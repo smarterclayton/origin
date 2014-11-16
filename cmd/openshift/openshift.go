@@ -10,6 +10,7 @@ import (
 
 	"github.com/openshift/origin/pkg/cmd/client"
 	"github.com/openshift/origin/pkg/cmd/flagtypes"
+	"github.com/openshift/origin/pkg/cmd/infra/archiver"
 	"github.com/openshift/origin/pkg/cmd/infra/builder"
 	"github.com/openshift/origin/pkg/cmd/infra/deployer"
 	"github.com/openshift/origin/pkg/cmd/infra/router"
@@ -65,6 +66,7 @@ func main() {
 
 	// let the infra commands be executed directly if program name matches
 	infraCommands := []*cobra.Command{
+		archiver.NewCommandArchiver("archiver"),
 		router.NewCommandRouter("router"),
 		deployer.NewCommandDeployer("deploy"),
 		builder.NewCommandSTIBuilder("sti-build"),
