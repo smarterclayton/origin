@@ -10,6 +10,11 @@
 			"Rev": "c2d3050044d05357eaf6c3547249ba57c5e235cb"
 		},
 		{
+			"ImportPath": "github.com/boltdb/bolt",
+			"Comment": "data/v1-254-gd285804",
+			"Rev": "d285804df1760edf4c602ecd901be5d5e67bf982"
+		},
+		{
 			"ImportPath": "code.google.com/p/go-uuid/uuid",
 			"Comment": "null-12",
 			"Rev": "7dda39b2e7d5e265014674c5af696ba4186679e9"
