@@ -7,6 +7,8 @@ import (
 	"path"
 	"reflect"
 
+	"code.google.com/p/go-uuid/uuid"
+
 	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/conversion"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
@@ -94,10 +96,6 @@ func SourceRefForGitURL(location string) (*SourceRef, error) {
 
 	ref := url.Fragment
 	url.Fragment = ""
-	if len(ref) == 0 {
-		ref = "master"
-	}
-
 	return &SourceRef{URL: url, Ref: ref}, nil
 }
 
@@ -107,12 +105,29 @@ func (r *SourceRef) SuggestName() (string, bool) {
 
 func (r *SourceRef) BuildSource() (*build.BuildSource, []build.BuildTriggerPolicy) {
 	return &build.BuildSource{
-		Type: build.BuildSourceGit,
-		Git: &build.GitBuildSource{
-			URI: r.URL.String(),
-			Ref: r.Ref,
-		},
-	}, nil
+			Type: build.BuildSourceGit,
+			Git: &build.GitBuildSource{
+				URI: r.URL.String(),
+				Ref: r.Ref,
+			},
+		}, []build.BuildTriggerPolicy{
+			{
+				Type: build.GithubWebHookType,
+				GithubWebHook: &build.WebHookTrigger{
+					Secret: generateSecret(),
+				},
+			},
+			{
+				Type: build.GenericWebHookType,
+				GenericWebHook: &build.WebHookTrigger{
+					Secret: generateSecret(),
+				},
+			},
+		}
+}
+
+func generateSecret() string {
+	return uuid.NewUUID().String()
 }
 
 type ImageRef struct {
@@ -182,9 +197,16 @@ func (r *ImageRef) SuggestName() (string, bool) {
 }
 
 func (r *ImageRef) BuildStrategy() (*build.BuildStrategy, []build.BuildTriggerPolicy) {
-	//TODO: handle this being an STI image
+	if r == nil {
+		return &build.BuildStrategy{
+			Type: build.DockerBuildStrategyType,
+		}, nil
+	}
 	return &build.BuildStrategy{
-		Type: build.DockerBuildStrategyType,
+		Type: build.STIBuildStrategyType,
+		STIStrategy: &build.STIBuildStrategy{
+			BuilderImage: r.nameReference(),
+		},
 	}, nil
 }
 
