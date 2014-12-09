@@ -33,6 +33,8 @@ func TestExamples(t *testing.T) {
 		"sample-app/application-template-stibuild.json":    &templateapi.Template{},
 		"sample-app/application-template-dockerbuild.json": &templateapi.Template{},
 
+		"generator/generator-cfg.json": &configapi.Config{},
+
 		"../api/examples/build.json":             &buildapi.Build{},
 		"../api/examples/build-list.json":        &buildapi.BuildList{},
 		"../api/examples/build-results.json":     &buildapi.Build{},

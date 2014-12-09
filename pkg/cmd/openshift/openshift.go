@@ -10,6 +10,7 @@ import (
 	"github.com/openshift/origin/pkg/cmd/flagtypes"
 	"github.com/openshift/origin/pkg/cmd/infra/builder"
 	"github.com/openshift/origin/pkg/cmd/infra/deployer"
+	"github.com/openshift/origin/pkg/cmd/infra/generate"
 	"github.com/openshift/origin/pkg/cmd/infra/router"
 	"github.com/openshift/origin/pkg/cmd/kubectl"
 	"github.com/openshift/origin/pkg/cmd/server"
@@ -46,6 +47,8 @@ func CommandFor(basename string) *cobra.Command {
 		return builder.NewCommandSTIBuilder(basename)
 	case "openshift-docker-build":
 		return builder.NewCommandDockerBuilder(basename)
+	case "openshift-generator":
+		return generate.NewCommandGenerator(basename)
 	case "kubectl":
 		return kubectl.NewCommandKubectl(basename)
 	default:
