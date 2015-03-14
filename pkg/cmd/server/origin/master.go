@@ -202,8 +202,8 @@ func (c *MasterConfig) InstallProtectedAPI(container *restful.Container) []strin
 
 	imageStorage := imageetcd.NewREST(c.EtcdHelper)
 	imageRegistry := image.NewRegistry(imageStorage)
-	imageRepositoryStorage := imagerepositoryetcd.NewREST(c.EtcdHelper, imagerepository.DefaultRegistryFunc(defaultRegistryFunc))
-	imageRepositoryRegistry := imagerepository.NewRegistry(imageRepositoryStorage)
+	imageRepositoryStorage, imageRepositoryStatus := imagerepositoryetcd.NewREST(c.EtcdHelper, imagerepository.DefaultRegistryFunc(defaultRegistryFunc))
+	imageRepositoryRegistry := imagerepository.NewRegistry(imageRepositoryStorage, imageRepositoryStatus)
 	imageRepositoryMappingStorage := imagerepositorymapping.NewREST(imageRegistry, imageRepositoryRegistry)
 	imageRepositoryTagStorage := imagerepositorytag.NewREST(imageRegistry, imageRepositoryRegistry)
 	imageStreamImageStorage := imagestreamimage.NewREST(imageRegistry, imageRepositoryRegistry)
@@ -232,14 +232,15 @@ func (c *MasterConfig) InstallProtectedAPI(container *restful.Container) []strin
 		"buildConfigs": buildconfigregistry.NewREST(buildEtcd),
 		"buildLogs":    buildlogregistry.NewREST(buildEtcd, c.BuildLogClient()),
 
-		"images":                  imageStorage,
-		"imageStreams":            imageRepositoryStorage,
-		"imageStreamImages":       imageStreamImageStorage,
-		"imageStreamMappings":     imageRepositoryMappingStorage,
-		"imageStreamTags":         imageRepositoryTagStorage,
-		"imageRepositories":       imageRepositoryStorage,
-		"imageRepositoryMappings": imageRepositoryMappingStorage,
-		"imageRepositoryTags":     imageRepositoryTagStorage,
+		"images":                   imageStorage,
+		"imageStreams":             imageRepositoryStorage,
+		"imageStreamImages":        imageStreamImageStorage,
+		"imageStreamMappings":      imageRepositoryMappingStorage,
+		"imageStreamTags":          imageRepositoryTagStorage,
+		"imageRepositories":        imageRepositoryStorage,
+		"imageRepositories/status": imageRepositoryStatus,
+		"imageRepositoryMappings":  imageRepositoryMappingStorage,
+		"imageRepositoryTags":      imageRepositoryTagStorage,
 
 		"deployments":               deployregistry.NewREST(deployEtcd),
 		"deploymentConfigs":         deployconfigregistry.NewREST(deployEtcd),
