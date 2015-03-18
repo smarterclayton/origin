@@ -18,7 +18,9 @@ package client
 
 import (
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/api"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/fields"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/labels"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/watch"
 )
 
 // FakePods implements PodsInterface. Meant to be embedded into a struct to get a default
@@ -51,4 +53,14 @@ func (c *FakePods) Create(pod *api.Pod) (*api.Pod, error) {
 func (c *FakePods) Update(pod *api.Pod) (*api.Pod, error) {
 	c.Fake.Actions = append(c.Fake.Actions, FakeAction{Action: "update-pod", Value: pod.Name})
 	return &api.Pod{}, nil
+}
+
+func (c *FakePods) Watch(label labels.Selector, field fields.Selector, resourceVersion string) (watch.Interface, error) {
+	c.Fake.Actions = append(c.Fake.Actions, FakeAction{Action: "watch-pods", Value: resourceVersion})
+	return c.Fake.Watch, c.Fake.Err
+}
+
+func (c *FakePods) Bind(bind *api.Binding) error {
+	c.Fake.Actions = append(c.Fake.Actions, FakeAction{Action: "bind-pod", Value: bind.Name})
+	return nil
 }

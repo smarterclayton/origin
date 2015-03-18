@@ -31,8 +31,6 @@ func init() {
 		&PodStatusResult{},
 		&PodTemplate{},
 		&PodTemplateList{},
-		&BoundPod{},
-		&BoundPods{},
 		&ReplicationController{},
 		&ReplicationControllerList{},
 		&Service{},
@@ -40,6 +38,7 @@ func init() {
 		&Endpoints{},
 		&EndpointsList{},
 		&Node{},
+		&NodeInfo{},
 		&NodeList{},
 		&Binding{},
 		&Status{},
@@ -50,7 +49,6 @@ func init() {
 		&LimitRangeList{},
 		&ResourceQuota{},
 		&ResourceQuotaList{},
-		&ResourceQuotaUsage{},
 		&Namespace{},
 		&NamespaceList{},
 		&Secret{},
@@ -66,8 +64,6 @@ func (*PodList) IsAnAPIObject()                   {}
 func (*PodStatusResult) IsAnAPIObject()           {}
 func (*PodTemplate) IsAnAPIObject()               {}
 func (*PodTemplateList) IsAnAPIObject()           {}
-func (*BoundPod) IsAnAPIObject()                  {}
-func (*BoundPods) IsAnAPIObject()                 {}
 func (*ReplicationController) IsAnAPIObject()     {}
 func (*ReplicationControllerList) IsAnAPIObject() {}
 func (*Service) IsAnAPIObject()                   {}
@@ -75,6 +71,7 @@ func (*ServiceList) IsAnAPIObject()               {}
 func (*Endpoints) IsAnAPIObject()                 {}
 func (*EndpointsList) IsAnAPIObject()             {}
 func (*Node) IsAnAPIObject()                      {}
+func (*NodeInfo) IsAnAPIObject()                  {}
 func (*NodeList) IsAnAPIObject()                  {}
 func (*Binding) IsAnAPIObject()                   {}
 func (*Status) IsAnAPIObject()                    {}
@@ -85,7 +82,6 @@ func (*LimitRange) IsAnAPIObject()                {}
 func (*LimitRangeList) IsAnAPIObject()            {}
 func (*ResourceQuota) IsAnAPIObject()             {}
 func (*ResourceQuotaList) IsAnAPIObject()         {}
-func (*ResourceQuotaUsage) IsAnAPIObject()        {}
 func (*Namespace) IsAnAPIObject()                 {}
 func (*NamespaceList) IsAnAPIObject()             {}
 func (*Secret) IsAnAPIObject()                    {}

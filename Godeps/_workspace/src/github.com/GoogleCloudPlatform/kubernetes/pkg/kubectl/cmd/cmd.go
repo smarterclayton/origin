@@ -34,7 +34,6 @@ import (
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -97,7 +96,7 @@ func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
 
 		Object: func(cmd *cobra.Command) (meta.RESTMapper, runtime.ObjectTyper) {
 			cfg, err := clientConfig.ClientConfig()
-			checkErr(err)
+			cmdutil.CheckErr(err)
 			cmdApiVersion := cfg.Version
 
 			return kubectl.OutputVersionMapper{mapper, cmdApiVersion}, api.Scheme
@@ -197,6 +196,8 @@ Find more information at https://github.com/GoogleCloudPlatform/kubernetes.`,
 	f.BindFlags(cmds.PersistentFlags())
 
 	cmds.AddCommand(f.NewCmdVersion(out))
+	cmds.AddCommand(f.NewCmdApiVersions(out))
+	cmds.AddCommand(f.NewCmdClusterInfo(out))
 	cmds.AddCommand(f.NewCmdProxy(out))
 
 	cmds.AddCommand(f.NewCmdGet(out))
@@ -252,7 +253,9 @@ func (f *Factory) PrinterForMapping(cmd *cobra.Command, mapping *meta.RESTMappin
 	}
 	if ok {
 		clientConfig, err := f.ClientConfig(cmd)
-		checkErr(err)
+		if err != nil {
+			return nil, err
+		}
 		defaultVersion := clientConfig.Version
 
 		version := cmdutil.OutputVersion(cmd, defaultVersion)
@@ -312,8 +315,9 @@ func (f *Factory) ClientMapperForCommand(cmd *cobra.Command) resource.ClientMapp
 //           3.  If the command line specifies one and the auth info specifies another, honor the command line technique.
 //   2.  Use default values and potentially prompt for auth information
 func DefaultClientConfig(flags *pflag.FlagSet) clientcmd.ClientConfig {
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	flags.StringVar(&loadingRules.ExplicitPath, "kubeconfig", "", "Path to the kubeconfig file to use for CLI requests.")
+	loadingRules := clientcmd.NewClientConfigLoadingRules()
+	loadingRules.EnvVarPath = os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
+	flags.StringVar(&loadingRules.CommandLinePath, "kubeconfig", "", "Path to the kubeconfig file to use for CLI requests.")
 
 	overrides := &clientcmd.ConfigOverrides{}
 	flagNames := clientcmd.RecommendedConfigOverrideFlags("")
@@ -325,18 +329,6 @@ func DefaultClientConfig(flags *pflag.FlagSet) clientcmd.ClientConfig {
 	clientConfig := clientcmd.NewInteractiveDeferredLoadingClientConfig(loadingRules, overrides, os.Stdin)
 
 	return clientConfig
-}
-
-func checkErr(err error) {
-	if err != nil {
-		glog.FatalDepth(1, err.Error())
-	}
-}
-
-func usageError(cmd *cobra.Command, format string, args ...interface{}) {
-	glog.Errorf(format, args...)
-	glog.Errorf("See '%s -h' for help.", cmd.CommandPath())
-	os.Exit(1)
 }
 
 func runHelp(cmd *cobra.Command, args []string) {

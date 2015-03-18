@@ -458,6 +458,7 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/go-systemd/daemon",
+			"Comment": "v2-43-g2d21675",
 			"Rev": "2d21675230a81a503f4363f4aa3490af06d52bb8"
 		},
 		{
@@ -526,7 +527,7 @@
 		},
 		{
 			"ImportPath": "github.com/docker/spdystream",
-			"Rev": "29e1da2890f60336f98d0b3bf28b05070aa2ee4d"
+			"Rev": "e731c8f9f19ffd7e51a469a2de1580c1dfbb4fae"
 		},
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
@@ -534,13 +535,13 @@
 		},
 		{
 			"ImportPath": "github.com/emicklei/go-restful",
-			"Comment": "v1.1.2-50-g692a500",
-			"Rev": "692a50017a7049b26cf7ea4ccfc0d8c77369a793"
+			"Comment": "v1.1.3-10-g62dc65d",
+			"Rev": "62dc65d6e51525418cad2bb6f292d3cf7c5e9d0a"
 		},
 		{
 			"ImportPath": "github.com/fsouza/go-dockerclient",
 			"Comment": "0.2.1-357-gd197177",
-			"Rev": "e1e2cc5b83662b894c6871db875c37eb3725a045"
+			"Rev": "d19717788084716e4adff0515be6289aa04bec46"
 		},
 		{
 			"ImportPath": "github.com/getsentry/raven-go",
@@ -564,16 +565,16 @@
 		},
 		{
 			"ImportPath": "github.com/google/cadvisor/client",
-			"Comment": "0.6.2",
-			"Rev": "89088df70eca64cf9d6b9a23a3d2bc21a30916d6"
+			"Comment": "0.10.1-62-ge78e515",
+			"Rev": "e78e515723d9eb387e5fd865a811f6263e946a06"
 		},
 		{
 			"ImportPath": "github.com/google/gofuzz",
-			"Rev": "aef70dacbc78771e35beb261bb3a72986adf7906"
+			"Rev": "bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
-			"Rev": "a8662172a384296ff59d28f837e151643c662985"
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
 		},
 		{
 			"ImportPath": "github.com/gorilla/handlers",
@@ -616,42 +617,42 @@
 		},
 		{
 			"ImportPath": "github.com/openshift/source-to-image/pkg/api",
-			"Comment": "v0.2",
+			"Comment": "v0.2-8-gc0c154e",
 			"Rev": "c0c154efcba27ea5693c428bfe28560c220b4850"
 		},
 		{
 			"ImportPath": "github.com/openshift/source-to-image/pkg/build",
-			"Comment": "v0.2",
+			"Comment": "v0.2-8-gc0c154e",
 			"Rev": "c0c154efcba27ea5693c428bfe28560c220b4850"
 		},
 		{
 			"ImportPath": "github.com/openshift/source-to-image/pkg/docker",
-			"Comment": "v0.2",
+			"Comment": "v0.2-8-gc0c154e",
 			"Rev": "c0c154efcba27ea5693c428bfe28560c220b4850"
 		},
 		{
 			"ImportPath": "github.com/openshift/source-to-image/pkg/errors",
-			"Comment": "v0.2",
+			"Comment": "v0.2-8-gc0c154e",
 			"Rev": "c0c154efcba27ea5693c428bfe28560c220b4850"
 		},
 		{
 			"ImportPath": "github.com/openshift/source-to-image/pkg/git",
-			"Comment": "v0.2",
+			"Comment": "v0.2-8-gc0c154e",
 			"Rev": "c0c154efcba27ea5693c428bfe28560c220b4850"
 		},
 		{
 			"ImportPath": "github.com/openshift/source-to-image/pkg/scripts",
-			"Comment": "v0.2",
+			"Comment": "v0.2-8-gc0c154e",
 			"Rev": "c0c154efcba27ea5693c428bfe28560c220b4850"
 		},
 		{
 			"ImportPath": "github.com/openshift/source-to-image/pkg/tar",
-			"Comment": "v0.2",
+			"Comment": "v0.2-8-gc0c154e",
 			"Rev": "c0c154efcba27ea5693c428bfe28560c220b4850"
 		},
 		{
 			"ImportPath": "github.com/openshift/source-to-image/pkg/util",
-			"Comment": "v0.2",
+			"Comment": "v0.2-8-gc0c154e",
 			"Rev": "c0c154efcba27ea5693c428bfe28560c220b4850"
 		},
 		{

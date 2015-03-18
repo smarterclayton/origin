@@ -354,7 +354,6 @@ func (p dockerPuller) Pull(image string) error {
 	}
 	// Image spec: [<registry>/]<repository>/<image>[:<version] so we count '/'
 	explicitRegistry := (strings.Count(image, "/") == 2)
-	glog.Errorf("Foo: %s", explicitRegistry)
 	// Hack, look for a private registry, and decorate the error with the lack of
 	// credentials.  This is heuristic, and really probably could be done better
 	// by talking to the registry API directly from the kubelet here.
@@ -397,7 +396,10 @@ func (c DockerContainers) FindPodContainer(podFullName string, uid types.UID, co
 			continue
 		}
 		// TODO(proppy): build the docker container name and do a map lookup instead?
-		dockerManifestID, dockerUUID, dockerContainerName, hash := ParseDockerName(dockerContainer.Names[0])
+		dockerManifestID, dockerUUID, dockerContainerName, hash, err := ParseDockerName(dockerContainer.Names[0])
+		if err != nil {
+			continue
+		}
 		if dockerManifestID == podFullName &&
 			(uid == "" || dockerUUID == uid) &&
 			dockerContainerName == containerName {
@@ -407,17 +409,25 @@ func (c DockerContainers) FindPodContainer(podFullName string, uid types.UID, co
 	return nil, false, 0
 }
 
-// Note, this might return containers belong to a different Pod instance with the same name
-func (c DockerContainers) FindContainersByPodFullName(podFullName string) map[string]*docker.APIContainers {
-	containers := make(map[string]*docker.APIContainers)
+// RemoveContainerWithID removes the container with the given containerID.
+func (c DockerContainers) RemoveContainerWithID(containerID DockerID) {
+	delete(c, containerID)
+}
 
+// FindContainersByPod returns the containers that belong to the pod.
+func (c DockerContainers) FindContainersByPod(podUID types.UID, podFullName string) DockerContainers {
+	containers := make(DockerContainers)
 	for _, dockerContainer := range c {
 		if len(dockerContainer.Names) == 0 {
 			continue
 		}
-		dockerManifestID, _, dockerContainerName, _ := ParseDockerName(dockerContainer.Names[0])
-		if dockerManifestID == podFullName {
-			containers[dockerContainerName] = dockerContainer
+		dockerPodName, uuid, _, _, err := ParseDockerName(dockerContainer.Names[0])
+		if err != nil {
+			continue
+		}
+		if podUID == uuid ||
+			(podUID == "" && podFullName == dockerPodName) {
+			containers[DockerID(dockerContainer.ID)] = dockerContainer
 		}
 	}
 	return containers
@@ -461,7 +471,10 @@ func GetRecentDockerContainersWithNameAndUUID(client DockerInterface, podFullNam
 		if len(dockerContainer.Names) == 0 {
 			continue
 		}
-		dockerPodName, dockerUUID, dockerContainerName, _ := ParseDockerName(dockerContainer.Names[0])
+		dockerPodName, dockerUUID, dockerContainerName, _, err := ParseDockerName(dockerContainer.Names[0])
+		if err != nil {
+			continue
+		}
 		if dockerPodName != podFullName {
 			continue
 		}
@@ -584,7 +597,8 @@ func inspectContainer(client DockerInterface, dockerID, containerName, tPath str
 	return &containerStatus, nil
 }
 
-// GetDockerPodInfo returns docker info for all containers in the pod/manifest.
+// GetDockerPodInfo returns docker info for all containers in the pod/manifest and
+// infrastructure container
 func GetDockerPodInfo(client DockerInterface, manifest api.PodSpec, podFullName string, uid types.UID) (api.PodInfo, error) {
 	info := api.PodInfo{}
 	expectedContainers := make(map[string]api.Container)
@@ -602,7 +616,10 @@ func GetDockerPodInfo(client DockerInterface, manifest api.PodSpec, podFullName 
 		if len(value.Names) == 0 {
 			continue
 		}
-		dockerManifestID, dockerUUID, dockerContainerName, _ := ParseDockerName(value.Names[0])
+		dockerManifestID, dockerUUID, dockerContainerName, _, err := ParseDockerName(value.Names[0])
+		if err != nil {
+			continue
+		}
 		if dockerManifestID != podFullName {
 			continue
 		}
@@ -693,24 +710,23 @@ func BuildDockerName(podUID types.UID, podFullName string, container *api.Contai
 		rand.Uint32())
 }
 
-// TODO(vmarmol): This should probably return an error.
 // Unpacks a container name, returning the pod full name and container name we would have used to
-// construct the docker name. If the docker name isn't the one we created, we may return empty strings.
-func ParseDockerName(name string) (podFullName string, podUID types.UID, containerName string, hash uint64) {
+// construct the docker name. If we are unable to parse the name, an error is returned.
+func ParseDockerName(name string) (podFullName string, podUID types.UID, containerName string, hash uint64, err error) {
 	// For some reason docker appears to be appending '/' to names.
 	// If it's there, strip it.
-	if name[0] == '/' {
-		name = name[1:]
-	}
+	name = strings.TrimPrefix(name, "/")
 	parts := strings.Split(name, "_")
 	if len(parts) == 0 || parts[0] != containerNamePrefix {
+		err = fmt.Errorf("failed to parse Docker container name %q into parts", name)
 		return
 	}
-	if len(parts) < 5 {
+	if len(parts) < 6 {
 		// We have at least 5 fields.  We may have more in the future.
 		// Anything with less fields than this is not something we can
 		// manage.
-		glog.Warningf("found a container with the %q prefix, but too few fields (%d): ", containerNamePrefix, len(parts), name)
+		glog.Warningf("found a container with the %q prefix, but too few fields (%d): %q", containerNamePrefix, len(parts), name)
+		err = fmt.Errorf("Docker container name %q has less parts than expected %v", name, parts)
 		return
 	}
 
@@ -718,19 +734,17 @@ func ParseDockerName(name string) (podFullName string, podUID types.UID, contain
 	nameParts := strings.Split(parts[1], ".")
 	containerName = nameParts[0]
 	if len(nameParts) > 1 {
-		var err error
 		hash, err = strconv.ParseUint(nameParts[1], 16, 32)
 		if err != nil {
-			glog.Warningf("invalid container hash: %s", nameParts[1])
+			glog.Warningf("invalid container hash %q in container %q", nameParts[1], name)
 		}
 	}
 
 	// Pod fullname.
-	podFullName = parts[2]
+	podFullName = parts[2] + "_" + parts[3]
 
 	// Pod UID.
-	podUID = types.UID(parts[3])
-
+	podUID = types.UID(parts[4])
 	return
 }
 
