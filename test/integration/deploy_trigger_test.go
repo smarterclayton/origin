@@ -14,6 +14,7 @@ import (
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/apiserver"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/client"
 	kclient "github.com/GoogleCloudPlatform/kubernetes/pkg/client"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/fields"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/labels"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/master"
 	watchapi "github.com/GoogleCloudPlatform/kubernetes/pkg/watch"
@@ -64,7 +65,7 @@ func TestSuccessfulManualDeployment(t *testing.T) {
 		t.Fatalf("Couldn't create DeploymentConfig: %v %#v", err, config)
 	}
 
-	watch, err := openshift.KubeClient.ReplicationControllers(util.Namespace()).Watch(labels.Everything(), labels.Everything(), dc.ResourceVersion)
+	watch, err := openshift.KubeClient.ReplicationControllers(util.Namespace()).Watch(labels.Everything(), fields.Everything(), dc.ResourceVersion)
 	if err != nil {
 		t.Fatalf("Couldn't subscribe to Deployments: %v", err)
 	}
@@ -115,7 +116,7 @@ func TestSimpleImageChangeTrigger(t *testing.T) {
 	config := imageChangeDeploymentConfig()
 	var err error
 
-	watch, err := openshift.KubeClient.ReplicationControllers(util.Namespace()).Watch(labels.Everything(), labels.Everything(), "0")
+	watch, err := openshift.KubeClient.ReplicationControllers(util.Namespace()).Watch(labels.Everything(), fields.Everything(), "0")
 	if err != nil {
 		t.Fatalf("Couldn't subscribe to Deployments %v", err)
 	}
@@ -183,7 +184,7 @@ func TestSimpleImageChangeTriggerFrom(t *testing.T) {
 	}
 	var err error
 
-	watch, err := openshift.KubeClient.ReplicationControllers(util.Namespace()).Watch(labels.Everything(), labels.Everything(), "0")
+	watch, err := openshift.KubeClient.ReplicationControllers(util.Namespace()).Watch(labels.Everything(), fields.Everything(), "0")
 	if err != nil {
 		t.Fatalf("Couldn't subscribe to Deployments %v", err)
 	}
@@ -243,7 +244,7 @@ func TestSimpleConfigChangeTrigger(t *testing.T) {
 	config := changeDeploymentConfig()
 	var err error
 
-	watch, err := openshift.KubeClient.ReplicationControllers(util.Namespace()).Watch(labels.Everything(), labels.Everything(), "0")
+	watch, err := openshift.KubeClient.ReplicationControllers(util.Namespace()).Watch(labels.Everything(), fields.Everything(), "0")
 	if err != nil {
 		t.Fatalf("Couldn't subscribe to Deployments %v", err)
 	}
