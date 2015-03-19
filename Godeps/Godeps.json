@@ -6,6 +6,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "bitbucket.org/ww/goautoneg",
+			"Comment": "null-5",
+			"Rev": "75cd24fc2f2c2a2088577d12123ddee5f54e0675"
+		},
+		{
 			"ImportPath": "code.google.com/p/go-uuid/uuid",
 			"Comment": "null-12",
 			"Rev": "7dda39b2e7d5e265014674c5af696ba4186679e9"
@@ -120,6 +125,11 @@
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/credentialprovider",
+			"Comment": "v0.12.0-867-gfaab509",
+			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/fields",
 			"Comment": "v0.12.0-867-gfaab509",
 			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
 		},
@@ -325,6 +335,10 @@
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.6.6-2-g2cea0f0",
 			"Rev": "2cea0f0d141f56fae06df5b813ec4119d1c8ccbd"
+		},
+		{
+			"ImportPath": "github.com/beorn7/perks/quantile",
+			"Rev": "b965b613227fddccbfffe13eae360ed3fa822f8d"
 		},
 		{
 			"ImportPath": "github.com/coreos/etcd/config",
@@ -537,6 +551,10 @@
 			"ImportPath": "github.com/emicklei/go-restful",
 			"Comment": "v1.1.3-10-g62dc65d",
 			"Rev": "62dc65d6e51525418cad2bb6f292d3cf7c5e9d0a"
+		},
+		{
+			"ImportPath": "github.com/evanphx/json-patch",
+			"Rev": "7dd4489c2eb6073e5a9d7746c3274c5b5f0387df"
 		},
 		{
 			"ImportPath": "github.com/fsouza/go-dockerclient",
