@@ -66,11 +66,8 @@ func (r *REST) ResourceLocation(ctx kapi.Context, id string) (string, error) {
 	buildPodNamespace := pod.Namespace
 	// Build will take place only in one container
 	buildContainerName := pod.Spec.Containers[0].Name
-	location := &url.URL{
-		Scheme: kubernetes.NodeScheme,
-		Host:   fmt.Sprintf("%s:%d", buildPodHost, kubernetes.NodePort),
-		Path:   fmt.Sprintf("/containerLogs/%s/%s/%s", buildPodNamespace, buildPodID, buildContainerName),
-	}
+
+	location := fmt.Sprintf("%s:%d/containerLogs/%s/%s/%s", buildPodHost, kubernetes.NodePort, buildPodNamespace, buildPodID, buildContainerName)
 
 	// Pod in which build take place can't be in the Pending or Unknown phase,
 	// cause no containers are present in the Pod in those phases.
@@ -80,14 +77,14 @@ func (r *REST) ResourceLocation(ctx kapi.Context, id string) (string, error) {
 
 	switch build.Status {
 	case api.BuildStatusRunning:
-		location.RawQuery = url.Values{"follow": []string{"1"}}.Encode()
+		location += url.Values{"follow": []string{"1"}}.Encode()
 	case api.BuildStatusComplete, api.BuildStatusFailed:
 		// Do not follow the Complete and Failed logs as the streaming already finished.
 	default:
 		return "", errors.NewFieldInvalid("build.Status", build.Status, "must be Running, Complete or Failed")
 	}
 
-	return location.String(), nil
+	return location, nil
 }
 
 func (r *REST) New() runtime.Object {
