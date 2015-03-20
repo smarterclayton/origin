@@ -1,0 +1,22 @@
+{
+  "apiVersion": "v1beta1",
+  "items": [
+    {
+      "apiVersion": "v1beta1",
+      "containerPort": 8080,
+      "id": "empty-service",
+      "kind": "Service",
+      "labels": {
+        "template": "empty-service"
+      },
+      "namespace": "example",
+      "port": 5432,
+      "protocol": "TCP",
+      "selector": {
+        "name": "empty-service"
+      },
+      "sessionAffinity": "None"
+    }
+  ],
+  "kind": "List"
+}

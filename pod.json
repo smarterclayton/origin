@@ -1,0 +1,24 @@
+{
+  "kind": "Pod",
+  "apiVersion": "v1beta1",
+  "id": "openshift",
+  "desiredState": {
+    "manifest": {
+      "version": "v1beta2",
+      "containers": [
+        {
+          "name": "origin",
+          "image": "openshift/origin",
+          "ports": [{
+              "containerPort": 8443,
+          }],
+          "command": ["start", "master", "--kubernetes=:8443"],
+          "imagePullPolicy": "PullIfNotPresent"
+        }
+      ],
+      "restartPolicy": {
+        "always": {}
+      }
+    }
+  }
+}

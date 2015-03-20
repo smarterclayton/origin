@@ -1,0 +1,36 @@
+<div ng-controller="ProjectController" class="content">
+  <project-page>
+    <div ng-controller="ServicesController">
+      <h1>Services</h1>
+      <alerts alerts="alerts"></alerts>
+      <div ng-if="(services | hashSize) == 0">
+        <div>
+          <em>{{emptyMessage}}</em>
+        </div>
+      </div>      
+      <div style="margin-bottom: 10px;" ng-repeat="service in services">
+        <h3>{{service.metadata.name}}</h3>
+        <div>Created: <relative-timestamp timestamp="service.metadata.creationTimestamp"></relative-timestamp></div>
+        <div>IP: {{service.spec.portalIP}}</div>
+        <div>Port: {{service.spec.port}}</div>
+        <div>Container port: {{service.spec.containerPort}}</div>
+        <div>Protocol: {{service.spec.protocol}}</div>
+        <div>Selectors: <span ng-if="!service.spec.selector"><em>none</em></span>
+            <span ng-repeat="(selectorLabel, selectorValue) in service.spec.selector"> {{selectorLabel}}={{selectorValue}}<span ng-show="!$last">, </span></span>
+        </div>
+        <div>Routes: <span ng-if="(routesByService[service.metadata.name] | hashSize) == 0"><em>none</em></span>
+            <span ng-repeat="(routeName, route) in routesByService[service.metadata.name]">
+                <span ng-if="route | isWebRoute"><a href="{{route | routeWebURL}}">{{route.host}}</a></span>
+                <span ng-if="!(route | isWebRoute)">{{route.host}}</span>
+                <span ng-show="!$last">, </span>
+            </span>
+        </div>
+      </div>
+
+      <div ng-if="routesByService['']" style="margin-bottom: 10px;">
+        <h3>No Service</h3>
+        <div>Routes: <span ng-repeat="(routeName, route) in routesByService['']">{{route.host}}<span ng-show="!$last">, </span></span></div>
+      </div>
+    </div>
+  </project-page>
+</div>

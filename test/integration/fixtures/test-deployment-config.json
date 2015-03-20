@@ -1,0 +1,43 @@
+{
+  "kind": "DeploymentConfig",
+  "apiVersion": "v1beta1",
+  "metadata": {
+    "name": "test-deployment-config"
+  },
+  "triggers": [
+  ],
+  "template": {
+    "strategy": {
+      "type": "Recreate"
+    },
+    "controllerTemplate": {
+      "replicas": 1,
+      "replicaSelector": {
+        "name": "test-deployment"
+      },
+      "podTemplate": {
+        "desiredState": {
+          "manifest": {
+            "version": "v1beta1",
+            "containers": [
+              {
+                "name": "ruby-helloworld",
+                "image": "127.0.0.1:5001/openshift/origin-ruby-sample",
+                "cpu": 100,
+                "memory": 3221225472,
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "labels": {
+          "name": "test-deployment"
+        }
+      }
+    }
+  }
+}

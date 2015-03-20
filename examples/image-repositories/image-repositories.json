@@ -1,0 +1,36 @@
+{
+  "apiVersion": "v1beta1",
+  "items": [
+    {
+      "apiVersion": "v1beta1",
+      "dockerImageRepository": "openshift/ruby-20-centos7",
+      "kind": "ImageRepository",
+      "metadata": {
+        "name": "ruby-20-centos7"
+      },
+      "tags": {
+      }
+    },
+    {
+      "apiVersion": "v1beta1",
+      "dockerImageRepository": "openshift/nodejs-010-centos7",
+      "kind": "ImageRepository",
+      "metadata": {
+        "name": "nodejs-010-centos7"
+      },
+      "tags": {
+      }
+    },
+    {
+      "apiVersion": "v1beta1",
+      "dockerImageRepository": "openshift/wildfly-8-centos",
+      "kind": "ImageRepository",
+      "metadata": {
+        "name": "wildfly-8-centos"
+      },
+      "tags": {
+      }
+    }
+  ],
+  "kind": "ImageRepositoryList"
+}

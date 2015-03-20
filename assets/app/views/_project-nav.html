@@ -1,0 +1,25 @@
+<div class="navbar-project">
+  <div class="navbar-project-menu">
+    <div class="form-group">
+      <label class="control-label" for="boostrapSelect">Projects</label>
+      <!-- TODO add multiple attribute back to the select tag when we support selecting multiple -->
+      <select class="selectpicker form-control" data-selected-text-format="count>3" id="boostrapSelect"></select>
+    </div>
+  </div>
+  <div class="navbar-search filter">
+    <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label ng-if="!renderOptions || !renderOptions.hideFilterWidget" class="control-label">Filter by labels</label>
+              <div class="navbar-filter-widget">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 active-filters">
+          </div>
+          <div class="col-md-2" style="margin-top: 30px;"><a href="/project/{{projectName}}/catalog" class="btn btn-lg btn-primary">Create <i class="fa fa-plus" /></a></div>
+        </div>
+    </div>
+  </div>
+</div>

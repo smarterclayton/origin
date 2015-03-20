@@ -1,0 +1,64 @@
+{
+  "apiVersion": "v1beta1",
+  "description": "Example shows how to build a CPM node.",
+  "id": "node",
+  "items": [
+    {
+      "apiVersion": "v1beta1",
+      "desiredState": {
+        "manifest": {
+          "containers": [
+            {
+              "env": [
+                {
+                  "name": "PG_USERNAME",
+                  "value": "exampleuser"
+                },
+                {
+                  "name": "PG_PASSWORD",
+                  "value": "example"
+                }
+              ],
+              "image": "registry:5000/crunchy-node",
+              "name": "master",
+              "ports": [
+                {
+                  "containerPort": 5432,
+                  "hostPort": 9000
+                }
+              ],
+              "volumeMounts": [
+                {
+                  "mountPath": "/pgdata",
+                  "name": "pgdata",
+                  "readOnly": false
+                }
+              ]
+            }
+          ],
+          "id": "pg-standalone-1",
+          "version": "v1beta1",
+          "volumes": [
+            {
+              "name": "pgdata",
+              "source": {
+                "hostDir": {
+                  "path": "/var/lib/pgsql/exampleuser"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "id": "pg-standalone-1",
+      "kind": "Pod",
+      "labels": {
+        "name": "crunchy-node"
+      }
+    }
+  ],
+  "kind": "Template",
+  "metadata": {
+    "name": "node-example"
+  }
+}
