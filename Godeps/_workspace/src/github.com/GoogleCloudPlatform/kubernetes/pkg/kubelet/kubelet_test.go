@@ -39,6 +39,7 @@ import (
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/kubelet/cadvisor"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/kubelet/dockertools"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/kubelet/metrics"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/kubelet/network"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/kubelet/volume"
 	_ "github.com/GoogleCloudPlatform/kubernetes/pkg/kubelet/volume/host_path"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/types"
@@ -73,6 +74,7 @@ func newTestKubelet(t *testing.T) *TestKubelet {
 	kubelet.kubeClient = fakeKubeClient
 	kubelet.dockerPuller = &dockertools.FakeDockerPuller{}
 	kubelet.hostname = "testnode"
+	kubelet.networkPlugin, _ = network.InitNetworkPlugin([]network.NetworkPlugin{}, "", network.NewFakeHost(nil))
 	if tempDir, err := ioutil.TempDir("/tmp", "kubelet_test."); err != nil {
 		t.Fatalf("can't make a temp rootdir: %v", err)
 	} else {
@@ -412,6 +414,7 @@ var emptyPodUIDs map[types.UID]metrics.SyncPodType
 
 func TestSyncPodsDoesNothing(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	waitGroup := testKubelet.waitGroup
@@ -449,11 +452,12 @@ func TestSyncPodsDoesNothing(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 	waitGroup.Wait()
-	verifyCalls(t, fakeDocker, []string{"list", "list", "list", "inspect_container", "inspect_container"})
+	verifyCalls(t, fakeDocker, []string{"list", "list", "list", "inspect_container", "inspect_container", "list", "inspect_container", "inspect_container"})
 }
 
 func TestSyncPodsWithTerminationLog(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	waitGroup := testKubelet.waitGroup
@@ -483,7 +487,7 @@ func TestSyncPodsWithTerminationLog(t *testing.T) {
 	}
 	waitGroup.Wait()
 	verifyCalls(t, fakeDocker, []string{
-		"list", "list", "list", "create", "start", "inspect_container", "create", "start"})
+		"list", "list", "list", "create", "start", "inspect_container", "create", "start", "list", "inspect_container", "inspect_container"})
 
 	fakeDocker.Lock()
 	parts := strings.Split(fakeDocker.Container.HostConfig.Binds[0], ":")
@@ -506,6 +510,7 @@ func matchString(t *testing.T, pattern, str string) bool {
 
 func TestSyncPodsCreatesNetAndContainer(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	waitGroup := testKubelet.waitGroup
@@ -533,7 +538,7 @@ func TestSyncPodsCreatesNetAndContainer(t *testing.T) {
 	waitGroup.Wait()
 
 	verifyCalls(t, fakeDocker, []string{
-		"list", "list", "list", "create", "start", "inspect_container", "create", "start"})
+		"list", "list", "list", "create", "start", "inspect_container", "create", "start", "list", "inspect_container", "inspect_container"})
 
 	fakeDocker.Lock()
 
@@ -557,6 +562,7 @@ func TestSyncPodsCreatesNetAndContainer(t *testing.T) {
 
 func TestSyncPodsCreatesNetAndContainerPullsImage(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	waitGroup := testKubelet.waitGroup
@@ -586,7 +592,7 @@ func TestSyncPodsCreatesNetAndContainerPullsImage(t *testing.T) {
 	waitGroup.Wait()
 
 	verifyCalls(t, fakeDocker, []string{
-		"list", "list", "list", "create", "start", "inspect_container", "create", "start"})
+		"list", "list", "list", "create", "start", "inspect_container", "create", "start", "list", "inspect_container", "inspect_container"})
 
 	fakeDocker.Lock()
 
@@ -604,6 +610,7 @@ func TestSyncPodsCreatesNetAndContainerPullsImage(t *testing.T) {
 
 func TestSyncPodsWithPodInfraCreatesContainer(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	waitGroup := testKubelet.waitGroup
@@ -636,7 +643,7 @@ func TestSyncPodsWithPodInfraCreatesContainer(t *testing.T) {
 	waitGroup.Wait()
 
 	verifyCalls(t, fakeDocker, []string{
-		"list", "list", "list", "inspect_container", "inspect_image", "list", "create", "start"})
+		"list", "list", "list", "inspect_container", "list", "create", "start", "list", "inspect_container", "inspect_container"})
 
 	fakeDocker.Lock()
 	if len(fakeDocker.Created) != 1 ||
@@ -648,6 +655,7 @@ func TestSyncPodsWithPodInfraCreatesContainer(t *testing.T) {
 
 func TestSyncPodsWithPodInfraCreatesContainerCallsHandler(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	waitGroup := testKubelet.waitGroup
@@ -693,7 +701,7 @@ func TestSyncPodsWithPodInfraCreatesContainerCallsHandler(t *testing.T) {
 	waitGroup.Wait()
 
 	verifyCalls(t, fakeDocker, []string{
-		"list", "list", "list", "inspect_container", "inspect_image", "list", "create", "start"})
+		"list", "list", "list", "inspect_container", "list", "create", "start", "list", "inspect_container", "inspect_container"})
 
 	fakeDocker.Lock()
 	if len(fakeDocker.Created) != 1 ||
@@ -708,6 +716,7 @@ func TestSyncPodsWithPodInfraCreatesContainerCallsHandler(t *testing.T) {
 
 func TestSyncPodsDeletesWithNoPodInfraContainer(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	waitGroup := testKubelet.waitGroup
@@ -762,7 +771,7 @@ func TestSyncPodsDeletesWithNoPodInfraContainer(t *testing.T) {
 	waitGroup.Wait()
 
 	verifyCalls(t, fakeDocker, []string{
-		"list", "list", "list", "list", "inspect_container", "inspect_container", "stop", "create", "start", "inspect_container", "create", "start"})
+		"list", "list", "list", "list", "inspect_container", "inspect_container", "list", "inspect_container", "inspect_container", "stop", "create", "start", "inspect_container", "create", "start", "list", "inspect_container", "inspect_container"})
 
 	// A map iteration is used to delete containers, so must not depend on
 	// order here.
@@ -779,6 +788,7 @@ func TestSyncPodsDeletesWithNoPodInfraContainer(t *testing.T) {
 func TestSyncPodsDeletesWhenSourcesAreReady(t *testing.T) {
 	ready := false
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	kubelet.sourcesReady = func() bool { return ready }
@@ -823,6 +833,7 @@ func TestSyncPodsDeletesWhenSourcesAreReady(t *testing.T) {
 
 func TestSyncPodsDeletes(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	fakeDocker.ContainerList = []docker.APIContainers{
@@ -900,7 +911,7 @@ func TestSyncPodDeletesDuplicate(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	verifyCalls(t, fakeDocker, []string{"list", "stop"})
+	verifyCalls(t, fakeDocker, []string{"list", "stop", "list"})
 	// Expect one of the duplicates to be killed.
 	if len(fakeDocker.Stopped) != 1 || (fakeDocker.Stopped[0] != "1234" && fakeDocker.Stopped[0] != "4567") {
 		t.Errorf("Wrong containers were stopped: %v", fakeDocker.Stopped)
@@ -942,7 +953,7 @@ func TestSyncPodBadHash(t *testing.T) {
 	}
 
 	//verifyCalls(t, fakeDocker, []string{"list", "stop", "list", "create", "start", "stop", "create", "start", "inspect_container"})
-	verifyCalls(t, fakeDocker, []string{"list", "stop", "stop", "create", "start", "inspect_container", "create", "start"})
+	verifyCalls(t, fakeDocker, []string{"list", "stop", "stop", "create", "start", "inspect_container", "create", "start", "list", "inspect_container", "inspect_container"})
 
 	// A map interation is used to delete containers, so must not depend on
 	// order here.
@@ -995,7 +1006,7 @@ func TestSyncPodUnhealthy(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	verifyCalls(t, fakeDocker, []string{"list", "stop", "create", "start"})
+	verifyCalls(t, fakeDocker, []string{"list", "stop", "create", "start", "list", "inspect_container"})
 
 	// A map interation is used to delete containers, so must not depend on
 	// order here.
@@ -1685,7 +1696,7 @@ func TestSyncPodEventHandlerFails(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	verifyCalls(t, fakeDocker, []string{"list", "list", "create", "start", "stop"})
+	verifyCalls(t, fakeDocker, []string{"list", "list", "create", "start", "stop", "list"})
 
 	if len(fakeDocker.Stopped) != 1 {
 		t.Errorf("Wrong containers were stopped: %v", fakeDocker.Stopped)
@@ -1694,6 +1705,7 @@ func TestSyncPodEventHandlerFails(t *testing.T) {
 
 func TestSyncPodsWithPullPolicy(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kubelet := testKubelet.kubelet
 	fakeDocker := testKubelet.fakeDocker
 	waitGroup := testKubelet.waitGroup
@@ -2758,6 +2770,8 @@ func TestGetHostPortConflicts(t *testing.T) {
 func TestHandlePortConflicts(t *testing.T) {
 	testKubelet := newTestKubelet(t)
 	kl := testKubelet.kubelet
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
+
 	spec := api.PodSpec{Containers: []api.Container{{Ports: []api.ContainerPort{{HostPort: 80}}}}}
 	pods := []api.Pod{
 		{
@@ -2783,7 +2797,7 @@ func TestHandlePortConflicts(t *testing.T) {
 	// The newer pod should be rejected.
 	conflictedPodName := GetPodFullName(&pods[0])
 
-	kl.handleHostPortConflicts(pods)
+	kl.handleNotfittingPods(pods)
 	if len(kl.podStatuses) != 1 {
 		t.Fatalf("expected length of status map to be 1. Got map %#v.", kl.podStatuses)
 	}
@@ -2807,15 +2821,76 @@ func TestHandlePortConflicts(t *testing.T) {
 	}
 }
 
+// Tests that we handle exceeded resources correctly by setting the failed status in status map.
+func TestHandleMemExceeded(t *testing.T) {
+	testKubelet := newTestKubelet(t)
+	kl := testKubelet.kubelet
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{MemoryCapacity: 100}, nil)
+
+	spec := api.PodSpec{Containers: []api.Container{{Resources: api.ResourceRequirements{
+		Limits: api.ResourceList{
+			"memory": resource.MustParse("90"),
+		},
+	}}}}
+	pods := []api.Pod{
+		{
+			ObjectMeta: api.ObjectMeta{
+				UID:       "123456789",
+				Name:      "newpod",
+				Namespace: "foo",
+			},
+			Spec: spec,
+		},
+		{
+			ObjectMeta: api.ObjectMeta{
+				UID:       "987654321",
+				Name:      "oldpod",
+				Namespace: "foo",
+			},
+			Spec: spec,
+		},
+	}
+	// Make sure the Pods are in the reverse order of creation time.
+	pods[1].CreationTimestamp = util.NewTime(time.Now())
+	pods[0].CreationTimestamp = util.NewTime(time.Now().Add(1 * time.Second))
+	// The newer pod should be rejected.
+	notfittingPodName := GetPodFullName(&pods[0])
+
+	kl.handleNotfittingPods(pods)
+	if len(kl.podStatuses) != 1 {
+		t.Fatalf("expected length of status map to be 1. Got map %#v.", kl.podStatuses)
+	}
+	// Check pod status stored in the status map.
+	status, ok := kl.podStatuses[notfittingPodName]
+	if !ok {
+		t.Fatalf("status of pod %q is not found in the status map.", notfittingPodName)
+	}
+	if status.Phase != api.PodFailed {
+		t.Fatalf("expected pod status %q. Got %q.", api.PodFailed, status.Phase)
+	}
+
+	// Check if we can retrieve the pod status from GetPodStatus().
+	kl.pods = pods
+	status, err := kl.GetPodStatus(notfittingPodName, "")
+	if err != nil {
+		t.Fatalf("unable to retrieve pod status for pod %q: #v.", notfittingPodName, err)
+	}
+	if status.Phase != api.PodFailed {
+		t.Fatalf("expected pod status %q. Got %q.", api.PodFailed, status.Phase)
+	}
+}
+
 func TestPurgingObsoleteStatusMapEntries(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
+
 	kl := testKubelet.kubelet
 	pods := []api.Pod{
 		{Spec: api.PodSpec{Containers: []api.Container{{Ports: []api.ContainerPort{{HostPort: 80}}}}}},
 		{Spec: api.PodSpec{Containers: []api.Container{{Ports: []api.ContainerPort{{HostPort: 80}}}}}},
 	}
 	// Run once to populate the status map.
-	kl.handleHostPortConflicts(pods)
+	kl.handleNotfittingPods(pods)
 	if len(kl.podStatuses) != 1 {
 		t.Fatalf("expected length of status map to be 1. Got map %#v.", kl.podStatuses)
 	}
@@ -3064,6 +3139,7 @@ func TestCreateMirrorPod(t *testing.T) {
 
 func TestDeleteOrphanedMirrorPods(t *testing.T) {
 	testKubelet := newTestKubelet(t)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorApi.MachineInfo{}, nil)
 	kl := testKubelet.kubelet
 	manager := testKubelet.fakeMirrorManager
 	orphanedPodNames := []string{"pod1_ns", "pod2_ns"}

@@ -65,7 +65,6 @@ import (
 
 // Config is a structure used to configure a Master.
 type Config struct {
-	Client            *client.Client
 	Cloud             cloudprovider.Interface
 	EtcdHelper        tools.EtcdHelper
 	EventTTL          time.Duration
@@ -122,7 +121,6 @@ type Config struct {
 // Master contains state for a Kubernetes cluster master/api server.
 type Master struct {
 	// "Inputs", Copied from Config
-	client       *client.Client
 	portalNet    *net.IPNet
 	cacheTimeout time.Duration
 
@@ -262,7 +260,6 @@ func New(c *Config) *Master {
 	glog.V(4).Infof("Setting master service IPs based on PortalNet subnet to %q (read-only) and %q (read-write).", serviceReadOnlyIP, serviceReadWriteIP)
 
 	m := &Master{
-		client:                c.Client,
 		portalNet:             c.PortalNet,
 		rootWebService:        new(restful.WebService),
 		enableLogsSupport:     c.EnableLogsSupport,
@@ -378,13 +375,13 @@ func (m *Master) init(c *Config) {
 		nodeStorageClient.Nodes(),
 		podRegistry,
 	)
-	if c.SyncPodStatus {
-		go util.Forever(func() { podCache.UpdateAllContainers() }, m.cacheTimeout)
-	}
-	go util.Forever(func() { podCache.GarbageCollectPodStatus() }, time.Minute*30)
 
-	// TODO: refactor podCache to sit on top of podStorage via status calls
-	podStorage = podStorage.WithPodStatus(podCache)
+	if c.SyncPodStatus {
+		go util.Forever(podCache.UpdateAllContainers, m.cacheTimeout)
+		go util.Forever(podCache.GarbageCollectPodStatus, time.Minute*30)
+		// Note the pod cache needs access to an un-decorated RESTStorage
+		podStorage = podStorage.WithPodStatus(podCache)
+	}
 
 	// TODO: Factor out the core API registration
 	m.storage = map[string]apiserver.RESTStorage{

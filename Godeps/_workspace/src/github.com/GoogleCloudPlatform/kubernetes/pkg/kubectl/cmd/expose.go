@@ -56,6 +56,7 @@ func (f *Factory) NewCmdExposeService(out io.Writer) *cobra.Command {
 	cmd.Flags().Int("port", -1, "The port that the service should serve on. Required.")
 	cmd.Flags().Bool("create-external-load-balancer", false, "If true, create an external load balancer for this service. Implementation is cloud provider dependent. Default is 'false'.")
 	cmd.Flags().String("selector", "", "A label selector to use for this service. If empty (the default) infer the selector from the replication controller.")
+	cmd.Flags().StringP("labels", "l", "", "Labels to apply to the service created by this call.")
 	cmd.Flags().Bool("dry-run", false, "If true, only print the object that would be sent, without creating it.")
 	cmd.Flags().String("container-port", "", "Name or number for the port on the container that the service should direct traffic to. Optional.")
 	cmd.Flags().String("public-ip", "", "Name of a public IP address to set for the service. The service will be assigned this IP in addition to its generated service IP.")
@@ -69,11 +70,11 @@ func RunExpose(f *Factory, out io.Writer, cmd *cobra.Command, args []string) err
 		return util.UsageError(cmd, "<name> is required for expose")
 	}
 
-	namespace, err := f.DefaultNamespace(cmd)
+	namespace, err := f.DefaultNamespace()
 	if err != nil {
 		return err
 	}
-	client, err := f.Client(cmd)
+	client, err := f.Client()
 	if err != nil {
 		return err
 	}

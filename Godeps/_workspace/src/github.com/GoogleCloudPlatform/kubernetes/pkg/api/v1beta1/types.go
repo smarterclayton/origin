@@ -105,6 +105,8 @@ type VolumeSource struct {
 	GitRepo *GitRepoVolumeSource `json:"gitRepo" description:"git repository at a particular revision"`
 	// Secret represents a secret to populate the volume with
 	Secret *SecretVolumeSource `json:"secret" description:"secret to populate volume with"`
+	// NFS represents an NFS mount on the host that shares a pod's lifetime
+	NFS *NFSVolumeSource `json:"nfs" description:"NFS volume that will be mounted in the host machine "`
 }
 
 // HostPathVolumeSource represents bare host directory volume.
@@ -354,6 +356,17 @@ type TypeMeta struct {
 	APIVersion        string    `json:"apiVersion,omitempty" description:"version of the schema the object should have"`
 	Namespace         string    `json:"namespace,omitempty" description:"namespace to which the object belongs; must be a DNS_SUBDOMAIN; 'default' by default; cannot be updated"`
 
+	// DeletionTimestamp is the time after which this resource will be deleted. This
+	// field is set by the server when a graceful deletion is requested by the user, and is not
+	// directly settable by a client. The resource will be deleted (no longer visible from
+	// resource lists, and not reachable by name) after the time in this field. Once set, this
+	// value may not be unset or be set further into the future, although it may be shortened
+	// or the resource may be deleted prior to this time. For example, a user may request that
+	// a pod is deleted in 30 seconds. The Kubelet will react by sending a graceful termination
+	// signal to the containers in the pod. Once the resource is deleted in the API, the Kubelet
+	// will send a hard termination signal to the container.
+	DeletionTimestamp *util.Time `json:"deletionTimestamp,omitempty" description:"RFC 3339 date and time at which the object will be deleted; populated by the system when a graceful deletion is requested, read-only; if not set, graceful deletion of the object has not been requested"`
+
 	// GenerateName indicates that the name should be made unique by the server prior to persisting
 	// it. A non-empty value for the field indicates the name will be made unique (and the name
 	// returned to the client will be different than the name passed). The value of this field will
@@ -437,9 +450,6 @@ type ContainerStatus struct {
 	// Note that this is calculated from dead containers.  But those containers are subject to
 	// garbage collection.  This value will get capped at 5 by GC.
 	RestartCount int `json:"restartCount" description:"the number of times the container has been restarted, currently based on the number of dead containers that have not yet been removed"`
-	// TODO(dchen1107): Deprecated this soon once we pull entire PodStatus from node,
-	// not just PodInfo. Now we need this to remove docker.Container from API
-	PodIP string `json:"podIP,omitempty" description:"pod's IP address"`
 	// TODO(dchen1107): Need to decide how to reprensent this in v1beta3
 	Image       string `json:"image" description:"image of the container"`
 	ImageID     string `json:"imageID" description:"ID of the container's image"`
@@ -814,6 +824,16 @@ type Binding struct {
 	Host     string `json:"host" description:"host to which to bind the specified pod"`
 }
 
+// DeleteOptions may be provided when deleting an API object
+type DeleteOptions struct {
+	TypeMeta `json:",inline"`
+
+	// Optional duration in seconds before the object should be deleted. Value must be non-negative integer.
+	// The value zero indicates delete immediately. If this value is nil, the default grace period for the
+	// specified type will be used.
+	GracePeriodSeconds *int64 `json:"gracePeriodSeconds" description:"the duration in seconds to wait before deleting this object; defaults to a per object value if not specified; zero means delete immediately"`
+}
+
 // Status is a return value for calls that don't return other objects.
 // TODO: this could go in apiserver, but I'm including it here so clients needn't
 // import both.
@@ -1152,6 +1172,19 @@ type ResourceQuotaList struct {
 
 	// Items is a list of ResourceQuota objects
 	Items []ResourceQuota `json:"items" description:"items is a list of ResourceQuota objects"`
+}
+
+// NFSVolumeSource represents an NFS Mount that lasts the lifetime of a pod
+type NFSVolumeSource struct {
+	// Server is the hostname or IP address of the NFS server
+	Server string `json:"server" description:"the hostname or IP address of the NFS server"`
+
+	// Path is the exported NFS share
+	Path string `json:"path" description:"the path that is exported by the NFS server"`
+
+	// Optional: Defaults to false (read/write). ReadOnly here will force
+	// the NFS export to be mounted as read-only permissions
+	ReadOnly bool `json:"readOnly,omitempty" description:"forces the NFS export to be mounted with read-only permissions"`
 }
 
 // Secret holds secret data of a certain type.  The total bytes of the values in

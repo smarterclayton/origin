@@ -65,278 +65,278 @@
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/admission",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/api",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/apiserver",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/auth/authenticator",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/auth/authorizer",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/auth/handlers",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/auth/user",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/capabilities",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/client",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/clientauth",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/cloudprovider",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/controller",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/conversion",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/credentialprovider",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/fields",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/healthz",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/httplog",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/kubectl",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/kubelet",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/labels",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/master",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/probe",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/proxy",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/controller",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/endpoint",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/etcd",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/event",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/generic",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/limitrange",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/minion",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/namespace",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/pod",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/resourcequota",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/secret",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/registry/service",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/resourcequota",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/runtime",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/scheduler",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/service",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/tools",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/types",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/ui",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/util",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/version",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/watch",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/plugin/pkg/admission/admit",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/plugin/pkg/admission/limitranger",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/plugin/pkg/admission/namespace/exists",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/plugin/pkg/admission/resourcedefaults",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/plugin/pkg/admission/resourcequota",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/plugin/pkg/auth/authenticator/token/tokenfile",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/plugin/pkg/scheduler",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/plugin/pkg/scheduler/factory",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/plugin/pkg/scheduler/algorithmprovider",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/third_party/golang/netutil",
-			"Comment": "v0.12.0-867-gfaab509",
-			"Rev": "faab509a23e21afe6e4811eadf693d939c17984f"
+			"Comment": "v0.12.0-971-g699dc96",
+			"Rev": "699dc96c7ba917529808fa4b3b1d893755a87419"
 		},
 		{
 			"ImportPath": "github.com/RangelReale/osin",

@@ -45,7 +45,7 @@ type fakeKubelet struct {
 	containerInfoFunc                  func(podFullName string, uid types.UID, containerName string, req *cadvisorApi.ContainerInfoRequest) (*cadvisorApi.ContainerInfo, error)
 	rootInfoFunc                       func(query *cadvisorApi.ContainerInfoRequest) (*cadvisorApi.ContainerInfo, error)
 	machineInfoFunc                    func() (*cadvisorApi.MachineInfo, error)
-	podsFunc                           func() ([]api.Pod, util.StringSet, error)
+	podsFunc                           func() ([]api.Pod, util.StringSet)
 	logFunc                            func(w http.ResponseWriter, req *http.Request)
 	runFunc                            func(podFullName string, uid types.UID, containerName string, cmd []string) ([]byte, error)
 	dockerVersionFunc                  func() ([]uint, error)
@@ -76,11 +76,11 @@ func (fk *fakeKubelet) GetDockerVersion() ([]uint, error) {
 	return fk.dockerVersionFunc()
 }
 
-func (fk *fakeKubelet) GetMachineInfo() (*cadvisorApi.MachineInfo, error) {
+func (fk *fakeKubelet) GetCachedMachineInfo() (*cadvisorApi.MachineInfo, error) {
 	return fk.machineInfoFunc()
 }
 
-func (fk *fakeKubelet) GetPods() ([]api.Pod, util.StringSet, error) {
+func (fk *fakeKubelet) GetPods() ([]api.Pod, util.StringSet) {
 	return fk.podsFunc()
 }
 
