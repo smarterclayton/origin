@@ -636,6 +636,11 @@
 			"Rev": "e78e515723d9eb387e5fd865a811f6263e946a06"
 		},
 		{
+			"ImportPath": "github.com/google/cadvisor/client",
+			"Comment": "0.10.1-62-ge78e515",
+			"Rev": "e78e515723d9eb387e5fd865a811f6263e946a06"
+		},
+		{
 			"ImportPath": "github.com/google/cadvisor/container",
 			"Comment": "0.10.1-62-ge78e515",
 			"Rev": "e78e515723d9eb387e5fd865a811f6263e946a06"
