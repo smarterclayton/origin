@@ -348,7 +348,6 @@ func NewTestOpenshift(t *testing.T) *testOpenshift {
 	handlerContainer := master.NewHandlerContainer(osMux)
 
 	_ = master.New(&master.Config{
-		Client:           kubeClient,
 		EtcdHelper:       etcdHelper,
 		KubeletClient:    kubeletClient,
 		APIPrefix:        "/api",
