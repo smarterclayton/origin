@@ -9,7 +9,14 @@ import (
 )
 
 func TestServiceResolverCacheEmpty(t *testing.T) {
-	fakeClient := &testclient.Fake{}
+	fakeClient := testclient.NewSimpleFake(&api.Service{
+		ObjectMeta: api.ObjectMeta{
+			Name: "foo",
+		},
+		Spec: api.ServiceSpec{
+			Ports: []api.ServicePort{{Port: 80}},
+		},
+	})
 	cache := NewServiceResolverCache(fakeClient.Services("default").Get)
 	if v, ok := cache.resolve("FOO_SERVICE_HOST"); v != "" || !ok {
 		t.Errorf("unexpected cache item")
