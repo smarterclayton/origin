@@ -928,7 +928,7 @@
 		},
 		{
 			"ImportPath": "golang.org/x/oauth2",
-			"Rev": "2e66694fea36dc820636630792a55cdc6987e05b"
+			"Rev": "ce5ea7da934b76b1066c527632359e2b8f65db97"
 		},
 		{
 			"ImportPath": "google.golang.org/appengine",
