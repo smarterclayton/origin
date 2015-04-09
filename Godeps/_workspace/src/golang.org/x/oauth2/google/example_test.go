@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"testing"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -18,6 +19,10 @@ import (
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/urlfetch"
 )
+
+// Remove after Go 1.4.
+// Related to https://codereview.appspot.com/107320046
+func TestA(t *testing.T) {}
 
 func Example_webServer() {
 	// Your credentials should be obtained from the Google
@@ -65,19 +70,6 @@ func ExampleJWTConfigFromJSON() {
 	// Initiate an http.Client. The following GET request will be
 	// authorized and authenticated on the behalf of
 	// your service account.
-	client := conf.Client(oauth2.NoContext)
-	client.Get("...")
-}
-
-func ExampleSDKConfig() {
-	// The credentials will be obtained from the first account that
-	// has been authorized with `gcloud auth login`.
-	conf, err := google.NewSDKConfig("")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Initiate an http.Client. The following GET request will be
-	// authorized and authenticated on the behalf of the SDK user.
 	client := conf.Client(oauth2.NoContext)
 	client.Get("...")
 }
