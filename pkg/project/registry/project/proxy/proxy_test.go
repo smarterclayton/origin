@@ -98,7 +98,7 @@ func TestCreateProjectOK(t *testing.T) {
 }
 
 func TestGetProjectOK(t *testing.T) {
-	mockClient := &testclient.Fake{}
+	mockClient := testclient.NewSimpleFake(&kapi.Namespace{ObjectMeta: kapi.ObjectMeta{Name: "foo"}})
 	storage := NewREST(mockClient.Namespaces(), &mockLister{})
 	project, err := storage.Get(kapi.NewContext(), "foo")
 	if project == nil {

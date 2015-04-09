@@ -49,7 +49,7 @@ func TestServiceResolverCache(t *testing.T) {
 		service: &api.Service{
 			Spec: api.ServiceSpec{
 				PortalIP: "127.0.0.1",
-				Port:     80,
+				Ports:    []api.ServicePort{{Port: 80}},
 			},
 		},
 	}
