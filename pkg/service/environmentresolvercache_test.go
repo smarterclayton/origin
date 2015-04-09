@@ -5,11 +5,11 @@ import (
 
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/api"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/api/errors"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/client"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/client/testclient"
 )
 
 func TestServiceResolverCacheEmpty(t *testing.T) {
-	fakeClient := &client.Fake{}
+	fakeClient := &testclient.Fake{}
 	cache := NewServiceResolverCache(fakeClient.Services("default").Get)
 	if v, ok := cache.resolve("FOO_SERVICE_HOST"); v != "" || !ok {
 		t.Errorf("unexpected cache item")
