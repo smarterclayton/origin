@@ -90,14 +90,14 @@ func (c *MasterConfig) RunNamespaceController() {
 // RunReplicationController starts the Kubernetes replication controller sync loop
 func (c *MasterConfig) RunReplicationController() {
 	controllerManager := controller.NewReplicationManager(c.KubeClient)
-	controllerManager.Run(5, util.NeverStop)
+	go controllerManager.Run(5, util.NeverStop)
 	glog.Infof("Started Kubernetes Replication Manager")
 }
 
 // RunEndpointController starts the Kubernetes replication controller sync loop
 func (c *MasterConfig) RunEndpointController() {
 	endpoints := service.NewEndpointController(c.KubeClient)
-	endpoints.Run(5, util.NeverStop)
+	go endpoints.Run(5, util.NeverStop)
 
 	glog.Infof("Started Kubernetes Endpoint Controller")
 }
