@@ -5,7 +5,6 @@ import (
 
 	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/auth/user"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
@@ -13,23 +12,6 @@ import (
 	"github.com/openshift/origin/pkg/cmd/server/bootstrappolicy"
 )
 
-func TestInvalidRole(t *testing.T) {
-	test := &authorizeTest{
-		context: kapi.WithUser(kapi.WithNamespace(kapi.NewContext(), "mallet"), &user.DefaultInfo{Name: "Brad"}),
-		attributes: &DefaultAuthorizationAttributes{
-			Verb:     "get",
-			Resource: "buildConfigs",
-		},
-		expectedAllowed: false,
-		expectedError:   "unable to interpret:",
-	}
-	test.policies = newDefaultGlobalPolicies()
-	test.policies = append(test.policies, newInvalidExtensionPolicies()...)
-	test.bindings = newDefaultGlobalBinding()
-	test.bindings = append(test.bindings, newInvalidExtensionBindings()...)
-
-	test.test(t)
-}
 func TestInvalidRoleButRuleNotUsed(t *testing.T) {
 	test := &authorizeTest{
 		context: kapi.WithUser(kapi.WithNamespace(kapi.NewContext(), "mallet"), &user.DefaultInfo{Name: "Brad"}),
@@ -506,11 +488,11 @@ func newInvalidExtensionPolicies() []authorizationapi.Policy {
 						Namespace: "mallet",
 					},
 					Rules: []authorizationapi.PolicyRule{
-						{
-							Verbs:                 util.NewStringSet("watch", "list", "get"),
-							Resources:             util.NewStringSet("buildConfigs"),
-							AttributeRestrictions: runtime.EmbeddedObject{&authorizationapi.Role{}},
-						},
+						/*{
+							Verbs:     util.NewStringSet("watch", "list", "get"),
+							Resources: util.NewStringSet("buildConfigs"),
+							// TODO: there is no invalid combination here yet
+						},*/
 						{
 							Verbs:     util.NewStringSet("update"),
 							Resources: util.NewStringSet("buildConfigs"),
