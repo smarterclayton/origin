@@ -47,6 +47,9 @@ var (
 	userColumns                = []string{"NAME", "UID", "FULL NAME", "IDENTITIES"}
 	identityColumns            = []string{"NAME", "IDP NAME", "IDP USER NAME", "USER NAME", "USER UID"}
 	userIdentityMappingColumns = []string{"NAME", "IDENTITY", "USER NAME", "USER UID"}
+
+	// known custom role extensions
+	IsPersonalSubjectAccessReviewColumns = []string{"NAME"}
 )
 
 var (
@@ -112,6 +115,8 @@ func NewHumanReadablePrinter(noHeaders bool) *kctl.HumanReadablePrinter {
 	p.Handler(identityColumns, printIdentity)
 	p.Handler(identityColumns, printIdentityList)
 	p.Handler(userIdentityMappingColumns, printUserIdentityMapping)
+
+	p.Handler(IsPersonalSubjectAccessReviewColumns, printIsPersonalSubjectAccessReview)
 	return p
 }
 
@@ -433,6 +438,11 @@ func printClusterRoleBinding(roleBinding *authorizationapi.ClusterRoleBinding, w
 
 func printClusterRoleBindingList(list *authorizationapi.ClusterRoleBindingList, w io.Writer) error {
 	return printRoleBindingList(authorizationTypeConverter.ToRoleBindingList(list), w)
+}
+
+func printIsPersonalSubjectAccessReview(a *authorizationapi.IsPersonalSubjectAccessReview, w io.Writer) error {
+	_, err := fmt.Fprintf(w, "IsPersonalSubjectAccessReview\n")
+	return err
 }
 
 func printRole(role *authorizationapi.Role, w io.Writer) error {

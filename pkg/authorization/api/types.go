@@ -77,7 +77,7 @@ type PolicyRule struct {
 	Verbs kutil.StringSet
 	// AttributeRestrictions will vary depending on what the Authorizer/AuthorizationAttributeBuilder pair supports.
 	// If the Authorizer does not recognize how to handle the AttributeRestrictions, the Authorizer should report an error.
-	AttributeRestrictions
+	AttributeRestrictions kruntime.EmbeddedObject
 	// Resources is a list of resources this rule applies to.  ResourceAll represents all resources.
 	Resources kutil.StringSet
 	// ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
@@ -87,9 +87,9 @@ type PolicyRule struct {
 	NonResourceURLs kutil.StringSet
 }
 
-type AttributeRestrictions struct {
-	// Indicates this is a personal subject access review
-	IsPersonalSubjectAccessReview bool
+// IsPersonalSubjectAccessReview is a marker for PolicyRule.AttributeRestrictions that denotes that subjectaccessreviews on self should be allowed
+type IsPersonalSubjectAccessReview struct {
+	kapi.TypeMeta
 }
 
 // Role is a logical grouping of PolicyRules that can be referenced as a unit by RoleBindings.

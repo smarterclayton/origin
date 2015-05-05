@@ -2,6 +2,7 @@ package bootstrappolicy
 
 import (
 	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
@@ -103,7 +104,7 @@ func GetBootstrapMasterRoles(masterNamespace string) []authorizationapi.Role {
 				{Verbs: util.NewStringSet("get"), Resources: util.NewStringSet("users"), ResourceNames: util.NewStringSet("~")},
 				{Verbs: util.NewStringSet("list"), Resources: util.NewStringSet("projectrequests")},
 				{Verbs: util.NewStringSet("list"), Resources: util.NewStringSet("projects")},
-				{Verbs: util.NewStringSet("create"), Resources: util.NewStringSet("subjectaccessreviews"), AttributeRestrictions: authorizationapi.AttributeRestrictions{IsPersonalSubjectAccessReview: true}},
+				{Verbs: util.NewStringSet("create"), Resources: util.NewStringSet("subjectaccessreviews"), AttributeRestrictions: runtime.EmbeddedObject{&authorizationapi.IsPersonalSubjectAccessReview{}}},
 			},
 		},
 		{

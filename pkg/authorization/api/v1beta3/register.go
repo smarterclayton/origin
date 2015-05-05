@@ -19,6 +19,8 @@ func init() {
 		&RoleBindingList{},
 		&RoleList{},
 
+		&IsPersonalSubjectAccessReview{},
+
 		&ClusterRole{},
 		&ClusterRoleBinding{},
 		&ClusterPolicy{},
@@ -51,3 +53,5 @@ func (*PolicyList) IsAnAPIObject()                   {}
 func (*PolicyBindingList) IsAnAPIObject()            {}
 func (*RoleBindingList) IsAnAPIObject()              {}
 func (*RoleList) IsAnAPIObject()                     {}
+
+func (*IsPersonalSubjectAccessReview) IsAnAPIObject() {}

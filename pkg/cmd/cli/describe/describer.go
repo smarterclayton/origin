@@ -1,6 +1,7 @@
 package describe
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"sort"
@@ -698,10 +699,14 @@ const policyRuleHeadings = "Verbs\tResources\tResource Names\tExtension"
 
 func describePolicyRule(out *tabwriter.Writer, rule authorizationapi.PolicyRule, indent string) {
 	extensionString := ""
+	if rule.AttributeRestrictions != (runtime.EmbeddedObject{}) {
+		extensionString = fmt.Sprintf("%#v", rule.AttributeRestrictions.Object)
 
-	switch restrict := rule.AttributeRestrictions; {
-	case restrict.IsPersonalSubjectAccessReview:
-		extensionString = fmt.Sprintf("personal access review")
+		buffer := new(bytes.Buffer)
+		printer := NewHumanReadablePrinter(true)
+		if err := printer.PrintObj(rule.AttributeRestrictions.Object, buffer); err == nil {
+			extensionString = strings.TrimSpace(buffer.String())
+		}
 	}
 
 	fmt.Fprintf(out, indent+"%v\t%v\t%v\t%v\n",
