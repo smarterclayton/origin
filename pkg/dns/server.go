@@ -15,7 +15,12 @@ func NewServerDefaults() (*server.Config, error) {
 		Domain: "cluster.local.",
 		Local:  "openshift.default.svc.cluster.local.",
 	}
-	return config, server.SetDefaults(config)
+	if err := server.SetDefaults(config); err != nil {
+		return nil, err
+	}
+	config.NoRec = true
+	config.Nameservers = nil
+	return config, nil
 }
 
 // ListenAndServe starts a DNS server that exposes services and values stored in etcd (if etcdclient

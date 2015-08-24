@@ -1,9 +1,12 @@
 package main
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/golang/glog"
 
 	"github.com/openshift/origin/pkg/cmd/openshift"
 	"github.com/openshift/origin/pkg/cmd/util/serviceability"
@@ -16,6 +19,9 @@ func main() {
 	if len(os.Getenv("GOMAXPROCS")) == 0 {
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
+
+	log.SetFlags(0)
+	glog.CopyStandardLogTo("INFO")
 
 	basename := filepath.Base(os.Args[0])
 	command := openshift.CommandFor(basename)
