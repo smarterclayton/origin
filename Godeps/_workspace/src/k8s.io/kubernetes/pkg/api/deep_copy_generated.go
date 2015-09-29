@@ -237,6 +237,7 @@ func deepCopy_api_Container(in Container, out *Container, c *conversion.Cloner) 
 		out.SecurityContext = nil
 	}
 	out.Stdin = in.Stdin
+	out.StdinOnce = in.StdinOnce
 	out.TTY = in.TTY
 	return nil
 }

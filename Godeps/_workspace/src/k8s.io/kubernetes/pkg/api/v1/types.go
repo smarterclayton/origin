@@ -986,6 +986,10 @@ type Container struct {
 	// Whether this container should allocate a buffer for stdin in the container runtime.
 	// Default is false.
 	Stdin bool `json:"stdin,omitempty"`
+	// Whether the container runtime should close the STDIN channel after it has been opened by
+	// a single attach. Allows a container to accept a file or other concrete input before starting.
+	// Default is false
+	StdinOnce bool `json:"stdinOnce,omitempty" description:""`
 	// Whether this container should allocate a TTY for itself, also requires 'stdin' to be true.
 	// Default is false.
 	TTY bool `json:"tty,omitempty"`
