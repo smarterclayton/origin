@@ -123,6 +123,21 @@ func TestRegistryClientImage(t *testing.T) {
 	}
 }
 
+func TestRegistryClientDockerForceV1(t *testing.T) {
+	conn, err := dockerregistry.NewClient().Connect("v1.docker.io", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	image, err := conn.ImageByTag("kubernetes", "guestbook", "latest")
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if image.PullByID {
+		t.Errorf("expected V1 image: %v", err)
+	}
+}
+
 func TestRegistryClientQuayIOImage(t *testing.T) {
 	conn, err := dockerregistry.NewClient().Connect("quay.io", false)
 	if err != nil {

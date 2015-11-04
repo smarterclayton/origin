@@ -436,6 +436,20 @@ func UpdateTrackingTags(stream *ImageStream, updatedTag string, updatedImage Tag
 	return updated
 }
 
+// NormalizePullSpecForImage converts a legacy Docker registry URL into the internal version
+// for pulls.
+func NormalizePullSpecForImage(spec string) string {
+	ref, err := ParseDockerImageReference(spec)
+	if err != nil {
+		return spec
+	}
+	if ref.Registry == "v1.docker.io" {
+		ref.Registry = ""
+		return ref.Exact()
+	}
+	return spec
+}
+
 // ResolveImageID returns a sets.String of all the image IDs in stream that start with imageID.
 func ResolveImageID(stream *ImageStream, imageID string) sets.String {
 	set := sets.NewString()

@@ -89,6 +89,8 @@ func (s *REST) Create(ctx kapi.Context, obj runtime.Object) (runtime.Object, err
 		tag = api.DefaultImageTag
 	}
 
+	image.DockerImageReference = api.NormalizePullSpecForImage(image.DockerImageReference)
+
 	if err := s.imageRegistry.CreateImage(ctx, &image); err != nil && !errors.IsAlreadyExists(err) {
 		return nil, err
 	}

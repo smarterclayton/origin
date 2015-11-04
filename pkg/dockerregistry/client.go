@@ -162,6 +162,12 @@ func newConnection(url url.URL, allowInsecure, enableV2 bool) *connection {
 		v2 := false
 		isV2 = &v2
 	}
+	// hack to allow fallback to the old docker hub
+	if url.Host == "v1.docker.io" {
+		url.Host = normalizeDockerHubHost("docker.io", false)
+		v2 := false
+		isV2 = &v2
+	}
 
 	var transport http.RoundTripper
 	if allowInsecure {
