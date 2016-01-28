@@ -17,8 +17,8 @@ import (
 	cmapp "k8s.io/kubernetes/cmd/kube-controller-manager/app"
 	"k8s.io/kubernetes/pkg/admission"
 	kapi "k8s.io/kubernetes/pkg/api"
-	kapilatest "k8s.io/kubernetes/pkg/api/latest"
 	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apiserver"
 	kclient "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/cloudprovider"
@@ -202,7 +202,7 @@ func BuildKubernetesMasterConfig(options configapi.MasterConfig, requestContextM
 
 	enabledExtensionsVersions := configapi.GetEnabledAPIVersionsForGroup(*options.KubernetesMasterConfig, configapi.APIGroupExtensions)
 	if len(enabledExtensionsVersions) > 0 {
-		groupMeta, err := kapilatest.Group(configapi.APIGroupExtensions)
+		groupMeta, err := registered.Group(configapi.APIGroupExtensions)
 		if err != nil {
 			return nil, fmt.Errorf("Error setting up Kubernetes extensions server storage: %v", err)
 		}
@@ -314,7 +314,7 @@ func getAPIGroupVersionOverrides(options configapi.MasterConfig) map[string]mast
 
 // NewEtcdStorage returns a storage interface for the provided storage version.
 func NewEtcdStorage(client *etcdclient.Client, version unversioned.GroupVersion, prefix string) (helper storage.Interface, err error) {
-	group, err := kapilatest.Group(version.Group)
+	group, err := registered.Group(version.Group)
 	if err != nil {
 		return nil, err
 	}

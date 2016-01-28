@@ -14,8 +14,8 @@ import (
 
 	kapi "k8s.io/kubernetes/pkg/api"
 	kapierrors "k8s.io/kubernetes/pkg/api/errors"
-	klatest "k8s.io/kubernetes/pkg/api/latest"
 	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apiserver"
 	"k8s.io/kubernetes/pkg/util/sets"
 
@@ -118,7 +118,7 @@ func forbidden(reason string, attributes authorizer.AuthorizationAttributes, w h
 
 	// Not all API versions in valid API requests will have a matching codec in kubernetes.  If we can't find one,
 	// just default to the latest kube codec.
-	codec := klatest.GroupOrDie(kapi.SchemeGroupVersion.Group).Codec
+	codec := registered.GroupOrDie(kapi.GroupName).Codec
 	if requestedGroup, err := klatest.Group(apiVersion.Group); err == nil {
 		if requestedCodec, err := requestedGroup.InterfacesFor(apiVersion); err == nil {
 			codec = requestedCodec
