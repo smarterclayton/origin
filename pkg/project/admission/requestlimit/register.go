@@ -2,8 +2,8 @@ package requestlimit
 
 import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/runtime"
 
-	"github.com/openshift/origin/pkg/cmd/server/api"
 	_ "github.com/openshift/origin/pkg/project/admission/requestlimit/latest"
 )
 
@@ -20,10 +20,15 @@ func Resource(resource string) unversioned.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
 
-func init() {
-	api.Scheme.AddKnownTypes(SchemeGroupVersion,
+func AddToScheme(scheme *runtime.Scheme) {
+	addKnownTypes(scheme)
+}
+
+// Adds the list of known types to api.Scheme.
+func addKnownTypes(scheme *runtime.Scheme) {
+	scheme.AddKnownTypes(SchemeGroupVersion,
 		&ProjectRequestLimitConfig{},
 	)
 }
 
-func (*ProjectRequestLimitConfig) IsAnAPIObject() {}
+func (obj *ProjectRequestLimitConfig) GetObjectKind() unversioned.ObjectKind { return &obj.TypeMeta }
