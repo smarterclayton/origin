@@ -208,13 +208,20 @@ func (r *RollingUpdater) Update(config *RollingUpdaterConfig) error {
 	if err != nil {
 		return err
 	}
-	// Further validation.
-	if maxUnavailable == 0 && maxSurge == 0 {
+	// Validate maximums.
+	if desired > 0 && maxUnavailable == 0 && maxSurge == 0 {
 		return fmt.Errorf("one of maxSurge or maxUnavailable must be specified")
 	}
 	// The minumum pods which must remain available througout the update
 	// calculated for internal convenience.
-	minAvailable := original - maxUnavailable
+	minAvailable := int(math.Max(float64(0), float64(desired-maxUnavailable)))
+	// If the desired new scale is 0, then the max unavailable is necessarily
+	// the effective scale of the old RC regardless of the configuration
+	// (equivalent to 100% maxUnavailable).
+	if desired == 0 {
+		maxUnavailable = original
+		minAvailable = 0
+	}
 
 	fmt.Fprintf(out, "Scaling up %s from %d to %d, scaling down %s from %d to 0 (keep %d pods available, don't exceed %d pods)\n",
 		newRc.Name, newRc.Spec.Replicas, desired, oldRc.Name, oldRc.Spec.Replicas, minAvailable, original+maxSurge)
@@ -300,14 +307,14 @@ func (r *RollingUpdater) scaleDown(newRc, oldRc *api.ReplicationController, desi
 		return oldRc, nil
 	}
 	// Block until there are any pods ready.
-	oldAvailable, newAvailable, err := r.waitForReadyPods(config.Interval, config.Timeout, oldRc, newRc)
+	_, newAvailable, err := r.waitForReadyPods(config.Interval, config.Timeout, oldRc, newRc)
 	if err != nil {
 		return nil, err
 	}
 	// The old controller is considered as part of the total because we want to
 	// maintain minimum availability even with a volatile old controller.
-	// Scale down as much as possible while maintaining minimum availability.
-	decrement := (oldAvailable + newAvailable) - minAvailable
+	// Scale down as much as possible while maintaining minimum availability
+	decrement := oldRc.Spec.Replicas + newAvailable - minAvailable
 	// The decrement normally shouldn't drop below 0 because the available count
 	// always starts below the old replica count, but the old replica count can
 	// decrement due to externalities like pods death in the replica set. This
@@ -431,7 +438,7 @@ func (r *RollingUpdater) getOrCreateTargetControllerWithClient(controller *api.R
 func (r *RollingUpdater) existingController(controller *api.ReplicationController) (*api.ReplicationController, error) {
 	// without rc name but generate name, there's no existing rc
 	if len(controller.Name) == 0 && len(controller.GenerateName) > 0 {
-		return nil, errors.NewNotFound("ReplicationController", controller.Name)
+		return nil, errors.NewNotFound(api.Resource("replicationcontrollers"), controller.Name)
 	}
 	// controller name is required to get rc back
 	return r.c.ReplicationControllers(controller.Namespace).Get(controller.Name)
