@@ -14,7 +14,7 @@ import (
 	etcdclient "github.com/coreos/go-etcd/etcd"
 
 	"k8s.io/kubernetes/cmd/kube-apiserver/app"
-	cmapp "k8s.io/kubernetes/cmd/kube-controller-manager/app"
+	cmapp "k8s.io/kubernetes/cmd/kube-controller-manager/app/options"
 	"k8s.io/kubernetes/pkg/admission"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
