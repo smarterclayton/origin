@@ -88,7 +88,7 @@ func ValidateBuildConfig(config *buildapi.BuildConfig) field.ErrorList {
 	if strategy.DockerStrategy != nil && strategy.DockerStrategy.From == nil {
 		for i, trigger := range config.Spec.Triggers {
 			if trigger.Type == buildapi.ImageChangeBuildTriggerType && (trigger.ImageChange == nil || trigger.ImageChange.From == nil) {
-				allErrs = append(allErrs, field.Required(triggersPath.Index(i).Child("imageChange", "from")))
+				allErrs = append(allErrs, field.Required(triggersPath.Index(i).Child("imageChange", "from"), ""))
 			}
 		}
 	}
@@ -196,7 +196,7 @@ func validateSecretRef(ref *kapi.LocalObjectReference, fldPath *field.Path) fiel
 		return allErrs
 	}
 	if len(ref.Name) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("name")))
+		allErrs = append(allErrs, field.Required(fldPath.Child("name"), ""))
 	}
 	return allErrs
 }
@@ -212,7 +212,7 @@ func isHTTPScheme(in string) bool {
 func validateGitSource(git *buildapi.GitBuildSource, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if len(git.URI) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("uri")))
+		allErrs = append(allErrs, field.Required(fldPath.Child("uri"), ""))
 	} else if !isValidURL(git.URI) {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("uri"), git.URI, "uri is not a valid url"))
 	}
@@ -232,7 +232,7 @@ func validateSecrets(secrets []buildapi.SecretBuildSource, isDockerStrategy bool
 	allErrs := field.ErrorList{}
 	for i, s := range secrets {
 		if len(s.Secret.Name) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Index(i).Child("secret")))
+			allErrs = append(allErrs, field.Required(fldPath.Index(i).Child("secret"), ""))
 		}
 		if strings.HasPrefix(path.Clean(s.DestinationDir), "..") {
 			allErrs = append(allErrs, field.Invalid(fldPath.Index(i).Child("destinationDir"), s.DestinationDir, "destination dir cannot start with '..'"))
@@ -250,7 +250,7 @@ func validateImageSource(imageSource buildapi.ImageSource, fldPath *field.Path) 
 		allErrs = append(allErrs, validateSecretRef(imageSource.PullSecret, fldPath.Child("pullSecret"))...)
 	}
 	if len(imageSource.Paths) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("paths")))
+		allErrs = append(allErrs, field.Required(fldPath.Child("paths"), ""))
 	}
 	for i, path := range imageSource.Paths {
 		allErrs = append(allErrs, validateImageSourcePath(path, fldPath.Child("paths").Index(i))...)
@@ -262,10 +262,10 @@ func validateImageSource(imageSource buildapi.ImageSource, fldPath *field.Path) 
 func validateImageSourcePath(imagePath buildapi.ImageSourcePath, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if len(imagePath.SourcePath) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("sourcePath")))
+		allErrs = append(allErrs, field.Required(fldPath.Child("sourcePath"), ""))
 	}
 	if len(imagePath.DestinationDir) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("destinationDir")))
+		allErrs = append(allErrs, field.Required(fldPath.Child("destinationDir"), ""))
 	}
 	if !filepath.IsAbs(imagePath.SourcePath) {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("sourcePath"), imagePath.SourcePath, "must be an absolute path"))
@@ -298,7 +298,7 @@ func validateToImageReference(reference *kapi.ObjectReference, fldPath *field.Pa
 	switch kind {
 	case "ImageStreamTag":
 		if len(name) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Child("name")))
+			allErrs = append(allErrs, field.Required(fldPath.Child("name"), ""))
 		} else if _, _, ok := imageapi.SplitImageStreamTag(name); !ok {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("name"), name, "ImageStreamTag object references must be in the form <name>:<tag>"))
 		}
@@ -314,7 +314,7 @@ func validateToImageReference(reference *kapi.ObjectReference, fldPath *field.Pa
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("name"), name, fmt.Sprintf("name is not a valid Docker pull specification: %v", err)))
 		}
 	case "":
-		allErrs = append(allErrs, field.Required(fldPath.Child("kind")))
+		allErrs = append(allErrs, field.Required(fldPath.Child("kind"), ""))
 	default:
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("kind"), kind, "the target of build output must be an 'ImageStreamTag' or 'DockerImage'"))
 
@@ -328,7 +328,7 @@ func validateFromImageReference(reference *kapi.ObjectReference, fldPath *field.
 	switch kind {
 	case "ImageStreamTag":
 		if len(name) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Child("name")))
+			allErrs = append(allErrs, field.Required(fldPath.Child("name"), ""))
 		} else if _, _, ok := imageapi.SplitImageStreamTag(name); !ok {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("name"), name, "ImageStreamTag object references must be in the form <name>:<tag>"))
 		}
@@ -342,19 +342,19 @@ func validateFromImageReference(reference *kapi.ObjectReference, fldPath *field.
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("namespace"), namespace, "namespace is not valid when used with a 'DockerImage'"))
 		}
 		if len(name) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Child("name")))
+			allErrs = append(allErrs, field.Required(fldPath.Child("name"), ""))
 		} else if _, err := imageapi.ParseDockerImageReference(name); err != nil {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("name"), name, fmt.Sprintf("name is not a valid Docker pull specification: %v", err)))
 		}
 	case "ImageStreamImage":
 		if len(name) == 0 {
-			allErrs = append(allErrs, field.Required(fldPath.Child("name")))
+			allErrs = append(allErrs, field.Required(fldPath.Child("name"), ""))
 		}
 		if len(namespace) != 0 && !kvalidation.IsDNS1123Subdomain(namespace) {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("namespace"), namespace, "namespace must be a valid subdomain"))
 		}
 	case "":
-		allErrs = append(allErrs, field.Required(fldPath.Child("kind")))
+		allErrs = append(allErrs, field.Required(fldPath.Child("kind"), ""))
 	default:
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("kind"), kind, "the source of a builder image must be an 'ImageStreamTag', 'ImageStreamImage', or 'DockerImage'"))
 
@@ -449,7 +449,7 @@ func validateCustomStrategy(strategy *buildapi.CustomBuildStrategy, fldPath *fie
 func validateTrigger(trigger *buildapi.BuildTriggerPolicy, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if len(trigger.Type) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("type")))
+		allErrs = append(allErrs, field.Required(fldPath.Child("type"), ""))
 		return allErrs
 	}
 
@@ -457,19 +457,19 @@ func validateTrigger(trigger *buildapi.BuildTriggerPolicy, fldPath *field.Path) 
 	switch trigger.Type {
 	case buildapi.GitHubWebHookBuildTriggerType:
 		if trigger.GitHubWebHook == nil {
-			allErrs = append(allErrs, field.Required(fldPath.Child("github")))
+			allErrs = append(allErrs, field.Required(fldPath.Child("github"), ""))
 		} else {
 			allErrs = append(allErrs, validateWebHook(trigger.GitHubWebHook, fldPath.Child("github"))...)
 		}
 	case buildapi.GenericWebHookBuildTriggerType:
 		if trigger.GenericWebHook == nil {
-			allErrs = append(allErrs, field.Required(fldPath.Child("generic")))
+			allErrs = append(allErrs, field.Required(fldPath.Child("generic"), ""))
 		} else {
 			allErrs = append(allErrs, validateWebHook(trigger.GenericWebHook, fldPath.Child("generic"))...)
 		}
 	case buildapi.ImageChangeBuildTriggerType:
 		if trigger.ImageChange == nil {
-			allErrs = append(allErrs, field.Required(fldPath.Child("imageChange")))
+			allErrs = append(allErrs, field.Required(fldPath.Child("imageChange"), ""))
 			break
 		}
 		if trigger.ImageChange.From == nil {
@@ -495,7 +495,7 @@ func validateTrigger(trigger *buildapi.BuildTriggerPolicy, fldPath *field.Path) 
 func validateWebHook(webHook *buildapi.WebHookTrigger, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if len(webHook.Secret) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("secret")))
+		allErrs = append(allErrs, field.Required(fldPath.Child("secret"), ""))
 	}
 	return allErrs
 }

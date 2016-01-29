@@ -158,8 +158,8 @@ func NewFactory(clientConfig kclientcmd.ClientConfig) *Factory {
 		return mapper, api.Scheme
 	}
 
-	kRESTClient := w.Factory.RESTClient
-	w.RESTClient = func(mapping *meta.RESTMapping) (resource.RESTClient, error) {
+	kClientForMapping := w.Factory.ClientForMapping
+	w.ClientForMapping = func(mapping *meta.RESTMapping) (resource.RESTClient, error) {
 		if latest.OriginKind(mapping.GroupVersionKind) {
 			mappingVersion := mapping.GroupVersionKind.GroupVersion()
 			client, err := clients.ClientForVersion(&mappingVersion)
@@ -168,7 +168,7 @@ func NewFactory(clientConfig kclientcmd.ClientConfig) *Factory {
 			}
 			return client.RESTClient, nil
 		}
-		return kRESTClient(mapping)
+		return kClientForMapping(mapping)
 	}
 
 	// Save original Describer function

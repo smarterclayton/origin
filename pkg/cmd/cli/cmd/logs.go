@@ -109,11 +109,11 @@ func (o *OpenShiftLogsOptions) Complete(f *clientcmd.Factory, out io.Writer, cmd
 	}
 
 	version := cmdutil.GetFlagInt64(cmd, "version")
-	_, resource := meta.KindToResource(infos[0].Mapping.GroupVersionKind.Kind, false)
+	_, resource := meta.KindToResource(infos[0].Mapping.GroupVersionKind, false)
 
 	// TODO: podLogOptions should be included in our own logOptions objects.
-	switch resource {
-	case "build", "buildconfig":
+	switch resource.GroupResource() {
+	case buildapi.Resource("build"), buildapi.Resource("buildconfig"):
 		bopts := &buildapi.BuildLogOptions{
 			Follow:       podLogOptions.Follow,
 			Previous:     podLogOptions.Previous,
@@ -127,7 +127,7 @@ func (o *OpenShiftLogsOptions) Complete(f *clientcmd.Factory, out io.Writer, cmd
 			bopts.Version = &version
 		}
 		o.Options = bopts
-	case "deploymentconfig":
+	case deployapi.Resource("deploymentconfig"):
 		dopts := &deployapi.DeploymentLogOptions{
 			Follow:       podLogOptions.Follow,
 			Previous:     podLogOptions.Previous,
