@@ -98,7 +98,7 @@ func watchForResourceVersion(versioner storage.Versioner, watcher rest.Watcher, 
 		if err != nil {
 			return err
 		}
-		actualResourceVersion := accessor.ResourceVersion()
+		actualResourceVersion := accessor.GetResourceVersion()
 		if actualResourceVersion != resourceVersion {
 			return fmt.Errorf("unexpected watch event verifying resourceVersion %s: resource version was %s)", resourceVersion, actualResourceVersion)
 		}
