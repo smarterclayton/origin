@@ -9,9 +9,11 @@ import (
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
-	kclient "k8s.io/kubernetes/pkg/client/unversioned"
 
-	"github.com/openshift/origin/pkg/api/latest"
+	kapi "k8s.io/kubernetes/pkg/api"
+	kclient "k8s.io/kubernetes/pkg/client/unversioned"
+	"k8s.io/kubernetes/pkg/runtime"
+
 	"github.com/openshift/origin/pkg/build/api"
 	bld "github.com/openshift/origin/pkg/build/builder"
 	"github.com/openshift/origin/pkg/build/builder/cmd/scmauth"
@@ -40,7 +42,7 @@ func newBuilderConfigFromEnvironment() (*builderConfig, error) {
 	buildStr := os.Getenv("BUILD")
 	glog.V(4).Infof("$BUILD env var is %s \n", buildStr)
 	cfg.build = &api.Build{}
-	if err = latest.Codec.DecodeInto([]byte(buildStr), cfg.build); err != nil {
+	if err = runtime.DecodeInto(kapi.Codecs.UniversalDecoder(), []byte(buildStr), cfg.build); err != nil {
 		return nil, fmt.Errorf("unable to parse build: %v", err)
 	}
 

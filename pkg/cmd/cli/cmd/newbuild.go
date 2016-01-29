@@ -89,7 +89,7 @@ func NewCmdNewBuild(fullName string, f *clientcmd.Factory, in io.Reader, out io.
 			mapper, typer := f.Object()
 			config.SetMapper(mapper)
 			config.SetTyper(typer)
-			config.SetClientMapper(f.ClientMapperForCommand())
+			config.SetClientMapper(resource.ClientMapperFunc(f.ClientForMapping))
 
 			config.AddEnvironmentToBuild = true
 			err := RunNewBuild(fullName, f, out, in, c, args, config)

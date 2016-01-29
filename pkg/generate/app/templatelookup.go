@@ -83,7 +83,7 @@ func (r *TemplateFileSearcher) Search(terms ...string) (ComponentMatches, error)
 
 	for _, term := range terms {
 		var isSingular bool
-		obj, err := resource.NewBuilder(r.Mapper, r.Typer, r.ClientMapper).
+		obj, err := resource.NewBuilder(r.Mapper, r.Typer, r.ClientMapper, kapi.Codecs.UniversalDecoder()).
 			NamespaceParam(r.Namespace).RequireNamespace().
 			FilenameParam(false, term).
 			Do().

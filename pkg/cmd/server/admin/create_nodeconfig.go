@@ -17,6 +17,7 @@ import (
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	kcmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/master/ports"
+	"k8s.io/kubernetes/pkg/runtime"
 
 	"github.com/openshift/origin/pkg/cmd/flagtypes"
 	configapi "github.com/openshift/origin/pkg/cmd/server/api"
@@ -407,11 +408,11 @@ func (o CreateNodeConfigOptions) MakeNodeConfig(serverCertFile, serverKeyFile, n
 	}
 
 	// Roundtrip the config to v1 and back to ensure proper defaults are set.
-	ext, err := configapi.Scheme.ConvertToVersion(config, "v1")
+	ext, err := kapi.Scheme.ConvertToVersion(config, "v1")
 	if err != nil {
 		return err
 	}
-	internal, err := configapi.Scheme.ConvertToVersion(ext, "")
+	internal, err := kapi.Scheme.ConvertToVersion(ext, "")
 	if err != nil {
 		return err
 	}
@@ -431,7 +432,9 @@ func (o CreateNodeConfigOptions) MakeNodeJSON(nodeJSONFile string) error {
 	node := &kapi.Node{}
 	node.Name = o.NodeName
 
-	json, err := registered.GroupOrDie(configapi.GroupName).Codec.Encode(node)
+	groupMeta := registered.GroupOrDie(configapi.GroupName)
+
+	json, err := runtime.Encode(kapi.Codecs.LegacyCodec(groupMeta.GroupVersions[0]), node)
 	if err != nil {
 		return err
 	}

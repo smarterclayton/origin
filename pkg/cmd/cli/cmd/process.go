@@ -150,7 +150,7 @@ func RunProcess(f *clientcmd.Factory, out io.Writer, cmd *cobra.Command, args []
 		templateObj.CreationTimestamp = unversioned.Now()
 		infos = append(infos, &resource.Info{Object: templateObj})
 	} else {
-		infos, err = resource.NewBuilder(mapper, typer, f.ClientMapperForCommand()).
+		infos, err = resource.NewBuilder(mapper, typerresource.ClientMapperFunc(f.ClientForMapping), kapi.Codecs.UniversalDecoder()).
 			NamespaceParam(namespace).RequireNamespace().
 			FilenameParam(explicit, filename).
 			Do().

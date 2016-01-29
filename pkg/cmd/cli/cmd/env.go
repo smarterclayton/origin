@@ -215,7 +215,7 @@ func RunEnv(f *clientcmd.Factory, in io.Reader, out io.Writer, cmd *cobra.Comman
 	}
 
 	mapper, typer := f.Object()
-	b := resource.NewBuilder(mapper, typer, f.ClientMapperForCommand()).
+	b := resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.ClientForMapping), kapi.Codecs.UniversalDecoder()).
 		ContinueOnError().
 		NamespaceParam(cmdNamespace).DefaultNamespace().
 		FilenameParam(explicit, filenames...).
@@ -235,7 +235,7 @@ func RunEnv(f *clientcmd.Factory, in io.Reader, out io.Writer, cmd *cobra.Comman
 	}
 	// Keep a copy of the original objects prior to updating their environment.
 	// Used in constructing the patch(es) that will be applied in the server.
-	oldObjects, err := resource.AsVersionedObjects(infos, clientConfig.GroupVersion.String())
+	oldObjects, err := resource.AsVersionedObjects(infos, clientConfig.GroupVersion.String(), kapi.Codecs.LegacyCodec(*clientConfig.GroupVersion))
 	if err != nil {
 		return err
 	}
@@ -298,7 +298,7 @@ func RunEnv(f *clientcmd.Factory, in io.Reader, out io.Writer, cmd *cobra.Comman
 		if err != nil {
 			return err
 		}
-		objects, err := resource.AsVersionedObjects(infos, outputVersion.String())
+		objects, err := resource.AsVersionedObjects(infos, outputVersion.String(), kapi.Codecs.LegacyCodec(outputVersion))
 		if err != nil {
 			return err
 		}
@@ -317,7 +317,7 @@ func RunEnv(f *clientcmd.Factory, in io.Reader, out io.Writer, cmd *cobra.Comman
 		return nil
 	}
 
-	objects, err := resource.AsVersionedObjects(infos, clientConfig.GroupVersion.String())
+	objects, err := resource.AsVersionedObjects(infos, clientConfig.GroupVersion.String(), kapi.Codecs.LegacyCodec(*clientConfig.GroupVersion))
 	if err != nil {
 		return err
 	}
