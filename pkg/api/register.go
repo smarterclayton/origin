@@ -15,8 +15,10 @@ import (
 	_ "github.com/openshift/origin/pkg/user/api"
 )
 
+const GroupName = ""
+
 // SchemeGroupVersion is group version used to register these objects
-var SchemeGroupVersion = unversioned.GroupVersion{Group: "", Version: ""}
+var SchemeGroupVersion = unversioned.GroupVersion{Group: GroupName, Version: ""}
 
 // Kind takes an unqualified kind and returns back a Group qualified GroupKind
 func Kind(kind string) unversioned.GroupKind {
