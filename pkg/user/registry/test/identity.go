@@ -64,7 +64,7 @@ func (r *IdentityRegistry) UpdateIdentity(ctx kapi.Context, u *api.Identity) (*a
 	return r.Update, r.UpdateErr
 }
 
-func (r *IdentityRegistry) ListIdentities(ctx kapi.Context, options *unversioned.ListOptions) (*api.IdentityList, error) {
+func (r *IdentityRegistry) ListIdentities(ctx kapi.Context, options *kapi.ListOptions) (*api.IdentityList, error) {
 	*r.Actions = append(*r.Actions, Action{"ListIdentities", options})
 	if r.List == nil && r.ListErr == nil {
 		return &api.IdentityList{}, nil

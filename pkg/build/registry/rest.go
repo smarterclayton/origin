@@ -20,7 +20,7 @@ var ErrUnknownBuildPhase = fmt.Errorf("unknown build phase")
 // The last observed Build state is returned.
 func WaitForRunningBuild(watcher rest.Watcher, ctx kapi.Context, build *api.Build, timeout time.Duration) (*api.Build, bool, error) {
 	fieldSelector := unversioned.FieldSelector{Selector: fields.Set{"metadata.name": build.Name}.AsSelector()}
-	options := &unversioned.ListOptions{FieldSelector: fieldSelector, ResourceVersion: build.ResourceVersion}
+	options := &kapi.ListOptions{FieldSelector: fieldSelector, ResourceVersion: build.ResourceVersion}
 	w, err := watcher.Watch(ctx, options)
 	if err != nil {
 		return nil, false, err

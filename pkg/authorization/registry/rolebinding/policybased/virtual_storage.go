@@ -51,7 +51,7 @@ func (m *VirtualStorage) NewList() runtime.Object {
 	return &authorizationapi.RoleBindingList{}
 }
 
-func (m *VirtualStorage) List(ctx kapi.Context, options *unversioned.ListOptions) (runtime.Object, error) {
+func (m *VirtualStorage) List(ctx kapi.Context, options *kapi.ListOptions) (runtime.Object, error) {
 	policyBindingList, err := m.BindingRegistry.ListPolicyBindings(ctx, options)
 	if err != nil {
 		return nil, err
@@ -327,7 +327,7 @@ func (m *VirtualStorage) getPolicyBindingForPolicy(ctx kapi.Context, policyNames
 }
 
 func (m *VirtualStorage) getPolicyBindingOwningRoleBinding(ctx kapi.Context, bindingName string) (*authorizationapi.PolicyBinding, error) {
-	policyBindingList, err := m.BindingRegistry.ListPolicyBindings(ctx, &unversioned.ListOptions{})
+	policyBindingList, err := m.BindingRegistry.ListPolicyBindings(ctx, &kapi.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

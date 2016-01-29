@@ -37,7 +37,7 @@ func (m *VirtualStorage) NewList() runtime.Object {
 	return &authorizationapi.RoleList{}
 }
 
-func (m *VirtualStorage) List(ctx kapi.Context, options *unversioned.ListOptions) (runtime.Object, error) {
+func (m *VirtualStorage) List(ctx kapi.Context, options *kapi.ListOptions) (runtime.Object, error) {
 	policyList, err := m.PolicyStorage.ListPolicies(ctx, options)
 	if err != nil {
 		return nil, err

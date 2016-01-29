@@ -5,7 +5,6 @@ import (
 
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/client/cache"
 	"k8s.io/kubernetes/pkg/runtime"
 	kfield "k8s.io/kubernetes/pkg/util/validation/field"
@@ -33,20 +32,10 @@ func NewReadOnlyClusterPolicyCache(registry clusterpolicyregistry.WatchingRegist
 	reflector := cache.NewReflector(
 		&cache.ListWatch{
 			ListFunc: func(options kapi.ListOptions) (runtime.Object, error) {
-				opts := &unversioned.ListOptions{
-					LabelSelector:   unversioned.LabelSelector{Selector: options.LabelSelector},
-					FieldSelector:   unversioned.FieldSelector{Selector: options.FieldSelector},
-					ResourceVersion: options.ResourceVersion,
-				}
-				return registry.ListClusterPolicies(ctx, opts)
+				return registry.ListClusterPolicies(ctx, &options)
 			},
 			WatchFunc: func(options kapi.ListOptions) (watch.Interface, error) {
-				opts := &unversioned.ListOptions{
-					LabelSelector:   unversioned.LabelSelector{Selector: options.LabelSelector},
-					FieldSelector:   unversioned.FieldSelector{Selector: options.FieldSelector},
-					ResourceVersion: options.ResourceVersion,
-				}
-				return registry.WatchClusterPolicies(ctx, opts)
+				return registry.WatchClusterPolicies(ctx, &options)
 			},
 		},
 		&authorizationapi.ClusterPolicy{},
@@ -79,7 +68,7 @@ func (c *readOnlyClusterPolicyCache) LastSyncResourceVersion() string {
 	return c.reflector.LastSyncResourceVersion()
 }
 
-func (c *readOnlyClusterPolicyCache) List(options *unversioned.ListOptions) (*authorizationapi.ClusterPolicyList, error) {
+func (c *readOnlyClusterPolicyCache) List(options *kapi.ListOptions) (*authorizationapi.ClusterPolicyList, error) {
 	clusterPolicyList := &authorizationapi.ClusterPolicyList{}
 	returnedList := c.indexer.List()
 	matcher := clusterpolicyregistry.Matcher(api.ListOptionsToSelectors(options))

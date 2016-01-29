@@ -94,7 +94,7 @@ func convertNamespaceList(namespaceList *kapi.NamespaceList) *api.ProjectList {
 var _ = rest.Lister(&REST{})
 
 // List retrieves a list of Projects that match label.
-func (s *REST) List(ctx kapi.Context, options *unversioned.ListOptions) (runtime.Object, error) {
+func (s *REST) List(ctx kapi.Context, options *kapi.ListOptions) (runtime.Object, error) {
 	user, ok := kapi.UserFrom(ctx)
 	if !ok {
 		return nil, kerrors.NewForbidden("Project", "", fmt.Errorf("unable to list projects without a user on the context"))

@@ -152,7 +152,7 @@ func (r *REST) getTemplate() (*templateapi.Template, error) {
 
 var _ = rest.Lister(&REST{})
 
-func (r *REST) List(ctx kapi.Context, options *unversioned.ListOptions) (runtime.Object, error) {
+func (r *REST) List(ctx kapi.Context, options *kapi.ListOptions) (runtime.Object, error) {
 	userInfo, exists := kapi.UserFrom(ctx)
 	if !exists {
 		return nil, errors.New("a user must be provided")

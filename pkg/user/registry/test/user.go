@@ -61,7 +61,7 @@ func (r *UserRegistry) UpdateUser(ctx kapi.Context, u *api.User) (*api.User, err
 	return r.Update, err
 }
 
-func (r *UserRegistry) ListUsers(ctx kapi.Context, options *unversioned.ListOptions) (*api.UserList, error) {
+func (r *UserRegistry) ListUsers(ctx kapi.Context, options *kapi.ListOptions) (*api.UserList, error) {
 	*r.Actions = append(*r.Actions, Action{"ListUsers", options})
 	if r.List == nil && r.ListErr == nil {
 		return &api.UserList{}, nil
