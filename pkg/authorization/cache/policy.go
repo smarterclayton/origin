@@ -76,7 +76,7 @@ func (c *readOnlyPolicyCache) List(options *kapi.ListOptions, namespace string) 
 		items, err := c.indexer.Index("namespace", &authorizationapi.Policy{ObjectMeta: kapi.ObjectMeta{Namespace: namespace}})
 		returnedList = items
 		if err != nil {
-			return &authorizationapi.PolicyList{}, errors.NewInvalid("PolicyList", "policyList", kfield.ErrorList{kfield.Invalid(kfield.NewPath("policyList"), nil, err.Error())})
+			return &authorizationapi.PolicyList{}, errors.NewInvalid(authorizationapi.Kind("PolicyList"), "policyList", kfield.ErrorList{kfield.Invalid(kfield.NewPath("policyList"), nil, err.Error())})
 		}
 	}
 	policyList := &authorizationapi.PolicyList{}
@@ -84,7 +84,7 @@ func (c *readOnlyPolicyCache) List(options *kapi.ListOptions, namespace string) 
 	for i := range returnedList {
 		policy, castOK := returnedList[i].(*authorizationapi.Policy)
 		if !castOK {
-			return policyList, errors.NewInvalid("PolicyList", "policyList", kfield.ErrorList{})
+			return policyList, errors.NewInvalid(authorizationapi.Kind("PolicyList"), "policyList", kfield.ErrorList{})
 		}
 		if matches, err := matcher.Matches(policy); err == nil && matches {
 			policyList.Items = append(policyList.Items, *policy)
@@ -102,12 +102,12 @@ func (c *readOnlyPolicyCache) Get(name, namespace string) (*authorizationapi.Pol
 		return &authorizationapi.Policy{}, getErr
 	}
 	if !exists {
-		existsErr := errors.NewNotFound("Policy", name)
+		existsErr := errors.NewNotFound(authorizationapi.Resource("policy"), name)
 		return &authorizationapi.Policy{}, existsErr
 	}
 	policy, castOK := item.(*authorizationapi.Policy)
 	if !castOK {
-		castErr := errors.NewInvalid("Policy", name, kfield.ErrorList{})
+		castErr := errors.NewInvalid(authorizationapi.Kind("Policy"), name, kfield.ErrorList{})
 		return &authorizationapi.Policy{}, castErr
 	}
 	return policy, nil

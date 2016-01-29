@@ -45,7 +45,7 @@ func (r *IdentityRegistry) GetIdentity(ctx kapi.Context, name string) (*api.Iden
 	if err, ok := r.GetErr[name]; ok {
 		return nil, err
 	}
-	return nil, kerrs.NewNotFound("Identity", name)
+	return nil, kerrs.NewNotFound(api.Resource("identity"), name)
 }
 
 func (r *IdentityRegistry) CreateIdentity(ctx kapi.Context, u *api.Identity) (*api.Identity, error) {

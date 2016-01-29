@@ -62,7 +62,7 @@ func (r *REST) Create(ctx kapi.Context, obj runtime.Object) (runtime.Object, err
 	projectRequest := obj.(*projectapi.ProjectRequest)
 
 	if _, err := r.openshiftClient.Projects().Get(projectRequest.Name); err == nil {
-		return nil, kapierror.NewAlreadyExists("project", projectRequest.Name)
+		return nil, kapierror.NewAlreadyExists(projectapi.Resource("project"), projectRequest.Name)
 	}
 
 	projectName := projectRequest.Name
@@ -176,7 +176,7 @@ func (r *REST) List(ctx kapi.Context, options *kapi.ListOptions) (runtime.Object
 		return &unversioned.Status{Status: unversioned.StatusSuccess}, nil
 	}
 
-	forbiddenError, _ := kapierror.NewForbidden("ProjectRequest", "", errors.New("you may not request a new project via this API.")).(*kapierror.StatusError)
+	forbiddenError, _ := kapierror.NewForbidden(projectapi.Resource("projectrequest"), "", errors.New("you may not request a new project via this API.")).(*kapierror.StatusError)
 	if len(r.message) > 0 {
 		forbiddenError.ErrStatus.Message = r.message
 		forbiddenError.ErrStatus.Details = &unversioned.StatusDetails{

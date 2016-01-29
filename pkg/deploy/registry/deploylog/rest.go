@@ -74,14 +74,14 @@ func (r *REST) Get(ctx kapi.Context, name string, opts runtime.Object) (runtime.
 		return nil, errors.NewBadRequest("did not get an expected options.")
 	}
 	if errs := validation.ValidateDeploymentLogOptions(deployLogOpts); len(errs) > 0 {
-		return nil, errors.NewInvalid("deploymentLogOptions", "", errs)
+		return nil, errors.NewInvalid(deployapi.Kind("DeploymentLogOptions"), "", errs)
 	}
 
 	// Fetch deploymentConfig and check latest version; if 0, there are no deployments
 	// for this config
 	config, err := r.ConfigGetter.DeploymentConfigs(namespace).Get(name)
 	if err != nil {
-		return nil, errors.NewNotFound("deploymentConfig", name)
+		return nil, errors.NewNotFound(deployapi.Resource("deploymentconfig"), name)
 	}
 	desiredVersion := config.Status.LatestVersion
 	if desiredVersion == 0 {
@@ -155,7 +155,7 @@ func (r *REST) Get(ctx kapi.Context, name string, opts runtime.Object) (runtime.
 		Transport:       transport,
 		ContentType:     "text/plain",
 		Flush:           deployLogOpts.Follow,
-		ResponseChecker: genericrest.NewGenericHttpResponseChecker("Pod", deployPodName),
+		ResponseChecker: genericrest.NewGenericHttpResponseChecker(kapi.Resource("pod"), deployPodName),
 	}, nil
 }
 

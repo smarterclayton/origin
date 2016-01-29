@@ -113,7 +113,7 @@ func forbidden(reason string, attributes authorizer.AuthorizationAttributes, w h
 	// We don't have direct access to kind or name (not that those apply either in the general case)
 	// We create a NewForbidden to stay close the API, but then we override the message to get a serialization
 	// that makes sense when a human reads it.
-	forbiddenError, _ := kapierrors.NewForbidden(kind, name, errors.New("") /*discarded*/).(*kapierrors.StatusError)
+	forbiddenError, _ := kapierrors.NewForbidden(unversioned.GroupResource{Group: attributes.GetAPIGroup(), Resource: attributes.GetResource()}, name, errors.New("") /*discarded*/).(*kapierrors.StatusError)
 	forbiddenError.ErrStatus.Message = reason
 
 	// Not all API versions in valid API requests will have a matching codec in kubernetes.  If we can't find one,

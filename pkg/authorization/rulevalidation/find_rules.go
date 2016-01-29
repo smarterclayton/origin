@@ -91,7 +91,7 @@ func (a *DefaultRuleResolver) GetRole(roleBinding authorizationinterfaces.RoleBi
 
 		policy, err := a.clusterPolicyGetter.GetClusterPolicy(ctx, authorizationapi.PolicyName)
 		if kapierror.IsNotFound(err) {
-			return nil, kapierror.NewNotFound("role", name)
+			return nil, kapierror.NewNotFound(authorizationapi.Resource("role"), name)
 		}
 		if err != nil {
 			return nil, err
@@ -99,7 +99,7 @@ func (a *DefaultRuleResolver) GetRole(roleBinding authorizationinterfaces.RoleBi
 
 		role, exists := policy.Roles[name]
 		if !exists {
-			return nil, kapierror.NewNotFound("role", name)
+			return nil, kapierror.NewNotFound(authorizationapi.Resource("role"), name)
 		}
 
 		return authorizationinterfaces.NewClusterRoleAdapter(role), nil
@@ -107,7 +107,7 @@ func (a *DefaultRuleResolver) GetRole(roleBinding authorizationinterfaces.RoleBi
 
 	policy, err := a.policyGetter.GetPolicy(ctx, authorizationapi.PolicyName)
 	if kapierror.IsNotFound(err) {
-		return nil, kapierror.NewNotFound("role", name)
+		return nil, kapierror.NewNotFound(authorizationapi.Resource("role"), name)
 	}
 	if err != nil {
 		return nil, err
@@ -115,7 +115,7 @@ func (a *DefaultRuleResolver) GetRole(roleBinding authorizationinterfaces.RoleBi
 
 	role, exists := policy.Roles[name]
 	if !exists {
-		return nil, kapierror.NewNotFound("role", name)
+		return nil, kapierror.NewNotFound(authorizationapi.Resource("role"), name)
 	}
 
 	return authorizationinterfaces.NewLocalRoleAdapter(role), nil

@@ -75,7 +75,7 @@ func (c *readOnlyClusterPolicyCache) List(options *kapi.ListOptions) (*authoriza
 	for i := range returnedList {
 		clusterPolicy, castOK := returnedList[i].(*authorizationapi.ClusterPolicy)
 		if !castOK {
-			return clusterPolicyList, errors.NewInvalid("ClusterPolicy", "clusterPolicy", kfield.ErrorList{})
+			return clusterPolicyList, errors.NewInvalid(authorizationapi.Kind("ClusterPolicy"), "clusterPolicy", kfield.ErrorList{})
 		}
 		if matches, err := matcher.Matches(clusterPolicy); err == nil && matches {
 			clusterPolicyList.Items = append(clusterPolicyList.Items, *clusterPolicy)
@@ -93,12 +93,12 @@ func (c *readOnlyClusterPolicyCache) Get(name string) (*authorizationapi.Cluster
 		return &authorizationapi.ClusterPolicy{}, getErr
 	}
 	if !exists {
-		existsErr := errors.NewNotFound("ClusterPolicy", name)
+		existsErr := errors.NewNotFound(authorizationapi.Resource("clusterpolicy"), name)
 		return &authorizationapi.ClusterPolicy{}, existsErr
 	}
 	clusterPolicy, castOK := item.(*authorizationapi.ClusterPolicy)
 	if !castOK {
-		castErr := errors.NewInvalid("ClusterPolicy", name, kfield.ErrorList{})
+		castErr := errors.NewInvalid(authorizationapi.Kind("ClusterPolicy"), name, kfield.ErrorList{})
 		return &authorizationapi.ClusterPolicy{}, castErr
 	}
 	return clusterPolicy, nil

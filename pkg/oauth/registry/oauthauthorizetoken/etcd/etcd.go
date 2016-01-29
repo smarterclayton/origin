@@ -48,7 +48,7 @@ func NewREST(s storage.Interface, backends ...storage.Interface) *REST {
 			expires := uint64(token.ExpiresIn)
 			return expires, nil
 		},
-		EndpointName: "oauthauthorizetokens",
+		QualifiedResource: api.Resource("oauthauthorizetokens"),
 
 		Storage: s,
 	}

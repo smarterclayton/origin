@@ -75,7 +75,7 @@ func (c *readOnlyClusterPolicyBindingCache) List(options *kapi.ListOptions) (*au
 	for i := range returnedList {
 		clusterPolicyBinding, castOK := returnedList[i].(*authorizationapi.ClusterPolicyBinding)
 		if !castOK {
-			return clusterPolicyBindingList, errors.NewInvalid("ClusterPolicyBinding", "clusterPolicyBinding", kfield.ErrorList{})
+			return clusterPolicyBindingList, errors.NewInvalid(authorizationapi.Kind("ClusterPolicyBinding"), "clusterPolicyBinding", kfield.ErrorList{})
 		}
 		if matches, err := matcher.Matches(clusterPolicyBinding); err == nil && matches {
 			clusterPolicyBindingList.Items = append(clusterPolicyBindingList.Items, *clusterPolicyBinding)
@@ -93,12 +93,12 @@ func (c *readOnlyClusterPolicyBindingCache) Get(name string) (*authorizationapi.
 		return &authorizationapi.ClusterPolicyBinding{}, getErr
 	}
 	if !exists {
-		existsErr := errors.NewNotFound("ClusterPolicyBinding", name)
+		existsErr := errors.NewNotFound(authorizationapi.Resource("clusterpolicybinding"), name)
 		return &authorizationapi.ClusterPolicyBinding{}, existsErr
 	}
 	clusterPolicyBinding, castOK := item.(*authorizationapi.ClusterPolicyBinding)
 	if !castOK {
-		castErr := errors.NewInvalid("ClusterPolicyBinding", name, kfield.ErrorList{})
+		castErr := errors.NewInvalid(authorizationapi.Kind("ClusterPolicyBinding"), name, kfield.ErrorList{})
 		return &authorizationapi.ClusterPolicyBinding{}, castErr
 	}
 	return clusterPolicyBinding, nil

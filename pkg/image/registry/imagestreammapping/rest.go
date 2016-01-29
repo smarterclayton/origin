@@ -168,9 +168,9 @@ func (s *REST) findStreamForMapping(ctx kapi.Context, mapping *api.ImageStreamMa
 				return &list.Items[i], nil
 			}
 		}
-		return nil, errors.NewInvalid("imageStreamMapping", "", field.ErrorList{
+		return nil, errors.NewInvalid(api.Kind("ImageStreamMapping"), "", field.ErrorList{
 			field.NotFound(field.NewPath("dockerImageStream"), mapping.DockerImageRepository),
 		})
 	}
-	return nil, errors.NewNotFound("ImageStream", "")
+	return nil, errors.NewNotFound(api.Resource("imagestream"), "")
 }

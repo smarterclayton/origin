@@ -99,7 +99,7 @@ func (g *DeploymentConfigGenerator) Generate(ctx kapi.Context, name string) (*de
 	}
 
 	if len(errs) > 0 {
-		return nil, errors.NewInvalid("DeploymentConfig", config.Name, errs)
+		return nil, errors.NewInvalid(deployapi.Kind("DeploymentConfig"), config.Name, errs)
 	}
 
 	// Bump the version if we updated containers or if this is an initial

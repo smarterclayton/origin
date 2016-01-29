@@ -76,7 +76,7 @@ func (c *readOnlyPolicyBindingCache) List(options *kapi.ListOptions, namespace s
 		items, err := c.indexer.Index("namespace", &authorizationapi.PolicyBinding{ObjectMeta: kapi.ObjectMeta{Namespace: namespace}})
 		returnedList = items
 		if err != nil {
-			return &authorizationapi.PolicyBindingList{}, errors.NewInvalid("PolicyBindingList", "policyBindingList", kfield.ErrorList{kfield.Invalid(kfield.NewPath("policyBindingList"), nil, err.Error())})
+			return &authorizationapi.PolicyBindingList{}, errors.NewInvalid(authorizationapi.Kind("PolicyBindingList"), "policyBindingList", kfield.ErrorList{kfield.Invalid(kfield.NewPath("policyBindingList"), nil, err.Error())})
 		}
 	}
 	policyBindingList := &authorizationapi.PolicyBindingList{}
@@ -84,7 +84,7 @@ func (c *readOnlyPolicyBindingCache) List(options *kapi.ListOptions, namespace s
 	for i := range returnedList {
 		policyBinding, castOK := returnedList[i].(*authorizationapi.PolicyBinding)
 		if !castOK {
-			return policyBindingList, errors.NewInvalid("PolicyBindingList", "policyBindingList", kfield.ErrorList{})
+			return policyBindingList, errors.NewInvalid(authorizationapi.Kind("PolicyBindingList"), "policyBindingList", kfield.ErrorList{})
 		}
 		if matches, err := matcher.Matches(policyBinding); err == nil && matches {
 			policyBindingList.Items = append(policyBindingList.Items, *policyBinding)
@@ -102,12 +102,12 @@ func (c *readOnlyPolicyBindingCache) Get(name, namespace string) (*authorization
 		return &authorizationapi.PolicyBinding{}, getErr
 	}
 	if !exists {
-		existsErr := errors.NewNotFound("PolicyBinding", name)
+		existsErr := errors.NewNotFound(authorizationapi.Resource("policybinding"), name)
 		return &authorizationapi.PolicyBinding{}, existsErr
 	}
 	policyBinding, castOK := item.(*authorizationapi.PolicyBinding)
 	if !castOK {
-		castErr := errors.NewInvalid("PolicyBinding", name, kfield.ErrorList{})
+		castErr := errors.NewInvalid(authorizationapi.Kind("PolicyBinding"), name, kfield.ErrorList{})
 		return &authorizationapi.PolicyBinding{}, castErr
 	}
 	return policyBinding, nil

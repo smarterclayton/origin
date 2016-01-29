@@ -75,7 +75,7 @@ func (r *ClusterPolicyBindingRegistry) GetClusterPolicyBinding(ctx kapi.Context,
 		}
 	}
 
-	return nil, kapierrors.NewNotFound("ClusterPolicyBinding", id)
+	return nil, kapierrors.NewNotFound(authorizationapi.Resource("clusterpolicybinding"), id)
 }
 
 // CreateClusterPolicyBinding creates a new policyBinding.
@@ -89,7 +89,7 @@ func (r *ClusterPolicyBindingRegistry) CreateClusterPolicyBinding(ctx kapi.Conte
 		return errors.New("invalid request.  Namespace parameter disallowed.")
 	}
 	if existing, _ := r.GetClusterPolicyBinding(ctx, policyBinding.Name); existing != nil {
-		return kapierrors.NewAlreadyExists("ClusterPolicyBinding", policyBinding.Name)
+		return kapierrors.NewAlreadyExists(authorizationapi.Resource("clusterpolicybinding"), policyBinding.Name)
 	}
 
 	addClusterPolicyBinding(r.ClusterPolicyBindings, *policyBinding)
@@ -108,7 +108,7 @@ func (r *ClusterPolicyBindingRegistry) UpdateClusterPolicyBinding(ctx kapi.Conte
 		return errors.New("invalid request.  Namespace parameter disallowed.")
 	}
 	if existing, _ := r.GetClusterPolicyBinding(ctx, policyBinding.Name); existing == nil {
-		return kapierrors.NewNotFound("ClusterPolicyBinding", policyBinding.Name)
+		return kapierrors.NewNotFound(authorizationapi.Resource("clusterpolicybinding"), policyBinding.Name)
 	}
 
 	addClusterPolicyBinding(r.ClusterPolicyBindings, *policyBinding)

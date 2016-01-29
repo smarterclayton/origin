@@ -75,7 +75,7 @@ func (r *PolicyBindingRegistry) GetPolicyBinding(ctx kapi.Context, id string) (*
 		}
 	}
 
-	return nil, kapierrors.NewNotFound("PolicyBinding", id)
+	return nil, kapierrors.NewNotFound(authorizationapi.Resource("policybinding"), id)
 }
 
 // CreatePolicyBinding creates a new policyBinding.
@@ -108,7 +108,7 @@ func (r *PolicyBindingRegistry) UpdatePolicyBinding(ctx kapi.Context, policyBind
 		return errors.New("invalid request.  Namespace parameter required.")
 	}
 	if existing, _ := r.GetPolicyBinding(ctx, policyBinding.Name); existing == nil {
-		return kapierrors.NewNotFound("PolicyBinding", policyBinding.Name)
+		return kapierrors.NewNotFound(authorizationapi.Resource("policybinding"), policyBinding.Name)
 	}
 
 	addPolicyBinding(r.PolicyBindings, *policyBinding)

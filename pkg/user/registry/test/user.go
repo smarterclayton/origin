@@ -41,7 +41,7 @@ func (r *UserRegistry) GetUser(ctx kapi.Context, name string) (*api.User, error)
 	if err, ok := r.GetErr[name]; ok {
 		return nil, err
 	}
-	return nil, kerrs.NewNotFound("User", name)
+	return nil, kerrs.NewNotFound(api.Resource("user"), name)
 }
 
 func (r *UserRegistry) CreateUser(ctx kapi.Context, u *api.User) (*api.User, error) {
