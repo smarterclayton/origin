@@ -589,7 +589,7 @@ func (c *MasterConfig) defaultAPIGroupVersion() *apiserver.APIGroupVersion {
 		restMapper = meta.MultiRESTMapper(append(restMapper, groupMeta.RESTMapper))
 	}
 
-	statusMapper := meta.NewDefaultRESTMapper([]unversioned.GroupVersion{kubeapiv1.SchemeGroupVersion}, nil)
+	statusMapper := meta.NewDefaultRESTMapper([]unversioned.GroupVersion{kubeapiv1.SchemeGroupVersion}, registered.GroupOrDie(kapi.GroupName).InterfacesFor)
 	statusMapper.Add(kubeapiv1.SchemeGroupVersion.WithKind("Status"), meta.RESTScopeRoot, false)
 	restMapper = meta.MultiRESTMapper(append(restMapper, statusMapper))
 
