@@ -842,6 +842,7 @@ func (c *Converter) convertKV(skv, dkv kvValue, scope *scope) error {
 			case scope.flags.IsSet(SourceToDest):
 				return scope.errorf("%v not present in dest", dkey)
 			default:
+				panic("here")
 				return scope.errorf("%v not present in src", skey)
 			}
 			continue
