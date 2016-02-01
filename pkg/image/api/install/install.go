@@ -31,17 +31,19 @@ import (
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/sets"
 
-	"github.com/openshift/origin/pkg/route/api"
-	"github.com/openshift/origin/pkg/route/api/v1"
-	"github.com/openshift/origin/pkg/route/api/v1beta3"
+	"github.com/openshift/origin/pkg/image/api"
+	"github.com/openshift/origin/pkg/image/api/docker10"
+	"github.com/openshift/origin/pkg/image/api/dockerpre012"
+	"github.com/openshift/origin/pkg/image/api/v1"
+	"github.com/openshift/origin/pkg/image/api/v1beta3"
 )
 
-const importPrefix = "github.com/openshift/origin/pkg/route/api"
+const importPrefix = "github.com/openshift/origin/pkg/image/api"
 
 var accessor = meta.NewAccessor()
 
 // availableVersions lists all known external versions for this group from most preferred to least preferred
-var availableVersions = []unversioned.GroupVersion{v1.SchemeGroupVersion, v1beta3.SchemeGroupVersion}
+var availableVersions = []unversioned.GroupVersion{v1.SchemeGroupVersion, docker10.SchemeGroupVersion, dockerpre012.SchemeGroupVersion, v1beta3.SchemeGroupVersion}
 
 func init() {
 	registered.RegisterVersions(availableVersions)
@@ -110,7 +112,7 @@ func addVersionsToScheme(externalVersions ...unversioned.GroupVersion) {
 }
 
 func newRESTMapper(externalVersions []unversioned.GroupVersion) meta.RESTMapper {
-	rootScoped := sets.NewString()
+	rootScoped := sets.NewString("Image")
 	ignoredKinds := sets.NewString()
 	return kapi.NewDefaultRESTMapper(externalVersions, interfacesFor, importPrefix, ignoredKinds, rootScoped)
 }

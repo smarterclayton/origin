@@ -31,12 +31,12 @@ import (
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/sets"
 
-	"github.com/openshift/origin/pkg/route/api"
-	"github.com/openshift/origin/pkg/route/api/v1"
-	"github.com/openshift/origin/pkg/route/api/v1beta3"
+	"github.com/openshift/origin/pkg/user/api"
+	"github.com/openshift/origin/pkg/user/api/v1"
+	"github.com/openshift/origin/pkg/user/api/v1beta3"
 )
 
-const importPrefix = "github.com/openshift/origin/pkg/route/api"
+const importPrefix = "github.com/openshift/origin/pkg/user/api"
 
 var accessor = meta.NewAccessor()
 
@@ -110,7 +110,7 @@ func addVersionsToScheme(externalVersions ...unversioned.GroupVersion) {
 }
 
 func newRESTMapper(externalVersions []unversioned.GroupVersion) meta.RESTMapper {
-	rootScoped := sets.NewString()
+	rootScoped := sets.NewString("User", "Identity", "UserIdentityMapping", "Group")
 	ignoredKinds := sets.NewString()
 	return kapi.NewDefaultRESTMapper(externalVersions, interfacesFor, importPrefix, ignoredKinds, rootScoped)
 }
