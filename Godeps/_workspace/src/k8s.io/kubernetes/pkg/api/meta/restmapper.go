@@ -83,6 +83,10 @@ type DefaultRESTMapper struct {
 	interfacesFunc VersionInterfacesFunc
 }
 
+func (m *DefaultRESTMapper) String() string {
+	return fmt.Sprintf("DefaultRESTMapper{kindToPluralResource=%v}", m.kindToPluralResource)
+}
+
 var _ RESTMapper = &DefaultRESTMapper{}
 
 // VersionInterfacesFunc returns the appropriate typer, and metadata accessor for a
@@ -578,6 +582,17 @@ func (m MultiRESTMapper) RESTMapping(gk unversioned.GroupKind, versions ...strin
 		}
 	}
 	return
+}
+
+func (m MultiRESTMapper) String() string {
+	nested := []string{}
+	for _, t := range m {
+		currString := fmt.Sprintf("%v", t)
+		splitStrings := strings.Split(currString, "\n")
+		nested = append(nested, strings.Join(splitStrings, "\n\t"))
+	}
+
+	return fmt.Sprintf("MultiRESTMapper{\n\t%s\n}", strings.Join(nested, "\n\t"))
 }
 
 // AliasesForResource finds the first alias response for the provided mappers.
