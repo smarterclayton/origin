@@ -19,7 +19,27 @@ package runtime
 import (
 	"encoding/json"
 	"errors"
+
+	"k8s.io/kubernetes/pkg/api/unversioned"
 )
+
+// NestedObjectEncoder is an optional interface that objects may implement to be given
+// an opportunity to encode any nested Objects / RawExtensions during serialization.
+// TODO: this would be better implemented if all serializer libraries in go (json, protobuf)
+//   were capable of passing a context object during marshal, that would allow objects that
+//   contained nested objects to get access to the encoder that was handling the top level.
+type NestedObjectEncoder interface {
+	EncodeNestedObjects(e Encoder, overrides ...unversioned.GroupVersion) error
+}
+
+// NestedObjectDecoder is an optional interface that objects may implement to be given
+// an opportunity to decode any nested Objects / RawExtensions during serialization.
+// TODO: this would be better implemented if all serializer libraries in go (json, protobuf)
+//   were capable of passing a context object during marshal, that would allow objects that
+//   contained nested objects to get access to the encoder that was handling the top level.
+type NestedObjectDecoder interface {
+	DecodeNestedObjects(d Decoder, overrides ...unversioned.GroupVersion) error
+}
 
 func (re *RawExtension) UnmarshalJSON(in []byte) error {
 	if re == nil {

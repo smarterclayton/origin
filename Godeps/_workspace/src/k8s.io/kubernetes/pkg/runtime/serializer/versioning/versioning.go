@@ -53,6 +53,8 @@ func NewCodec(
 		creater:    creater,
 		copier:     copier,
 		typer:      typer,
+
+		orderedDecodeVersions: decodeVersion,
 	}
 	if encodeVersion != nil {
 		internal.encodeVersion = make(map[string]unversioned.GroupVersion)
@@ -77,8 +79,9 @@ type codec struct {
 	copier     runtime.ObjectCopier
 	typer      runtime.Typer
 
-	encodeVersion map[string]unversioned.GroupVersion
-	decodeVersion map[string]unversioned.GroupVersion
+	encodeVersion         map[string]unversioned.GroupVersion
+	decodeVersion         map[string]unversioned.GroupVersion
+	orderedDecodeVersions []unversioned.GroupVersion
 }
 
 // Decode attempts a decode of the object, then tries to convert it to the internal version. If into is provided and the decoding is
@@ -105,6 +108,11 @@ func (c *codec) Decode(data []byte, defaultGVK *unversioned.GroupVersionKind, in
 		}
 		if err := c.convertor.Convert(obj, into); err != nil {
 			return nil, gvk, err
+		}
+		if s, ok := into.(runtime.NestedObjectDecoder); ok {
+			if err := s.DecodeNestedObjects(c, c.orderedDecodeVersions...); err != nil {
+				return nil, gvk, err
+			}
 		}
 		if isVersioned {
 			versioned.Objects = []runtime.Object{obj, into}
@@ -157,6 +165,11 @@ func (c *codec) Decode(data []byte, defaultGVK *unversioned.GroupVersionKind, in
 	out, err := c.convertor.ConvertToVersion(obj, targetGV.String())
 	if err != nil {
 		return nil, gvk, err
+	}
+	if s, ok := out.(runtime.NestedObjectDecoder); ok {
+		if err := s.DecodeNestedObjects(c, c.orderedDecodeVersions...); err != nil {
+			return nil, gvk, err
+		}
 	}
 	if isVersioned {
 		versioned.Objects = append(versioned.Objects, out)
@@ -224,6 +237,12 @@ func (c *codec) EncodeToStream(obj runtime.Object, w io.Writer, overrides ...unv
 		old := obj.GetObjectKind().GroupVersionKind()
 		defer obj.GetObjectKind().SetGroupVersionKind(old)
 		obj.GetObjectKind().SetGroupVersionKind(&unversioned.GroupVersionKind{Group: targetGV.Group, Version: targetGV.Version, Kind: gvk.Kind})
+	}
+
+	if s, ok := obj.(runtime.NestedObjectEncoder); ok {
+		if err := s.EncodeNestedObjects(c, overrides...); err != nil {
+			return err
+		}
 	}
 
 	return c.serializer.EncodeToStream(obj, w, overrides...)
