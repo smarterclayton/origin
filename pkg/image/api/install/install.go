@@ -103,6 +103,10 @@ func addVersionsToScheme(externalVersions ...unversioned.GroupVersion) {
 			v1.AddToScheme(kapi.Scheme)
 		case v1beta3.SchemeGroupVersion:
 			v1beta3.AddToScheme(kapi.Scheme)
+		case docker10.SchemeGroupVersion:
+			docker10.AddToScheme(kapi.Scheme)
+		case dockerpre012.SchemeGroupVersion:
+			dockerpre012.AddToScheme(kapi.Scheme)
 
 		default:
 			glog.Errorf("Version %s is not known, so it will not be added to the Scheme.", v)
@@ -126,6 +130,18 @@ func interfacesFor(version unversioned.GroupVersion) (*meta.VersionInterfaces, e
 		}, nil
 
 	case v1beta3.SchemeGroupVersion:
+		return &meta.VersionInterfaces{
+			ObjectConvertor:  kapi.Scheme,
+			MetadataAccessor: accessor,
+		}, nil
+
+	case docker10.SchemeGroupVersion:
+		return &meta.VersionInterfaces{
+			ObjectConvertor:  kapi.Scheme,
+			MetadataAccessor: accessor,
+		}, nil
+
+	case dockerpre012.SchemeGroupVersion:
 		return &meta.VersionInterfaces{
 			ObjectConvertor:  kapi.Scheme,
 			MetadataAccessor: accessor,
