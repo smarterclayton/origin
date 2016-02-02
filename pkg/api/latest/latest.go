@@ -2,6 +2,7 @@ package latest
 
 import (
 	"strings"
+	"sync"
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
@@ -25,7 +26,12 @@ var OldestVersion = v1beta3.SchemeGroupVersion
 var Versions = []unversioned.GroupVersion{v1.SchemeGroupVersion, v1beta3.SchemeGroupVersion}
 
 // originTypes are the hardcoded types defined by the OpenShift API.
-var originTypes = make(map[unversioned.GroupVersionKind]bool)
+var originTypes map[unversioned.GroupVersionKind]bool
+
+// originTypesLock allows lazying initialization of originTypes to allow initializers to run before
+// loading the map.  It means that initializers have to know ahead of time where their type is from,
+// but that is not onerous
+var originTypesLock sync.Mutex
 
 // UserResources are the resource names that apply to the primary, user facing resources used by
 // client tools. They are in deletion-first order - dependent resources should be last.
@@ -39,7 +45,7 @@ var UserResources = []string{
 
 // OriginKind returns true if OpenShift owns the GroupVersionKind.
 func OriginKind(gvk unversioned.GroupVersionKind) bool {
-	return originTypes[gvk]
+	return getOrCreateOriginKinds()[gvk]
 }
 
 // IsKindInAnyOriginGroup returns true if OpenShift owns the kind described in any apiVersion.
@@ -54,16 +60,29 @@ func IsKindInAnyOriginGroup(kind string) bool {
 	return false
 }
 
-func init() {
+func getOrCreateOriginKinds() map[unversioned.GroupVersionKind]bool {
+	if originTypes == nil {
+		originTypesLock.Lock()
+		defer originTypesLock.Unlock()
 
-	// enumerate all supported versions, get the kinds, and register with the mapper how to address our resources
-	for _, version := range Versions {
-		for kind, t := range api.Scheme.KnownTypes(version) {
-			if !strings.Contains(t.PkgPath(), "openshift/origin") {
-				continue
+		if originTypes == nil {
+			newOriginTypes := map[unversioned.GroupVersionKind]bool{}
+
+			// enumerate all supported versions, get the kinds, and register with the mapper how to address our resources
+			for _, version := range Versions {
+				for kind, t := range api.Scheme.KnownTypes(version) {
+					if !strings.Contains(t.PkgPath(), "openshift/origin") {
+						continue
+					}
+					gvk := version.WithKind(kind)
+					newOriginTypes[gvk] = true
+				}
 			}
-			gvk := version.WithKind(kind)
-			originTypes[gvk] = true
+			originTypes = newOriginTypes
 		}
+
+		return originTypes
 	}
+
+	return originTypes
 }
