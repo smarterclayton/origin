@@ -2,9 +2,11 @@ package git
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"net/url"
 	"path"
+	"reflect"
 	"strings"
 
 	s2igit "github.com/openshift/source-to-image/pkg/scm/git"
@@ -75,4 +77,29 @@ func ParsePostReceive(r io.Reader) ([]ChangedRef, error) {
 		return nil, err
 	}
 	return refs, nil
+}
+
+func UnmarshalLocalConfig(r Repository, dir string, out interface{}) error {
+	v := reflect.ValueOf(out)
+	if v.Kind() != reflect.Ptr || v.IsNil() || v.Elem().Kind() != reflect.Struct {
+		return fmt.Errorf("%v is not a pointer to a struct", out)
+	}
+	v = v.Elem()
+	for i := 0; i < v.NumField(); i++ {
+		sv := v.Field(i)
+		if !sv.CanSet() {
+			continue
+		}
+		sf := v.Type().Field(i)
+		tag := sf.Tag.Get("git")
+		if len(tag) == 0 {
+			continue
+		}
+		value, err := r.LocalConfig(dir, tag)
+		if err != nil {
+			return err
+		}
+		sv.Set(reflect.ValueOf(value))
+	}
+	return nil
 }

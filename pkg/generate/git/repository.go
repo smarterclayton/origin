@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"syscall"
 	"unicode"
 
 	"github.com/golang/glog"
@@ -20,7 +21,7 @@ import (
 // Repository represents a git source repository
 type Repository interface {
 	GetRootDir(dir string) (string, error)
-	GetOriginURL(dir string) (string, bool, error)
+	GetOriginURL(dir string, remotes ...string) (string, bool, error)
 	GetRef(dir string) string
 	Clone(dir string, url string) error
 	CloneWithOptions(dir string, url string, opts CloneOptions) error
@@ -32,6 +33,7 @@ type Repository interface {
 	Archive(dir, ref, format string, w io.Writer) error
 	Init(dir string, bare bool) error
 	AddRemote(dir string, name, url string) error
+	LocalConfig(dir, name string) (string, error)
 	AddLocalConfig(dir, name, value string) error
 	ShowFormat(dir, commit, format string) (string, error)
 	ListRemote(url string, args ...string) (string, string, error)
@@ -41,6 +43,7 @@ type Repository interface {
 // SourceInfo stores information about the source code
 type SourceInfo struct {
 	s2iapi.SourceInfo
+	Branch string
 }
 
 // CloneOptions are options used in cloning a git repository
@@ -125,7 +128,10 @@ var (
 )
 
 // GetOriginURL returns the origin branch URL for the git repository
-func (r *repository) GetOriginURL(location string) (string, bool, error) {
+func (r *repository) GetOriginURL(location string, fromRemotes ...string) (string, bool, error) {
+	if len(fromRemotes) == 0 {
+		fromRemotes = remoteOriginNames
+	}
 	text, _, err := r.git(nil, location, "config", "--get-regexp", "^remote\\..*\\.url$")
 	if err != nil {
 		return "", false, err
@@ -141,7 +147,7 @@ func (r *repository) GetOriginURL(location string) (string, bool, error) {
 	if err := s.Err(); err != nil {
 		return "", false, err
 	}
-	for _, remote := range remoteOriginNames {
+	for _, remote := range fromRemotes {
 		if url, ok := remotes[remote]; ok {
 			return url, true, nil
 		}
@@ -169,6 +175,17 @@ func (r *repository) AddRemote(location, name, url string) error {
 func (r *repository) AddLocalConfig(location, name, value string) error {
 	_, _, err := r.git(nil, location, "config", "--local", "--add", name, value)
 	return err
+}
+
+func (r *repository) LocalConfig(location, name string) (string, error) {
+	out, _, err := r.git(nil, location, "config", "--local", "--get", name)
+	if err != nil {
+		if IsExitCode(err, 1) {
+			return "", nil
+		}
+		return "", err
+	}
+	return out, nil
 }
 
 // CloneWithOptions clones a remote git repository to a local directory
@@ -277,6 +294,10 @@ func (r *repository) GetInfo(location string) (*SourceInfo, []error) {
 	info.Date = git("--no-pager", "show", "-s", "--format=%ad", "HEAD")
 	info.Message = git("--no-pager", "show", "-s", "--format=%<(80,trunc)%s", "HEAD")
 
+	if out, _, err := r.git(nil, location, "symbolic-ref", "--short", "HEAD"); err == nil {
+		info.Branch = out
+	}
+
 	return info, errors
 }
 
@@ -341,4 +362,17 @@ func (e *GitError) Error() string {
 		return e.Stderr
 	}
 	return e.Err.Error()
+}
+
+func IsExitCode(err error, exitCode int) bool {
+	switch t := err.(type) {
+	case *GitError:
+		return IsExitCode(t.Err, exitCode)
+	case *exec.ExitError:
+		if ws, ok := t.Sys().(syscall.WaitStatus); ok {
+			return ws.ExitStatus() == exitCode
+		}
+		return false
+	}
+	return false
 }

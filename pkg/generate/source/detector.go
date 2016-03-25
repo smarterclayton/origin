@@ -3,6 +3,7 @@ package source
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Info is detected platform information from a source directory
@@ -28,6 +29,7 @@ var DefaultDetectors = Detectors{
 	DetectPython,
 	DetectPerl,
 	DetectScala,
+	DetectGo,
 }
 
 type sourceDetector struct {
@@ -80,6 +82,11 @@ func DetectScala(dir string) (*Info, bool) {
 	return detect("scala", dir, "build.sbt")
 }
 
+// DetectGo detects Go source
+func DetectGo(dir string) (*Info, bool) {
+	return detect("golang", dir, "Godeps/Godeps.json", "glide.yaml", ".godir", "*.go")
+}
+
 // detect returns an Info object with the given platform if the source at dir contains any of the argument files
 func detect(platform string, dir string, files ...string) (*Info, bool) {
 	if filesPresent(dir, files) {
@@ -92,6 +99,10 @@ func detect(platform string, dir string, files ...string) (*Info, bool) {
 
 func filesPresent(dir string, files []string) bool {
 	for _, f := range files {
+		if strings.Contains(f, "*") {
+			m, err := filepath.Glob(filepath.Join(dir, f))
+			return err == nil && len(m) > 0
+		}
 		_, err := os.Stat(filepath.Join(dir, f))
 		if err == nil {
 			return true
