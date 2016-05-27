@@ -212,6 +212,7 @@ func autoConvert_v1_ImageLayer_To_api_ImageLayer(in *ImageLayer, out *image_api.
 	}
 	out.Name = in.Name
 	out.Size = in.Size
+	out.MediaType = in.MediaType
 	return nil
 }
 
@@ -225,6 +226,7 @@ func autoConvert_api_ImageLayer_To_v1_ImageLayer(in *image_api.ImageLayer, out *
 	}
 	out.Name = in.Name
 	out.Size = in.Size
+	out.MediaType = in.MediaType
 	return nil
 }
 

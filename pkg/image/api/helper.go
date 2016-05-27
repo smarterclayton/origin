@@ -15,6 +15,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest/schema1"
+	"github.com/docker/distribution/manifest/schema2"
 	"github.com/golang/glog"
 )
 
@@ -369,12 +370,24 @@ func ManifestMatchesImage(image *Image, newManifest []byte) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	sm := schema1.SignedManifest{Raw: newManifest}
-	raw, err := sm.Payload()
-	if err != nil {
-		return false, err
+	var canonical []byte
+	if image.DockerImageManifestMediaType == schema2.MediaTypeManifest {
+		var m schema2.DeserializedManifest
+		if err := json.Unmarshal(newManifest, &m); err != nil {
+			return false, err
+		}
+		_, canonical, err = m.Payload()
+		if err != nil {
+			return false, err
+		}
+	} else {
+		var m schema1.SignedManifest
+		if err := json.Unmarshal(newManifest, &m); err != nil {
+			return false, err
+		}
+		canonical = m.Canonical
 	}
-	if _, err := v.Write(raw); err != nil {
+	if _, err := v.Write(canonical); err != nil {
 		return false, err
 	}
 	return v.Verified(), nil
@@ -416,6 +429,7 @@ func ImageWithMetadata(image *Image) error {
 
 		image.DockerImageLayers = make([]ImageLayer, len(manifest.FSLayers))
 		for i, layer := range manifest.FSLayers {
+			image.DockerImageLayers[i].MediaType = schema1.MediaTypeManifestLayer
 			image.DockerImageLayers[i].Name = layer.DockerBlobSum
 		}
 		if len(manifest.History) == len(image.DockerImageLayers) {
@@ -456,8 +470,43 @@ func ImageWithMetadata(image *Image) error {
 			image.DockerImageMetadata.Size = v1Metadata.Size
 		}
 	case 2:
-		// TODO: need to prepare for this
-		return fmt.Errorf("unrecognized Docker image manifest schema %d for %q (%s)", manifest.SchemaVersion, image.Name, image.DockerImageReference)
+		config := DockerImageConfig{}
+		if err := json.Unmarshal([]byte(image.DockerImageConfig), &config); err != nil {
+			return err
+		}
+
+		image.DockerImageLayers = make([]ImageLayer, len(manifest.Layers))
+		for i, layer := range manifest.Layers {
+			image.DockerImageLayers[i].MediaType = layer.MediaType
+			image.DockerImageLayers[i].Name = layer.Digest
+			image.DockerImageLayers[i].Size = layer.Size
+		}
+		// reverse order of the layers for v1 (lowest = 0, highest = i)
+		for i, j := 0, len(image.DockerImageLayers)-1; i < j; i, j = i+1, j-1 {
+			image.DockerImageLayers[i], image.DockerImageLayers[j] = image.DockerImageLayers[j], image.DockerImageLayers[i]
+		}
+
+		image.DockerImageMetadata.ID = manifest.Config.Digest
+		image.DockerImageMetadata.Parent = config.Parent
+		image.DockerImageMetadata.Comment = config.Comment
+		image.DockerImageMetadata.Created = config.Created
+		image.DockerImageMetadata.Container = config.Container
+		image.DockerImageMetadata.ContainerConfig = config.ContainerConfig
+		image.DockerImageMetadata.DockerVersion = config.DockerVersion
+		image.DockerImageMetadata.Author = config.Author
+		image.DockerImageMetadata.Config = config.Config
+		image.DockerImageMetadata.Architecture = config.Architecture
+		image.DockerImageMetadata.Size += int64(len(image.DockerImageConfig))
+
+		if len(image.DockerImageLayers) > 0 {
+			size := int64(0)
+			for _, layer := range image.DockerImageLayers {
+				size += layer.Size
+			}
+			image.DockerImageMetadata.Size += size
+		} else {
+			image.DockerImageMetadata.Size += config.Size
+		}
 	default:
 		return fmt.Errorf("unrecognized Docker image manifest schema %d for %q (%s)", manifest.SchemaVersion, image.Name, image.DockerImageReference)
 	}
