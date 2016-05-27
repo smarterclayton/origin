@@ -33,6 +33,12 @@ os::build::build_binaries "${OS_CROSS_COMPILE_TARGETS[@]}"
 OS_BUILD_PLATFORMS=("${OS_IMAGE_COMPILE_PLATFORMS[@]-}")
 os::build::build_static_binaries "${OS_IMAGE_COMPILE_TARGETS[@]-}" "${OS_SCRATCH_IMAGE_COMPILE_TARGETS[@]-}"
 
+# Build dockerregistry
+(
+  export GO15VENDOREXPERIMENT=1
+  os::build::build_static_binaries "${OS_IMAGE_COMPILE_DOCKERREGISTRY_TARGETS[@]-}"
+)
+
 # Make the primary client/server release.
 OS_RELEASE_ARCHIVE="openshift-origin"
 OS_BUILD_PLATFORMS=("${platforms[@]}")

@@ -38,14 +38,16 @@ readonly OS_IMAGE_COMPILE_PLATFORMS=(
 )
 readonly OS_IMAGE_COMPILE_TARGETS=(
   images/pod
-  cmd/dockerregistry
   cmd/gitserver
+)
+readonly OS_IMAGE_COMPILE_DOCKERREGISTRY_TARGETS=(
+  cmd/dockerregistry
 )
 readonly OS_SCRATCH_IMAGE_COMPILE_TARGETS=(
   examples/hello-openshift
   examples/deployment
 )
-readonly OS_IMAGE_COMPILE_BINARIES=("${OS_SCRATCH_IMAGE_COMPILE_TARGETS[@]##*/}" "${OS_IMAGE_COMPILE_TARGETS[@]##*/}")
+readonly OS_IMAGE_COMPILE_BINARIES=("${OS_SCRATCH_IMAGE_COMPILE_TARGETS[@]##*/}" "${OS_IMAGE_COMPILE_TARGETS[@]##*/}" "${OS_IMAGE_COMPILE_DOCKERREGISTRY_TARGETS[@]##*/}")
 
 readonly OS_CROSS_COMPILE_PLATFORMS=(
   linux/amd64

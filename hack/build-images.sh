@@ -30,9 +30,14 @@ if [[ "${OS_RELEASE:-}" == "n" ]]; then
   OS_BUILD_PLATFORMS=("${OS_IMAGE_COMPILE_PLATFORMS[@]-}")
 
   echo "Building images from source ${OS_RELEASE_COMMIT}:"
-	echo
+  echo
   os::build::build_static_binaries "${OS_IMAGE_COMPILE_TARGETS[@]-}" "${OS_SCRATCH_IMAGE_COMPILE_TARGETS[@]-}"
-	os::build::place_bins "${OS_IMAGE_COMPILE_BINARIES[@]}"
+  # Build dockerregistry
+  (
+    export GO15VENDOREXPERIMENT=1
+    os::build::build_static_binaries "${OS_IMAGE_COMPILE_DOCKERREGISTRY_TARGETS[@]-}"
+  )
+  os::build::place_bins "${OS_IMAGE_COMPILE_BINARIES[@]}"
   echo
 else
   # Get the latest Linux release
