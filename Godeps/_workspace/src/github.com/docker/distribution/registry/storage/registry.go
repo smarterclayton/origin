@@ -183,12 +183,6 @@ func (repo *repository) Name() string {
 // may be context sensitive in the future. The instance should be used similar
 // to a request local.
 func (repo *repository) Manifests(ctx context.Context, options ...distribution.ManifestServiceOption) (distribution.ManifestService, error) {
-	manifestLinkPathFns := []linkPathFunc{
-		// NOTE(stevvooe): Need to search through multiple locations since
-		// 2.1.0 unintentionally linked into  _layers.
-		manifestRevisionLinkPath,
-		blobLinkPath,
-	}
 	manifestRootPathFns := []blobsRootPathFunc{
 		manifestRevisionsPath,
 		blobsRootPath,
@@ -208,13 +202,9 @@ func (repo *repository) Manifests(ctx context.Context, options ...distribution.M
 				blobAccessController: &linkedBlobStatter{
 					blobStore:             repo.blobStore,
 					repository:            repo,
-					linkPathFns:           manifestLinkPathFns,
 					removeParentsOnDelete: repo.registry.blobStore.removeParentsOnDelete,
 				},
 
-				// TODO(stevvooe): linkPath limits this blob store to only
-				// manifests. This instance cannot be used for blob checks.
-				linkPathFns:            manifestLinkPathFns,
 				blobsRootPathFns:       manifestRootPathFns,
 				resumableDigestEnabled: repo.resumableDigestEnabled,
 			},
@@ -244,7 +234,6 @@ func (repo *repository) Blobs(ctx context.Context) distribution.BlobStore {
 	var statter distribution.BlobDescriptorService = &linkedBlobStatter{
 		blobStore:             repo.blobStore,
 		repository:            repo,
-		linkPathFns:           []linkPathFunc{blobLinkPath},
 		removeParentsOnDelete: repo.registry.blobStore.removeParentsOnDelete,
 	}
 
@@ -259,9 +248,6 @@ func (repo *repository) Blobs(ctx context.Context) distribution.BlobStore {
 		repository:           repo,
 		ctx:                  ctx,
 
-		// TODO(stevvooe): linkPath limits this blob store to only layers.
-		// This instance cannot be used for manifest checks.
-		linkPathFns:            []linkPathFunc{blobLinkPath},
 		blobsRootPathFns:       []blobsRootPathFunc{blobsRootPath},
 		deleteEnabled:          repo.registry.deleteEnabled,
 		resumableDigestEnabled: repo.resumableDigestEnabled,

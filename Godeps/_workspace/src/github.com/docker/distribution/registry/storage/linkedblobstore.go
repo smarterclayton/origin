@@ -219,6 +219,10 @@ func (lbs *linkedBlobStore) linkBlob(ctx context.Context, canonical distribution
 	// Don't make duplicate links.
 	seenDigests := make(map[digest.Digest]struct{}, len(dgsts))
 
+	if len(lbs.linkPathFns) == 0 {
+		return nil
+	}
+
 	// only use the first link
 	linkPathFn := lbs.linkPathFns[0]
 
@@ -325,6 +329,9 @@ func (lbs *linkedBlobStatter) Stat(ctx context.Context, dgst digest.Digest) (dis
 		return distribution.Descriptor{}, resolveErr
 	}
 
+	if len(lbs.linkPathFns) == 0 {
+		target = dgst
+	}
 	if target != dgst {
 		// Track when we are doing cross-digest domain lookups. ie, tarsum to sha256.
 		context.GetLogger(ctx).Warnf("looking up blob with canonical target: %v -> %v", dgst, target)
