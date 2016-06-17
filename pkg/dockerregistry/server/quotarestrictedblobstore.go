@@ -32,7 +32,7 @@ const (
 // newQuotaEnforcingConfig creates caches for quota objects. The objects are stored with given eviction
 // timeout. Caches will only be initialized if the given ttl is positive. Options are gathered from
 // configuration file and will be overriden by enforceQuota and projectCacheTTL environment variable values.
-func newQuotaEnforcingConfig(ctx context.Context, enforceQuota, projectCacheTTL string, options map[string]interface{}) *quotaEnforcingConfig {
+func newQuotaEnforcingConfig(enforceQuota, projectCacheTTL string, options map[string]interface{}) *quotaEnforcingConfig {
 	buildOptionValues := func(optionName string, override string) []string {
 		optValues := []string{}
 		if value, ok := options[optionName]; ok {
@@ -60,11 +60,7 @@ func newQuotaEnforcingConfig(ctx context.Context, enforceQuota, projectCacheTTL 
 		enforce = s == "true"
 	}
 	if !enforce {
-		context.GetLogger(ctx).Info("quota enforcement disabled")
-		return &quotaEnforcingConfig{
-			enforcementDisabled:  true,
-			projectCacheDisabled: true,
-		}
+		return nil
 	}
 
 	ttl := defaultProjectCacheTTL
@@ -78,13 +74,11 @@ func newQuotaEnforcingConfig(ctx context.Context, enforceQuota, projectCacheTTL 
 	}
 
 	if ttl <= 0 {
-		context.GetLogger(ctx).Info("not using project caches for quota objects")
 		return &quotaEnforcingConfig{
 			projectCacheDisabled: true,
 		}
 	}
 
-	context.GetLogger(ctx).Infof("caching project quota objects with TTL %s", ttl.String())
 	return &quotaEnforcingConfig{
 		limitRanges: newProjectObjectListCache(ttl),
 	}
@@ -175,21 +169,21 @@ func admitBlobWrite(ctx context.Context, repo *repository, size int64) error {
 		err error
 	)
 
-	if !quotaEnforcing.projectCacheDisabled {
-		obj, exists, _ := quotaEnforcing.limitRanges.get(repo.namespace)
+	if !repo.config.quota.projectCacheDisabled {
+		obj, exists, _ := repo.config.quota.limitRanges.get(repo.namespace)
 		if exists {
 			lrs = obj.(*kapi.LimitRangeList)
 		}
 	}
 	if lrs == nil {
 		context.GetLogger(ctx).Debugf("listing limit ranges in namespace %s", repo.namespace)
-		lrs, err = repo.limitClient.LimitRanges(repo.namespace).List(kapi.ListOptions{})
+		lrs, err = repo.config.limitClient.LimitRanges(repo.namespace).List(kapi.ListOptions{})
 		if err != nil {
 			context.GetLogger(ctx).Errorf("failed to list limitranges: %v", err)
 			return err
 		}
-		if !quotaEnforcing.projectCacheDisabled {
-			err = quotaEnforcing.limitRanges.add(repo.namespace, lrs)
+		if !repo.config.quota.projectCacheDisabled {
+			err = repo.config.quota.limitRanges.add(repo.namespace, lrs)
 			if err != nil {
 				context.GetLogger(ctx).Errorf("failed to cache limit range list: %v", err)
 			}

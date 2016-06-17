@@ -60,7 +60,7 @@ func (r *pullthroughBlobStore) Stat(ctx context.Context, dgst digest.Digest) (di
 	}
 
 	retriever := r.repo.importContext()
-	cached := r.repo.cachedLayers.RepositoriesForDigest(dgst)
+	cached := r.repo.config.cachedLayers.RepositoriesForDigest(dgst)
 
 	// look at the first level of tagged repositories first
 	search := identifyCandidateRepositories(is, localRegistry, true)
@@ -160,7 +160,7 @@ func (r *pullthroughBlobStore) findCandidateRepository(ctx context.Context, sear
 		if err != nil {
 			continue
 		}
-		r.repo.cachedLayers.RememberDigest(dgst, repo)
+		r.repo.config.cachedLayers.RememberDigest(dgst, repo)
 		context.GetLogger(r.repo.ctx).Infof("Found digest location by search %q in %q: %v", dgst, repo, err)
 		return desc, nil
 	}

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
@@ -31,6 +32,11 @@ const (
 	// registry. All references to pushed images will be prefixed with its value.
 	DockerRegistryURLEnvVar = "DOCKER_REGISTRY_URL"
 
+	// PullthroughEnvVar is a boolean environment variable that allows pullthrough to be enabled.
+	// By default, pullthrough is on. Setting this variable overrides openshift middleware configuration
+	// option. Recognized values are "true" and "false".
+	PullthroughEnvVar = "REGISTRY_MIDDLEWARE_REPOSITORY_OPENSHIFT_PULLTHROUGH"
+
 	// EnforceQuotaEnvVar is a boolean environment variable that allows to turn quota enforcement on or off.
 	// By default, quota enforcement is off. It overrides openshift middleware configuration option.
 	// Recognized values are "true" and "false".
@@ -42,9 +48,74 @@ const (
 	ProjectCacheTTLEnvVar = "REGISTRY_MIDDLEWARE_REPOSITORY_OPENSHIFT_PROJECTCACHETTL"
 )
 
-var (
-	// cachedLayers is a shared cache of blob digests to remote repositories that have previously
-	// been identified as containing that blob. Thread safe and reused by all middleware layers.
+func init() {
+	var m middleware
+
+	// load the client when the middleware is initialized, which allows test code to change
+	// DefaultRegistryClient before starting a registry.
+	repomw.Register("openshift", m.newRepository)
+}
+
+// middleware initializes the config exactly once
+type middleware struct {
+	lock   sync.Mutex
+	err    error
+	config *middlewareConfig
+}
+
+// newRepository lazily inits middlewareConfig, returning a new wrapped repository
+func (m *middleware) newRepository(ctx context.Context, repo distribution.Repository, options map[string]interface{}) (distribution.Repository, error) {
+	nameParts := strings.SplitN(repo.Name(), "/", 2)
+	if len(nameParts) != 2 {
+		return nil, fmt.Errorf("invalid repository name %q: it must be of the format <project>/<name>", repo.Name())
+	}
+
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	config, err := m.init(options)
+	if err != nil {
+		return nil, err
+	}
+
+	return &repository{
+		Repository: repo,
+
+		config:    config,
+		ctx:       ctx,
+		namespace: nameParts[0],
+		name:      nameParts[1],
+	}, nil
+}
+
+func (m *middleware) init(options map[string]interface{}) (*middlewareConfig, error) {
+	if m.config == nil && m.config == nil {
+		m.config, m.err = newMiddlewareConfig(options)
+	}
+	return m.config, m.err
+}
+
+// middlewareConfig holds all configuration used by this middleware layer
+type middlewareConfig struct {
+	// quotaEnforcing contains shared caches of quota objects keyed by project name. Will be initialized
+	// only if the quota is enforced. See EnforceQuotaEnvVar.
+	quota *quotaEnforcingConfig
+	// pullthrough controls whether upstream registries are checked when a user tries to access images that
+	// are not in the local repository, but may be in an upstream registry.
+	pullthrough bool
+	// registryAddr is the address of this server
+	registryAddr string
+
+	// client for accessing image streams
+	client client.Interface
+	// quotaClient retrieves quota information
+	quotaClient kclient.ResourceQuotasNamespacer
+	// limitClient retrieves limit information
+	limitClient kclient.LimitRangesNamespacer
+
+	// cachedLayers remembers a mapping of layer digest to repositories recently seen with that image to avoid
+	// having to check every potential upstream repository when a blob request is made. The cache is useful only
+	// when session affinity is on for the registry, but in practice the first pull will fill the cache.
 	cachedLayers digestToRepositoryCache
 	// secureTransport is the transport pool used for pullthrough to remote registries marked as
 	// secure.
@@ -52,104 +123,62 @@ var (
 	// insecureTransport is the transport pool that does not verify remote TLS certificates for use
 	// during pullthrough against registries marked as insecure.
 	insecureTransport http.RoundTripper
-	// quotaEnforcing contains shared caches of quota objects keyed by project name. Will be initialized
-	// only if the quota is enforced. See EnforceQuotaEnvVar.
-	quotaEnforcing *quotaEnforcingConfig
-)
+}
 
-func init() {
+func newMiddlewareConfig(options map[string]interface{}) (*middlewareConfig, error) {
+	c := &middlewareConfig{}
+
 	cache, err := newDigestToRepositoryCache(1024)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	cachedLayers = cache
+	c.cachedLayers = cache
 
-	// load the client when the middleware is initialized, which allows test code to change
-	// DefaultRegistryClient before starting a registry.
-	repomw.Register("openshift",
-		func(ctx context.Context, repo distribution.Repository, options map[string]interface{}) (distribution.Repository, error) {
-			registryOSClient, kClient, err := DefaultRegistryClient.Clients()
-			if err != nil {
-				return nil, err
-			}
-			if quotaEnforcing == nil {
-				quotaEnforcing = newQuotaEnforcingConfig(ctx, os.Getenv(EnforceQuotaEnvVar), os.Getenv(ProjectCacheTTLEnvVar), options)
-			}
-			return newRepositoryWithClient(registryOSClient, kClient, kClient, ctx, repo, options)
-		},
-	)
-
-	secureTransport = http.DefaultTransport
-	insecureTransport, err = restclient.TransportFor(&restclient.Config{Insecure: true})
+	c.secureTransport = http.DefaultTransport
+	c.insecureTransport, err = restclient.TransportFor(&restclient.Config{Insecure: true})
 	if err != nil {
-		panic(fmt.Sprintf("Unable to configure a default transport for importing insecure images: %v", err))
+		return nil, fmt.Errorf("Unable to configure a default transport for importing insecure images: %v", err)
 	}
+
+	oclient, kclient, err := DefaultRegistryClient.Clients()
+	if err != nil {
+		return nil, err
+	}
+	c.quotaClient = kclient
+	c.limitClient = kclient
+	c.client = oclient
+
+	c.registryAddr = os.Getenv(DockerRegistryURLEnvVar)
+	if len(c.registryAddr) == 0 {
+		return nil, fmt.Errorf("%s is required", DockerRegistryURLEnvVar)
+	}
+	if value := os.Getenv(PullthroughEnvVar); len(value) > 0 {
+		c.pullthrough = value == "true"
+	} else {
+		if value, ok := options["pullthrough"]; ok {
+			if b, ok := value.(bool); ok {
+				c.pullthrough = b
+			}
+		}
+	}
+
+	c.quota = newQuotaEnforcingConfig(os.Getenv(EnforceQuotaEnvVar), os.Getenv(ProjectCacheTTLEnvVar), options)
+	return c, nil
 }
 
 // repository wraps a distribution.Repository and allows manifests to be served from the OpenShift image
 // API.
 type repository struct {
+	config *middlewareConfig
+
 	distribution.Repository
 
-	ctx              context.Context
-	quotaClient      kclient.ResourceQuotasNamespacer
-	limitClient      kclient.LimitRangesNamespacer
-	registryOSClient client.Interface
-	registryAddr     string
-	namespace        string
-	name             string
-
-	// if true, the repository will check remote references in the image stream to support pulling "through"
-	// from a remote repository
-	pullthrough bool
-	// cachedLayers remembers a mapping of layer digest to repositories recently seen with that image to avoid
-	// having to check every potential upstream repository when a blob request is made. The cache is useful only
-	// when session affinity is on for the registry, but in practice the first pull will fill the cache.
-	cachedLayers digestToRepositoryCache
+	ctx       context.Context
+	namespace string
+	name      string
 }
 
 var _ distribution.ManifestService = &repository{}
-
-// newRepositoryWithClient returns a new repository middleware.
-func newRepositoryWithClient(
-	registryOSClient client.Interface,
-	quotaClient kclient.ResourceQuotasNamespacer,
-	limitClient kclient.LimitRangesNamespacer,
-	ctx context.Context,
-	repo distribution.Repository,
-	options map[string]interface{},
-) (distribution.Repository, error) {
-	registryAddr := os.Getenv(DockerRegistryURLEnvVar)
-	if len(registryAddr) == 0 {
-		return nil, fmt.Errorf("%s is required", DockerRegistryURLEnvVar)
-	}
-
-	pullthrough := false
-	if value, ok := options["pullthrough"]; ok {
-		if b, ok := value.(bool); ok {
-			pullthrough = b
-		}
-	}
-
-	nameParts := strings.SplitN(repo.Name(), "/", 2)
-	if len(nameParts) != 2 {
-		return nil, fmt.Errorf("invalid repository name %q: it must be of the format <project>/<name>", repo.Name())
-	}
-
-	return &repository{
-		Repository: repo,
-
-		ctx:              ctx,
-		quotaClient:      quotaClient,
-		limitClient:      limitClient,
-		registryOSClient: registryOSClient,
-		registryAddr:     registryAddr,
-		namespace:        nameParts[0],
-		name:             nameParts[1],
-		pullthrough:      pullthrough,
-		cachedLayers:     cachedLayers,
-	}, nil
-}
 
 // Manifests returns r, which implements distribution.ManifestService.
 func (r *repository) Manifests(ctx context.Context, options ...distribution.ManifestServiceOption) (distribution.ManifestService, error) {
@@ -168,7 +197,7 @@ func (r *repository) Blobs(ctx context.Context) distribution.BlobStore {
 
 	bs := r.Repository.Blobs(ctx)
 
-	if quotaEnforcing != nil {
+	if r.config.quota != nil && !r.config.quota.enforcementDisabled {
 		bs = &quotaRestrictedBlobStore{
 			BlobStore: bs,
 
@@ -176,7 +205,7 @@ func (r *repository) Blobs(ctx context.Context) distribution.BlobStore {
 		}
 	}
 
-	if r.pullthrough {
+	if r.config.pullthrough {
 		bs = &pullthroughBlobStore{
 			BlobStore: bs,
 
@@ -186,7 +215,6 @@ func (r *repository) Blobs(ctx context.Context) distribution.BlobStore {
 	}
 
 	return bs
-
 }
 
 // Tags lists the tags under the named repository.
@@ -235,7 +263,7 @@ func (r *repository) Get(dgst digest.Digest) (*schema1.SignedManifest, error) {
 		return nil, err
 	}
 
-	ref := imageapi.DockerImageReference{Namespace: r.namespace, Name: r.name, Registry: r.registryAddr}
+	ref := imageapi.DockerImageReference{Namespace: r.namespace, Name: r.name, Registry: r.config.registryAddr}
 	return r.manifestFromImageWithCachedLayers(image, ref.DockerClientDefaults().Exact())
 }
 
@@ -265,7 +293,7 @@ func (r *repository) GetByTag(tag string, options ...distribution.ManifestServic
 	if referenceErr == nil {
 		ref.Namespace = r.namespace
 		ref.Name = r.name
-		ref.Registry = r.registryAddr
+		ref.Registry = r.config.registryAddr
 	}
 	defaultRef := ref.DockerClientDefaults()
 	cacheName := defaultRef.AsRepository().Exact()
@@ -295,7 +323,7 @@ func (r *repository) GetByTag(tag string, options ...distribution.ManifestServic
 	}
 
 	// allow pullthrough to be disabled
-	if !r.pullthrough {
+	if !r.config.pullthrough {
 		return nil, distribution.ErrManifestBlobUnknown{Digest: dgst}
 	}
 
@@ -382,7 +410,7 @@ func (r *repository) Put(manifest *schema1.SignedManifest) error {
 					imageapi.ManagedByOpenShiftAnnotation: "true",
 				},
 			},
-			DockerImageReference: fmt.Sprintf("%s/%s/%s@%s", r.registryAddr, r.namespace, r.name, dgst.String()),
+			DockerImageReference: fmt.Sprintf("%s/%s/%s@%s", r.config.registryAddr, r.namespace, r.name, dgst.String()),
 			DockerImageManifest:  string(manifest.Raw),
 		},
 	}
@@ -391,7 +419,7 @@ func (r *repository) Put(manifest *schema1.SignedManifest) error {
 		return err
 	}
 
-	if err := r.registryOSClient.ImageStreamMappings(r.namespace).Create(&ism); err != nil {
+	if err := r.config.client.ImageStreamMappings(r.namespace).Create(&ism); err != nil {
 		// if the error was that the image stream wasn't found, try to auto provision it
 		statusErr, ok := err.(*kerrors.StatusError)
 		if !ok {
@@ -432,7 +460,7 @@ func (r *repository) Put(manifest *schema1.SignedManifest) error {
 		}
 
 		// try to create the ISM again
-		if err := r.registryOSClient.ImageStreamMappings(r.namespace).Create(&ism); err != nil {
+		if err := r.config.client.ImageStreamMappings(r.namespace).Create(&ism); err != nil {
 			if quotautil.IsErrorQuotaExceeded(err) {
 				context.GetLogger(r.ctx).Errorf("denied a creation of ImageStreamMapping: %v", err)
 				return distribution.ErrAccessDenied
@@ -506,45 +534,45 @@ func (r *repository) Delete(dgst digest.Digest) error {
 // importContext loads secrets for this image stream and returns a context for getting distribution
 // clients to remote repositories.
 func (r *repository) importContext() importer.RepositoryRetriever {
-	secrets, err := r.registryOSClient.ImageStreamSecrets(r.namespace).Secrets(r.name, kapi.ListOptions{})
+	secrets, err := r.config.client.ImageStreamSecrets(r.namespace).Secrets(r.name, kapi.ListOptions{})
 	if err != nil {
 		context.GetLogger(r.ctx).Errorf("error getting secrets for repository %q: %v", r.Name(), err)
 		secrets = &kapi.SecretList{}
 	}
 	credentials := importer.NewCredentialsForSecrets(secrets.Items)
-	return importer.NewContext(secureTransport, insecureTransport).WithCredentials(credentials)
+	return importer.NewContext(r.config.secureTransport, r.config.insecureTransport).WithCredentials(credentials)
 }
 
 // getImageStream retrieves the ImageStream for r.
 func (r *repository) getImageStream() (*imageapi.ImageStream, error) {
-	return r.registryOSClient.ImageStreams(r.namespace).Get(r.name)
+	return r.config.client.ImageStreams(r.namespace).Get(r.name)
 }
 
 // getImage retrieves the Image with digest `dgst`.
 func (r *repository) getImage(dgst digest.Digest) (*imageapi.Image, error) {
-	return r.registryOSClient.Images().Get(dgst.String())
+	return r.config.client.Images().Get(dgst.String())
 }
 
 // getImageStreamTag retrieves the Image with tag `tag` for the ImageStream
 // associated with r.
 func (r *repository) getImageStreamTag(tag string) (*imageapi.ImageStreamTag, error) {
-	return r.registryOSClient.ImageStreamTags(r.namespace).Get(r.name, tag)
+	return r.config.client.ImageStreamTags(r.namespace).Get(r.name, tag)
 }
 
 // getImageStreamImage retrieves the Image with digest `dgst` for the ImageStream
 // associated with r. This ensures the image belongs to the image stream.
 func (r *repository) getImageStreamImage(dgst digest.Digest) (*imageapi.ImageStreamImage, error) {
-	return r.registryOSClient.ImageStreamImages(r.namespace).Get(r.name, dgst.String())
+	return r.config.client.ImageStreamImages(r.namespace).Get(r.name, dgst.String())
 }
 
 // rememberLayers caches the provided layers
 func (r *repository) rememberLayers(manifest *schema1.SignedManifest, cacheName string) {
-	if !r.pullthrough {
+	if !r.config.pullthrough {
 		return
 	}
 	// remember the layers in the cache as an optimization to avoid searching all remote repositories
 	for _, layer := range manifest.FSLayers {
-		r.cachedLayers.RememberDigest(layer.BlobSum, cacheName)
+		r.config.cachedLayers.RememberDigest(layer.BlobSum, cacheName)
 	}
 }
 
