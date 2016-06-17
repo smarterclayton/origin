@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
+	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/storage/cache"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
@@ -179,11 +180,20 @@ func (repo *repository) Name() string {
 	return repo.name
 }
 
+type emptyBlobService struct {
+	*blobStore
+}
+
+func (emptyBlobService) Clear(_ context.Context, _ digest.Digest) error { return nil }
+func (emptyBlobService) SetDescriptor(ctx context.Context, dgst digest.Digest, desc distribution.Descriptor) error {
+	return nil
+}
+
 // Manifests returns an instance of ManifestService. Instantiation is cheap and
 // may be context sensitive in the future. The instance should be used similar
 // to a request local.
 func (repo *repository) Manifests(ctx context.Context, options ...distribution.ManifestServiceOption) (distribution.ManifestService, error) {
-	manifestLinkPathFns := []linkPathFunc{
+	/*manifestLinkPathFns := []linkPathFunc{
 		// NOTE(stevvooe): Need to search through multiple locations since
 		// 2.1.0 unintentionally linked into  _layers.
 		manifestRevisionLinkPath,
@@ -192,7 +202,7 @@ func (repo *repository) Manifests(ctx context.Context, options ...distribution.M
 	manifestRootPathFns := []blobsRootPathFunc{
 		manifestRevisionsPath,
 		blobsRootPath,
-	}
+	}*/
 
 	ms := &manifestStore{
 		ctx:        ctx,
@@ -200,24 +210,20 @@ func (repo *repository) Manifests(ctx context.Context, options ...distribution.M
 		revisionStore: &revisionStore{
 			ctx:        ctx,
 			repository: repo,
-			blobStore: &linkedBlobStore{
-				ctx:           ctx,
-				blobStore:     repo.blobStore,
-				repository:    repo,
-				deleteEnabled: repo.registry.deleteEnabled,
-				blobAccessController: &linkedBlobStatter{
-					blobStore:             repo.blobStore,
-					repository:            repo,
-					linkPathFns:           manifestLinkPathFns,
-					removeParentsOnDelete: repo.registry.blobStore.removeParentsOnDelete,
-				},
+			blobStore:  repo.blobStore,
+			/*&linkedBlobStore{
+				ctx:                  ctx,
+				blobStore:            repo.blobStore,
+				repository:           repo,
+				deleteEnabled:        repo.registry.deleteEnabled,
+				blobAccessController: emptyBlobService{repo.blobStore},
 
 				// TODO(stevvooe): linkPath limits this blob store to only
 				// manifests. This instance cannot be used for blob checks.
 				linkPathFns:            manifestLinkPathFns,
 				blobsRootPathFns:       manifestRootPathFns,
 				resumableDigestEnabled: repo.resumableDigestEnabled,
-			},
+			},*/
 		},
 		tagStore: &tagStore{
 			ctx:        ctx,

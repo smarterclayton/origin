@@ -13,7 +13,7 @@ import (
 // revisionStore supports storing and managing manifest revisions.
 type revisionStore struct {
 	repository *repository
-	blobStore  *linkedBlobStore
+	blobStore  *blobStore
 	ctx        context.Context
 }
 
@@ -85,11 +85,6 @@ func (rs *revisionStore) put(ctx context.Context, sm *schema1.SignedManifest) (d
 	revision, err := rs.blobStore.Put(ctx, schema1.ManifestMediaType, payload)
 	if err != nil {
 		context.GetLogger(ctx).Errorf("error putting payload into blobstore: %v", err)
-		return distribution.Descriptor{}, err
-	}
-
-	// Link the revision into the repository.
-	if err := rs.blobStore.linkBlob(ctx, revision); err != nil {
 		return distribution.Descriptor{}, err
 	}
 
