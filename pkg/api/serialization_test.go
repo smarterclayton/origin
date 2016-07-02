@@ -65,21 +65,21 @@ func fuzzInternalObject(t *testing.T, forVersion unversioned.GroupVersion, item 
 				switch j.Subjects[i].Kind {
 				case authorizationapi.UserKind:
 					j.Subjects[i].Namespace = ""
-					if valid, _ := uservalidation.ValidateUserName(j.Subjects[i].Name, false); !valid {
+					if len(uservalidation.ValidateUserName(j.Subjects[i].Name, false)) != 0 {
 						j.Subjects[i].Name = fmt.Sprintf("validusername%d", i)
 					}
 
 				case authorizationapi.GroupKind:
 					j.Subjects[i].Namespace = ""
-					if valid, _ := uservalidation.ValidateGroupName(j.Subjects[i].Name, false); !valid {
+					if len(uservalidation.ValidateGroupName(j.Subjects[i].Name, false)) != 0 {
 						j.Subjects[i].Name = fmt.Sprintf("validgroupname%d", i)
 					}
 
 				case authorizationapi.ServiceAccountKind:
-					if valid, _ := validation.ValidateNamespaceName(j.Subjects[i].Namespace, false); !valid {
+					if len(validation.ValidateNamespaceName(j.Subjects[i].Namespace, false)) != 0 {
 						j.Subjects[i].Namespace = fmt.Sprintf("sanamespacehere%d", i)
 					}
-					if valid, _ := validation.ValidateServiceAccountName(j.Subjects[i].Name, false); !valid {
+					if len(validation.ValidateServiceAccountName(j.Subjects[i].Name, false)) != 0 {
 						j.Subjects[i].Name = fmt.Sprintf("sanamehere%d", i)
 					}
 
@@ -110,21 +110,21 @@ func fuzzInternalObject(t *testing.T, forVersion unversioned.GroupVersion, item 
 				switch j.Subjects[i].Kind {
 				case authorizationapi.UserKind:
 					j.Subjects[i].Namespace = ""
-					if valid, _ := uservalidation.ValidateUserName(j.Subjects[i].Name, false); !valid {
+					if len(uservalidation.ValidateUserName(j.Subjects[i].Name, false)) != 0 {
 						j.Subjects[i].Name = fmt.Sprintf("validusername%d", i)
 					}
 
 				case authorizationapi.GroupKind:
 					j.Subjects[i].Namespace = ""
-					if valid, _ := uservalidation.ValidateGroupName(j.Subjects[i].Name, false); !valid {
+					if len(uservalidation.ValidateGroupName(j.Subjects[i].Name, false)) != 0 {
 						j.Subjects[i].Name = fmt.Sprintf("validgroupname%d", i)
 					}
 
 				case authorizationapi.ServiceAccountKind:
-					if valid, _ := validation.ValidateNamespaceName(j.Subjects[i].Namespace, false); !valid {
+					if len(validation.ValidateNamespaceName(j.Subjects[i].Namespace, false)) != 0 {
 						j.Subjects[i].Namespace = fmt.Sprintf("sanamespacehere%d", i)
 					}
-					if valid, _ := validation.ValidateServiceAccountName(j.Subjects[i].Name, false); !valid {
+					if len(validation.ValidateServiceAccountName(j.Subjects[i].Name, false)) != 0 {
 						j.Subjects[i].Name = fmt.Sprintf("sanamehere%d", i)
 					}
 

@@ -1,8 +1,9 @@
 package api
 
 import (
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"fmt"
+	//kapi "k8s.io/kubernetes/pkg/api"
+	//"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/conversion"
 	"k8s.io/kubernetes/pkg/runtime"
 )
@@ -15,25 +16,25 @@ func Convert_runtime_Object_To_runtime_RawExtension(in runtime.Object, out *runt
 	if in == nil {
 		return nil
 	}
+	/*
+		externalObject, err := kapi.Scheme.ConvertToVersion(in, s.Meta().DestVersion)
+		if err != nil {
+			return err
+		}
 
-	externalObject, err := kapi.Scheme.ConvertToVersion(in, s.Meta().DestVersion)
-	if err != nil {
-		return err
-	}
+		targetVersion, err := unversioned.ParseGroupVersion(s.Meta().DestVersion)
+		if err != nil {
+			return err
+		}
+		bytes, err := runtime.Encode(kapi.Codecs.LegacyCodec(targetVersion), externalObject)
+		if err != nil {
+			return err
+		}
 
-	targetVersion, err := unversioned.ParseGroupVersion(s.Meta().DestVersion)
-	if err != nil {
-		return err
-	}
-	bytes, err := runtime.Encode(kapi.Codecs.LegacyCodec(targetVersion), externalObject)
-	if err != nil {
-		return err
-	}
-
-	out.Raw = bytes
-	out.Object = externalObject
-
-	return nil
+		out.Raw = bytes
+		out.Object = externalObject
+	*/
+	return fmt.Errorf("TODO: this needs to be unified with the groupversioner carry patch")
 }
 
 // Convert_runtime_RawExtension_To_runtime_Object well, this is the reason why there was runtime.Embedded.  The `out` here is hopeless.
@@ -45,22 +46,22 @@ func Convert_runtime_RawExtension_To_runtime_Object(in *runtime.RawExtension, ou
 	}
 
 	// the scheme knows all available group versions, so its possible to build the decoder properly, but it would require some refactoring
+	/*
+		srcVersion, err := unversioned.ParseGroupVersion(s.Meta().SrcVersion)
+		if err != nil {
+			return err
+		}
+		decodedObject, err := runtime.Decode(kapi.Codecs.UniversalDecoder(srcVersion), in.Raw)
+		if err != nil {
+			return err
+		}
 
-	srcVersion, err := unversioned.ParseGroupVersion(s.Meta().SrcVersion)
-	if err != nil {
-		return err
-	}
-	decodedObject, err := runtime.Decode(kapi.Codecs.UniversalDecoder(srcVersion), in.Raw)
-	if err != nil {
-		return err
-	}
+		internalObject, err := kapi.Scheme.ConvertToVersion(decodedObject, s.Meta().DestVersion)
+		if err != nil {
+			return err
+		}
+		in.Object = internalObject
+	*/
 
-	internalObject, err := kapi.Scheme.ConvertToVersion(decodedObject, s.Meta().DestVersion)
-	if err != nil {
-		return err
-	}
-
-	in.Object = internalObject
-
-	return nil
+	return fmt.Errorf("TODO: this needs to be unified with the groupversioner carry patch")
 }

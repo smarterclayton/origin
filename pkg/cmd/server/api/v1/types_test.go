@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/ghodss/yaml"
-	"speter.net/go/exp/math/dec/inf"
 
+	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/runtime/serializer"
@@ -605,13 +605,12 @@ volumeConfig:
 			if nodeConfig.VolumeConfig.LocalQuota.PerFSGroup == nil {
 				t.Errorf("Expected quota: %s, got: nil", test.expected)
 			} else {
-				amount := nodeConfig.VolumeConfig.LocalQuota.PerFSGroup.Amount
+				amount := nodeConfig.VolumeConfig.LocalQuota.PerFSGroup
 				t.Logf("%s", amount.String())
-				rounded := new(inf.Dec)
-				rounded.Round(amount, 0, inf.RoundUp)
-				t.Logf("%s", rounded.String())
-				if test.expected != rounded.String() {
-					t.Errorf("Expected quota: %s, got: %s", test.expected, rounded.String())
+				amount.RoundUp(resource.Scale(0))
+				t.Logf("%s", amount.String())
+				if test.expected != amount.String() {
+					t.Errorf("Expected quota: %s, got: %s", test.expected, amount.String())
 				}
 			}
 		}

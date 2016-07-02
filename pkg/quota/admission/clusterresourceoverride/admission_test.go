@@ -220,7 +220,7 @@ func TestLimitRequestAdmission(t *testing.T) {
 			continue
 		}
 		c.(*clusterResourceOverridePlugin).SetProjectCache(fakeProjectCache(test.namespace))
-		attrs := admission.NewAttributesRecord(test.pod, unversioned.GroupVersionKind{}, test.namespace.Name, "name", kapi.Resource("pods").WithVersion("version"), "", admission.Create, fakeUser())
+		attrs := admission.NewAttributesRecord(test.pod, nil, unversioned.GroupVersionKind{}, test.namespace.Name, "name", kapi.Resource("pods").WithVersion("version"), "", admission.Create, fakeUser())
 		if err = c.Admit(attrs); err != nil {
 			t.Errorf("%s: admission controller returned error: %v", test.name, err)
 			continue

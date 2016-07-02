@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"fmt"
+
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/conversion"
 	"k8s.io/kubernetes/pkg/runtime"
@@ -293,7 +295,7 @@ func addConversionFuncs(scheme *runtime.Scheme) {
 			}
 			if in.Provider.Object != nil {
 				var err error
-				out.Provider, err = internal.Scheme.ConvertToVersion(in.Provider.Object, internal.SchemeGroupVersion.String())
+				out.Provider, err = internal.Scheme.ConvertToVersion(in.Provider.Object, internal.SchemeGroupVersion)
 				if err != nil {
 					return err
 				}
@@ -317,7 +319,7 @@ func addConversionFuncs(scheme *runtime.Scheme) {
 			}
 			if in.Configuration.Object != nil {
 				var err error
-				out.Configuration, err = internal.Scheme.ConvertToVersion(in.Configuration.Object, internal.SchemeGroupVersion.String())
+				out.Configuration, err = internal.Scheme.ConvertToVersion(in.Configuration.Object, internal.SchemeGroupVersion)
 				if err != nil {
 					return err
 				}
@@ -353,34 +355,35 @@ func convert_runtime_Object_To_runtime_RawExtension(in runtime.Object, out *runt
 		return nil
 	}
 
-	externalObject, err := internal.Scheme.ConvertToVersion(in, s.Meta().DestVersion)
-	if runtime.IsNotRegisteredError(err) {
-		switch cast := in.(type) {
-		case *runtime.Unknown:
-			out.Raw = cast.Raw
-			return nil
-		case *runtime.Unstructured:
-			bytes, err := runtime.Encode(runtime.UnstructuredJSONScheme, externalObject)
-			if err != nil {
-				return err
+	/*
+		externalObject, err := internal.Scheme.ConvertToVersion(in, s.Meta().DestVersion)
+		if runtime.IsNotRegisteredError(err) {
+			switch cast := in.(type) {
+			case *runtime.Unknown:
+				out.Raw = cast.Raw
+				return nil
+			case *runtime.Unstructured:
+				bytes, err := runtime.Encode(runtime.UnstructuredJSONScheme, externalObject)
+				if err != nil {
+					return err
+				}
+				out.Raw = bytes
+				return nil
 			}
-			out.Raw = bytes
-			return nil
 		}
-	}
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	bytes, err := runtime.Encode(codec, externalObject)
-	if err != nil {
-		return err
-	}
+		bytes, err := runtime.Encode(codec, externalObject)
+		if err != nil {
+			return err
+		}
 
-	out.Raw = bytes
-	out.Object = externalObject
-
-	return nil
+		out.Raw = bytes
+		out.Object = externalObject
+	*/
+	return fmt.Errorf("TODO: fix me with changes to encode")
 }
 
 // Convert_runtime_RawExtension_To_runtime_Object well, this is the reason why there was runtime.Embedded.  The `out` here is hopeless.
@@ -390,19 +393,19 @@ func convert_runtime_RawExtension_To_runtime_Object(in *runtime.RawExtension, ou
 	if in == nil || len(in.Raw) == 0 || in.Object != nil {
 		return nil
 	}
+	/*
+		decodedObject, err := runtime.Decode(codec, in.Raw)
+		if err != nil {
+			in.Object = &runtime.Unknown{Raw: in.Raw}
+			return nil
+		}
 
-	decodedObject, err := runtime.Decode(codec, in.Raw)
-	if err != nil {
-		in.Object = &runtime.Unknown{Raw: in.Raw}
-		return nil
-	}
+		internalObject, err := internal.Scheme.ConvertToVersion(decodedObject, s.Meta().DestVersion)
+		if err != nil {
+			return err
+		}
 
-	internalObject, err := internal.Scheme.ConvertToVersion(decodedObject, s.Meta().DestVersion)
-	if err != nil {
-		return err
-	}
-
-	in.Object = internalObject
-
-	return nil
+		in.Object = internalObject
+	*/
+	return fmt.Errorf("TODO: fix me with changes to encode")
 }
