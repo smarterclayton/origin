@@ -30,16 +30,8 @@ Find more information at
     DEPRECATED: The API version to use when talking to the server
 
 .PP
-\fB\-\-application\-metrics\-count\-limit\fP=100
-    Max number of application metrics to store (per container)
-
-.PP
 \fB\-\-as\fP=""
     Username to impersonate for the operation.
-
-.PP
-\fB\-\-boot\-id\-file\fP="/proc/sys/kernel/random/boot\_id"
-    Comma\-separated list of files to check for boot\-id. Use the first one that exists.
 
 .PP
 \fB\-\-certificate\-authority\fP=""
@@ -62,52 +54,8 @@ Find more information at
     Path to the config file to use for CLI requests.
 
 .PP
-\fB\-\-container\-hints\fP="/etc/cadvisor/container\_hints.json"
-    location of the container hints file
-
-.PP
 \fB\-\-context\fP=""
     The name of the kubeconfig context to use
-
-.PP
-\fB\-\-docker\fP="unix:///var/run/docker.sock"
-    docker endpoint
-
-.PP
-\fB\-\-docker\-env\-metadata\-whitelist\fP=""
-    a comma\-separated list of environment variable keys that needs to be collected for docker containers
-
-.PP
-\fB\-\-docker\-only\fP=false
-    Only report docker containers in addition to root stats
-
-.PP
-\fB\-\-docker\-root\fP="/var/lib/docker"
-    Absolute path to the Docker state root directory (default: /var/lib/docker)
-
-.PP
-\fB\-\-docker\-run\fP="/var/run/docker"
-    Absolute path to the Docker run directory (default: /var/run/docker)
-
-.PP
-\fB\-\-enable\-load\-reader\fP=false
-    Whether to enable cpu load reader
-
-.PP
-\fB\-\-event\-storage\-age\-limit\fP="default=24h"
-    Max length of time for which to store events (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is a duration. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-event\-storage\-event\-limit\fP="default=100000"
-    Max number of events to store (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is an integer. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-global\-housekeeping\-interval\fP=0
-    Interval between global housekeepings
-
-.PP
-\fB\-\-housekeeping\-interval\fP=0
-    Interval between container housekeepings
 
 .PP
 \fB\-\-httptest.serve\fP=""
@@ -158,20 +106,12 @@ Find more information at
     when logging hits line file:N, emit a stack trace
 
 .PP
-\fB\-\-log\-cadvisor\-usage\fP=false
-    Whether to log the usage of the cAdvisor container
-
-.PP
 \fB\-\-log\-dir\fP=""
     If non\-empty, write log files in this directory
 
 .PP
 \fB\-\-logtostderr\fP=true
     log to standard error instead of files
-
-.PP
-\fB\-\-machine\-id\-file\fP="/etc/machine\-id,/var/lib/dbus/machine\-id"
-    Comma\-separated list of files to check for machine\-id. Use the first one that exists.
 
 .PP
 \fB\-\-match\-server\-version\fP=false
@@ -188,34 +128,6 @@ Find more information at
 .PP
 \fB\-\-stderrthreshold\fP=2
     logs at or above this threshold go to stderr
-
-.PP
-\fB\-\-storage\-driver\-buffer\-duration\fP=0
-    Writes in the storage driver will be buffered for this duration, and committed to the non memory backends as a single transaction
-
-.PP
-\fB\-\-storage\-driver\-db\fP="cadvisor"
-    database name
-
-.PP
-\fB\-\-storage\-driver\-host\fP="localhost:8086"
-    database host:port
-
-.PP
-\fB\-\-storage\-driver\-password\fP="root"
-    database password
-
-.PP
-\fB\-\-storage\-driver\-secure\fP=false
-    use secure connection with database
-
-.PP
-\fB\-\-storage\-driver\-table\fP="stats"
-    table name
-
-.PP
-\fB\-\-storage\-driver\-user\fP="root"
-    database username
 
 .PP
 \fB\-\-token\fP=""
@@ -246,7 +158,7 @@ Find more information at
 
 .SH SEE ALSO
 .PP
-\fBopenshift(1)\fP, \fBopenshift\-kube\-get(1)\fP, \fBopenshift\-kube\-describe(1)\fP, \fBopenshift\-kube\-create(1)\fP, \fBopenshift\-kube\-replace(1)\fP, \fBopenshift\-kube\-patch(1)\fP, \fBopenshift\-kube\-delete(1)\fP, \fBopenshift\-kube\-edit(1)\fP, \fBopenshift\-kube\-apply(1)\fP, \fBopenshift\-kube\-namespace(1)\fP, \fBopenshift\-kube\-logs(1)\fP, \fBopenshift\-kube\-rolling\-update(1)\fP, \fBopenshift\-kube\-scale(1)\fP, \fBopenshift\-kube\-cordon(1)\fP, \fBopenshift\-kube\-drain(1)\fP, \fBopenshift\-kube\-uncordon(1)\fP, \fBopenshift\-kube\-attach(1)\fP, \fBopenshift\-kube\-exec(1)\fP, \fBopenshift\-kube\-port\-forward(1)\fP, \fBopenshift\-kube\-proxy(1)\fP, \fBopenshift\-kube\-run(1)\fP, \fBopenshift\-kube\-stop(1)\fP, \fBopenshift\-kube\-expose(1)\fP, \fBopenshift\-kube\-autoscale(1)\fP, \fBopenshift\-kube\-rollout(1)\fP, \fBopenshift\-kube\-label(1)\fP, \fBopenshift\-kube\-annotate(1)\fP, \fBopenshift\-kube\-config(1)\fP, \fBopenshift\-kube\-cluster\-info(1)\fP, \fBopenshift\-kube\-api\-versions(1)\fP, \fBopenshift\-kube\-version(1)\fP, \fBopenshift\-kube\-explain(1)\fP, \fBopenshift\-kube\-convert(1)\fP, \fBopenshift\-kube\-options(1)\fP,
+\fBopenshift(1)\fP, \fBopenshift\-kube\-get(1)\fP, \fBopenshift\-kube\-set(1)\fP, \fBopenshift\-kube\-describe(1)\fP, \fBopenshift\-kube\-create(1)\fP, \fBopenshift\-kube\-replace(1)\fP, \fBopenshift\-kube\-patch(1)\fP, \fBopenshift\-kube\-delete(1)\fP, \fBopenshift\-kube\-edit(1)\fP, \fBopenshift\-kube\-apply(1)\fP, \fBopenshift\-kube\-namespace(1)\fP, \fBopenshift\-kube\-logs(1)\fP, \fBopenshift\-kube\-rolling\-update(1)\fP, \fBopenshift\-kube\-scale(1)\fP, \fBopenshift\-kube\-cordon(1)\fP, \fBopenshift\-kube\-drain(1)\fP, \fBopenshift\-kube\-uncordon(1)\fP, \fBopenshift\-kube\-attach(1)\fP, \fBopenshift\-kube\-exec(1)\fP, \fBopenshift\-kube\-port\-forward(1)\fP, \fBopenshift\-kube\-proxy(1)\fP, \fBopenshift\-kube\-run(1)\fP, \fBopenshift\-kube\-stop(1)\fP, \fBopenshift\-kube\-expose(1)\fP, \fBopenshift\-kube\-autoscale(1)\fP, \fBopenshift\-kube\-rollout(1)\fP, \fBopenshift\-kube\-label(1)\fP, \fBopenshift\-kube\-annotate(1)\fP, \fBopenshift\-kube\-taint(1)\fP, \fBopenshift\-kube\-config(1)\fP, \fBopenshift\-kube\-cluster\-info(1)\fP, \fBopenshift\-kube\-api\-versions(1)\fP, \fBopenshift\-kube\-version(1)\fP, \fBopenshift\-kube\-explain(1)\fP, \fBopenshift\-kube\-convert(1)\fP, \fBopenshift\-kube\-completion(1)\fP, \fBopenshift\-kube\-options(1)\fP,
 
 
 .SH HISTORY

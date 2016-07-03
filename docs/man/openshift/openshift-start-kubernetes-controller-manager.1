@@ -33,14 +33,6 @@ This command launches an instance of the Kubernetes controller\-manager (kube\-c
     log to standard error as well as files
 
 .PP
-\fB\-\-application\-metrics\-count\-limit\fP=100
-    Max number of application metrics to store (per container)
-
-.PP
-\fB\-\-boot\-id\-file\fP="/proc/sys/kernel/random/boot\_id"
-    Comma\-separated list of files to check for boot\-id. Use the first one that exists.
-
-.PP
 \fB\-\-cloud\-config\fP=""
     The path to the cloud provider configuration file.  Empty string for no configuration file.
 
@@ -85,8 +77,8 @@ This command launches an instance of the Kubernetes controller\-manager (kube\-c
     The number of service account token objects that are allowed to sync concurrently. Larger number = more responsive token generation, but more CPU (and network) load
 
 .PP
-\fB\-\-container\-hints\fP="/etc/cadvisor/container\_hints.json"
-    location of the container hints file
+\fB\-\-configure\-cloud\-routes\fP=true
+    Should CIDRs allocated by allocate\-node\-cidrs be configured on the cloud provider.
 
 .PP
 \fB\-\-controller\-start\-interval\fP=0
@@ -97,7 +89,7 @@ This command launches an instance of the Kubernetes controller\-manager (kube\-c
     The the size of lookup cache for daemonsets. Larger number = more responsive daemonsets, but more MEM load.
 
 .PP
-\fB\-\-deleting\-pods\-burst\fP=10
+\fB\-\-deleting\-pods\-burst\fP=1
     Number of nodes on which pods are bursty deleted in case of node failure. For more details look into RateLimiter.
 
 .PP
@@ -109,52 +101,24 @@ This command launches an instance of the Kubernetes controller\-manager (kube\-c
     Period for syncing the deployments.
 
 .PP
-\fB\-\-docker\fP="unix:///var/run/docker.sock"
-    docker endpoint
+\fB\-\-enable\-dynamic\-provisioning\fP=true
+    Enable dynamic provisioning for environments that support it.
 
 .PP
-\fB\-\-docker\-env\-metadata\-whitelist\fP=""
-    a comma\-separated list of environment variable keys that needs to be collected for docker containers
-
-.PP
-\fB\-\-docker\-only\fP=false
-    Only report docker containers in addition to root stats
-
-.PP
-\fB\-\-docker\-root\fP="/var/lib/docker"
-    Absolute path to the Docker state root directory (default: /var/lib/docker)
-
-.PP
-\fB\-\-docker\-run\fP="/var/run/docker"
-    Absolute path to the Docker run directory (default: /var/run/docker)
+\fB\-\-enable\-garbage\-collector\fP=false
+    Enables the generic garbage collector. MUST be synced with the corresponding flag of the kube\-apiserver. WARNING: the generic garbage collector is an alpha feature.
 
 .PP
 \fB\-\-enable\-hostpath\-provisioner\fP=false
     Enable HostPath PV provisioning when running without a cloud provider. This allows testing and development of provisioning features.  HostPath provisioning is not supported in any way, won't work in a multi\-node cluster, and should not be used for anything other than testing or development.
 
 .PP
-\fB\-\-enable\-load\-reader\fP=false
-    Whether to enable cpu load reader
-
-.PP
-\fB\-\-event\-storage\-age\-limit\fP="default=24h"
-    Max length of time for which to store events (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is a duration. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-event\-storage\-event\-limit\fP="default=100000"
-    Max number of events to store (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is an integer. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-global\-housekeeping\-interval\fP=0
-    Interval between global housekeepings
+\fB\-\-flex\-volume\-plugin\-dir\fP="/usr/libexec/kubernetes/kubelet\-plugins/volume/exec/"
+    Full path of the directory in which the flex volume plugin should search for additional third party volume plugins.
 
 .PP
 \fB\-\-horizontal\-pod\-autoscaler\-sync\-period\fP=0
     The period for syncing the number of pods in horizontal pod autoscaler.
-
-.PP
-\fB\-\-housekeeping\-interval\fP=0
-    Interval between container housekeepings
 
 .PP
 \fB\-\-httptest.serve\fP=""
@@ -197,8 +161,8 @@ This command launches an instance of the Kubernetes controller\-manager (kube\-c
     Burst to use while talking with kubernetes apiserver
 
 .PP
-\fB\-\-kube\-api\-content\-type\fP=""
-    ContentType of requests sent to apiserver. Passing application/vnd.kubernetes.protobuf is an experimental feature now.
+\fB\-\-kube\-api\-content\-type\fP="application/vnd.kubernetes.protobuf"
+    Content type of requests sent to apiserver.
 
 .PP
 \fB\-\-kube\-api\-qps\fP=20
@@ -229,20 +193,12 @@ This command launches an instance of the Kubernetes controller\-manager (kube\-c
     when logging hits line file:N, emit a stack trace
 
 .PP
-\fB\-\-log\-cadvisor\-usage\fP=false
-    Whether to log the usage of the cAdvisor container
-
-.PP
 \fB\-\-log\-dir\fP=""
     If non\-empty, write log files in this directory
 
 .PP
 \fB\-\-logtostderr\fP=true
     log to standard error instead of files
-
-.PP
-\fB\-\-machine\-id\-file\fP="/etc/machine\-id,/var/lib/dbus/machine\-id"
-    Comma\-separated list of files to check for machine\-id. Use the first one that exists.
 
 .PP
 \fB\-\-master\fP=""
@@ -255,6 +211,10 @@ This command launches an instance of the Kubernetes controller\-manager (kube\-c
 .PP
 \fB\-\-namespace\-sync\-period\fP=0
     The period for syncing namespace life\-cycle updates
+
+.PP
+\fB\-\-node\-cidr\-mask\-size\fP=24
+    Mask size for node cidr in cluster.
 
 .PP
 \fB\-\-node\-monitor\-grace\-period\fP=0
@@ -337,40 +297,16 @@ This command launches an instance of the Kubernetes controller\-manager (kube\-c
     Filename containing a PEM\-encoded private RSA key used to sign service account tokens.
 
 .PP
+\fB\-\-service\-cluster\-ip\-range\fP=""
+    CIDR Range for Services in cluster.
+
+.PP
 \fB\-\-service\-sync\-period\fP=0
     The period for syncing services with their external load balancers
 
 .PP
 \fB\-\-stderrthreshold\fP=2
     logs at or above this threshold go to stderr
-
-.PP
-\fB\-\-storage\-driver\-buffer\-duration\fP=0
-    Writes in the storage driver will be buffered for this duration, and committed to the non memory backends as a single transaction
-
-.PP
-\fB\-\-storage\-driver\-db\fP="cadvisor"
-    database name
-
-.PP
-\fB\-\-storage\-driver\-host\fP="localhost:8086"
-    database host:port
-
-.PP
-\fB\-\-storage\-driver\-password\fP="root"
-    database password
-
-.PP
-\fB\-\-storage\-driver\-secure\fP=false
-    use secure connection with database
-
-.PP
-\fB\-\-storage\-driver\-table\fP="stats"
-    table name
-
-.PP
-\fB\-\-storage\-driver\-user\fP="root"
-    database username
 
 .PP
 \fB\-\-terminated\-pod\-gc\-threshold\fP=12500

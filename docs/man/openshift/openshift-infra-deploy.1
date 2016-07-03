@@ -22,13 +22,13 @@ use the \-\-until flag to run the deployment until you reach the specified condi
 
 .PP
 Available conditions:
-.IP \n+[step]
+.IP \n+[step]
 
 \item "start": after old deployments are scaled to zero
 \item "pre": after the pre hook completes (even if no hook specified)
 \item "mid": after the mid hook completes (even if no hook specified)
 \item A percentage of the deployment, based on which strategy is in use
-.IP \n+[step]
+.IP \n+[step]
 
 \item "0%"   Recreate after the previous deployment is scaled to zero
 \item "N%"   Recreate after the acceptance check if this is not the first deployment

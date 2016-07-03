@@ -24,7 +24,7 @@ foreground for an interactive container execution.  You may pass 'run/v1' to
 .SH OPTIONS
 .PP
 \fB\-\-attach\fP=false
-    If true, wait for the Pod to start running, and then attach to the Pod as if 'kubectl attach ...' were called.  Default false, unless '\-i/\-\-interactive' is set, in which case the default is true.
+    If true, wait for the Pod to start running, and then attach to the Pod as if 'kubectl attach ...' were called.  Default false, unless '\-i/\-\-stdin' is set, in which case the default is true.
 
 .PP
 \fB\-\-command\fP=false
@@ -106,7 +106,7 @@ foreground for an interactive container execution.  You may pass 'run/v1' to
 
 .PP
 \fB\-\-restart\fP="Always"
-    The restart policy for this Pod.  Legal values [Always, OnFailure, Never].  If set to 'Always' a deployment is created for this pod, if set to OnFailure or Never, a job is created for this pod and \-\-replicas must be 1.  Default 'Always'
+    The restart policy for this Pod.  Legal values [Always, OnFailure, Never].  If set to 'Always' a deployment is created for this pod, if set to 'OnFailure', a job is created for this pod, if set to 'Never', a regular pod is created. For the latter two \-\-replicas must be 1.  Default 'Always'
 
 .PP
 \fB\-\-rm\fP=false

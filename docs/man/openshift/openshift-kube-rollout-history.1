@@ -23,7 +23,7 @@ View previous rollout revisions and configurations.
 
 .PP
 \fB\-R\fP, \fB\-\-recursive\fP=false
-    If true, process directory recursively.
+    Process the directory used in \-f, \-\-filename recursively. Useful when you want to manage related manifests organized within the same directory.
 
 .PP
 \fB\-\-revision\fP=0
@@ -40,16 +40,8 @@ View previous rollout revisions and configurations.
     DEPRECATED: The API version to use when talking to the server
 
 .PP
-\fB\-\-application\-metrics\-count\-limit\fP=100
-    Max number of application metrics to store (per container)
-
-.PP
 \fB\-\-as\fP=""
     Username to impersonate for the operation.
-
-.PP
-\fB\-\-boot\-id\-file\fP="/proc/sys/kernel/random/boot\_id"
-    Comma\-separated list of files to check for boot\-id. Use the first one that exists.
 
 .PP
 \fB\-\-certificate\-authority\fP=""
@@ -72,56 +64,12 @@ View previous rollout revisions and configurations.
     Path to the config file to use for CLI requests.
 
 .PP
-\fB\-\-container\-hints\fP="/etc/cadvisor/container\_hints.json"
-    location of the container hints file
-
-.PP
 \fB\-\-context\fP=""
     The name of the kubeconfig context to use
 
 .PP
-\fB\-\-docker\fP="unix:///var/run/docker.sock"
-    docker endpoint
-
-.PP
-\fB\-\-docker\-env\-metadata\-whitelist\fP=""
-    a comma\-separated list of environment variable keys that needs to be collected for docker containers
-
-.PP
-\fB\-\-docker\-only\fP=false
-    Only report docker containers in addition to root stats
-
-.PP
-\fB\-\-docker\-root\fP="/var/lib/docker"
-    Absolute path to the Docker state root directory (default: /var/lib/docker)
-
-.PP
-\fB\-\-docker\-run\fP="/var/run/docker"
-    Absolute path to the Docker run directory (default: /var/run/docker)
-
-.PP
-\fB\-\-enable\-load\-reader\fP=false
-    Whether to enable cpu load reader
-
-.PP
-\fB\-\-event\-storage\-age\-limit\fP="default=24h"
-    Max length of time for which to store events (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is a duration. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-event\-storage\-event\-limit\fP="default=100000"
-    Max number of events to store (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is an integer. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-global\-housekeeping\-interval\fP=0
-    Interval between global housekeepings
-
-.PP
 \fB\-\-google\-json\-key\fP=""
     The Google Cloud Platform Service Account JSON Key to use for authentication.
-
-.PP
-\fB\-\-housekeeping\-interval\fP=0
-    Interval between container housekeepings
 
 .PP
 \fB\-\-httptest.serve\fP=""
@@ -172,10 +120,6 @@ View previous rollout revisions and configurations.
     when logging hits line file:N, emit a stack trace
 
 .PP
-\fB\-\-log\-cadvisor\-usage\fP=false
-    Whether to log the usage of the cAdvisor container
-
-.PP
 \fB\-\-log\-dir\fP=""
     If non\-empty, write log files in this directory
 
@@ -186,10 +130,6 @@ View previous rollout revisions and configurations.
 .PP
 \fB\-\-logtostderr\fP=true
     log to standard error instead of files
-
-.PP
-\fB\-\-machine\-id\-file\fP="/etc/machine\-id,/var/lib/dbus/machine\-id"
-    Comma\-separated list of files to check for machine\-id. Use the first one that exists.
 
 .PP
 \fB\-\-match\-server\-version\fP=false
@@ -206,34 +146,6 @@ View previous rollout revisions and configurations.
 .PP
 \fB\-\-stderrthreshold\fP=2
     logs at or above this threshold go to stderr
-
-.PP
-\fB\-\-storage\-driver\-buffer\-duration\fP=0
-    Writes in the storage driver will be buffered for this duration, and committed to the non memory backends as a single transaction
-
-.PP
-\fB\-\-storage\-driver\-db\fP="cadvisor"
-    database name
-
-.PP
-\fB\-\-storage\-driver\-host\fP="localhost:8086"
-    database host:port
-
-.PP
-\fB\-\-storage\-driver\-password\fP="root"
-    database password
-
-.PP
-\fB\-\-storage\-driver\-secure\fP=false
-    use secure connection with database
-
-.PP
-\fB\-\-storage\-driver\-table\fP="stats"
-    table name
-
-.PP
-\fB\-\-storage\-driver\-user\fP="root"
-    database username
 
 .PP
 \fB\-\-token\fP=""

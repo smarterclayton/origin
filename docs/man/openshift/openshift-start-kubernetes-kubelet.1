@@ -38,20 +38,12 @@ starting from a configuration file.
     List of Kubernetes API servers for publishing events, and reading pods and services. (ip:port), comma separated.
 
 .PP
-\fB\-\-application\-metrics\-count\-limit\fP=100
-    Max number of application metrics to store (per container)
-
-.PP
 \fB\-\-auth\-path\fP="/var/lib/kubelet/kubernetes\_auth"
     Path to .kubernetes\_auth file, specifying how to authenticate to API server.
 
 .PP
 \fB\-\-babysit\-daemons\fP=false
     If true, the node has babysitter process monitoring docker and kubelet.
-
-.PP
-\fB\-\-boot\-id\-file\fP="/proc/sys/kernel/random/boot\_id"
-    Comma\-separated list of files to check for boot\-id. Use the first one that exists.
 
 .PP
 \fB\-\-cadvisor\-port\fP=4194
@@ -94,10 +86,6 @@ starting from a configuration file.
     If true, kubelet will configure cbr0 based on Node.Spec.PodCIDR.
 
 .PP
-\fB\-\-container\-hints\fP="/etc/cadvisor/container\_hints.json"
-    location of the container hints file
-
-.PP
 \fB\-\-container\-runtime\fP="docker"
     The container runtime to use. Possible values: 'docker', 'rkt'. Default: 'docker'.
 
@@ -110,32 +98,16 @@ starting from a configuration file.
     Enable CPU CFS quota enforcement for containers that specify CPU limits
 
 .PP
-\fB\-\-docker\fP="unix:///var/run/docker.sock"
-    docker endpoint
-
-.PP
 \fB\-\-docker\-endpoint\fP=""
     If non\-empty, use this for the docker endpoint to communicate with
-
-.PP
-\fB\-\-docker\-env\-metadata\-whitelist\fP=""
-    a comma\-separated list of environment variable keys that needs to be collected for docker containers
 
 .PP
 \fB\-\-docker\-exec\-handler\fP="native"
     Handler to use when executing a command in a container. Valid values are 'native' and 'nsenter'. Defaults to 'native'.
 
 .PP
-\fB\-\-docker\-only\fP=false
-    Only report docker containers in addition to root stats
-
-.PP
-\fB\-\-docker\-root\fP="/var/lib/docker"
-    Absolute path to the Docker state root directory (default: /var/lib/docker)
-
-.PP
-\fB\-\-docker\-run\fP="/var/run/docker"
-    Absolute path to the Docker run directory (default: /var/run/docker)
+\fB\-\-enable\-controller\-attach\-detach\fP=true
+    Enables the Attach/Detach controller to manage attachment/detachment of volumes scheduled to this node, and disables kubelet from executing any attach/detach operations
 
 .PP
 \fB\-\-enable\-custom\-metrics\fP=false
@@ -144,10 +116,6 @@ starting from a configuration file.
 .PP
 \fB\-\-enable\-debugging\-handlers\fP=true
     Enables server endpoints for log collection and local running of containers and commands
-
-.PP
-\fB\-\-enable\-load\-reader\fP=false
-    Whether to enable cpu load reader
 
 .PP
 \fB\-\-enable\-server\fP=true
@@ -162,16 +130,16 @@ starting from a configuration file.
     If > 0, limit event creations per second to this value. If 0, unlimited.
 
 .PP
-\fB\-\-event\-storage\-age\-limit\fP="default=24h"
-    Max length of time for which to store events (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is a duration. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-event\-storage\-event\-limit\fP="default=100000"
-    Max number of events to store (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is an integer. Default is applied to all non\-specified event types
-
-.PP
 \fB\-\-eviction\-hard\fP=""
     A set of eviction thresholds (e.g. memory.available<1Gi) that if met would trigger a pod eviction.
+
+.PP
+\fB\-\-eviction\-max\-pod\-grace\-period\fP=0
+    Maximum allowed grace period (in seconds) to use when terminating pods in response to a soft eviction threshold being met.  If negative, defer to pod specified value.
+
+.PP
+\fB\-\-eviction\-pressure\-transition\-period\fP=0
+    Duration for which the kubelet has to wait before transitioning out of an eviction pressure condition.
 
 .PP
 \fB\-\-eviction\-soft\fP=""
@@ -182,16 +150,20 @@ starting from a configuration file.
     A set of eviction grace periods (e.g. memory.available=1m30s) that correspond to how long a soft eviction threshold must hold before triggering a pod eviction.
 
 .PP
+\fB\-\-exit\-on\-lock\-contention\fP=false
+    Whether kubelet should exit upon lock\-file contention.
+
+.PP
 \fB\-\-experimental\-flannel\-overlay\fP=false
     Experimental support for starting the kubelet with the default overlay network (flannel). Assumes flanneld is already running in client mode. [default=false]
 
 .PP
-\fB\-\-file\-check\-frequency\fP=0
-    Duration between checking config files for new data
+\fB\-\-experimental\-nvidia\-gpus\fP=0
+    Number of NVIDIA GPU devices on this node. Only 0 (default) and 1 are currently supported.
 
 .PP
-\fB\-\-global\-housekeeping\-interval\fP=0
-    Interval between global housekeepings
+\fB\-\-file\-check\-frequency\fP=0
+    Duration between checking config files for new data
 
 .PP
 \fB\-\-hairpin\-mode\fP="promiscuous\-bridge"
@@ -220,10 +192,6 @@ starting from a configuration file.
 .PP
 \fB\-\-hostname\-override\fP=""
     If non\-empty, will use this string as identification instead of the actual hostname.
-
-.PP
-\fB\-\-housekeeping\-interval\fP=0
-    Interval between container housekeepings
 
 .PP
 \fB\-\-http\-check\-frequency\fP=0
@@ -278,8 +246,8 @@ starting from a configuration file.
     Burst to use while talking with kubernetes apiserver
 
 .PP
-\fB\-\-kube\-api\-content\-type\fP=""
-    ContentType of requests sent to apiserver. Passing application/vnd.kubernetes.protobuf is an experimental feature now.
+\fB\-\-kube\-api\-content\-type\fP="application/vnd.kubernetes.protobuf"
+    Content type of requests sent to apiserver.
 
 .PP
 \fB\-\-kube\-api\-qps\fP=5
@@ -307,10 +275,6 @@ starting from a configuration file.
     when logging hits line file:N, emit a stack trace
 
 .PP
-\fB\-\-log\-cadvisor\-usage\fP=false
-    Whether to log the usage of the cAdvisor container
-
-.PP
 \fB\-\-log\-dir\fP=""
     If non\-empty, write log files in this directory
 
@@ -321,10 +285,6 @@ starting from a configuration file.
 .PP
 \fB\-\-low\-diskspace\-threshold\-mb\fP=256
     The absolute free disk space, in MB, to maintain. When disk space falls below this threshold, new pods would be rejected. Default: 256
-
-.PP
-\fB\-\-machine\-id\-file\fP="/etc/machine\-id,/var/lib/dbus/machine\-id"
-    Comma\-separated list of files to check for machine\-id. Use the first one that exists.
 
 .PP
 \fB\-\-manifest\-url\fP=""
@@ -403,6 +363,10 @@ starting from a configuration file.
     The image whose network/ipc namespaces containers in each pod will use.
 
 .PP
+\fB\-\-pods\-per\-core\fP=0
+    Number of Pods per core that can run on this Kubelet. The total number of Pods on this Kubelet cannot exceed max\-pods, so max\-pods will be used if this calculation results in a larger number of Pods allowed on the Kubelet. A value of 0 disables this limit.
+
+.PP
 \fB\-\-port\fP=10250
     The port for the Kubelet to serve on.
 
@@ -467,40 +431,20 @@ starting from a configuration file.
     Optional absolute name of cgroups to create and run the runtime in.
 
 .PP
+\fB\-\-runtime\-request\-timeout\fP=0
+    Timeout of all runtime requests except long running request \- pull, logs, exec and attach. When timeout exceeded, kubelet will cancel the request, throw out an error and retry later. Default: 2m0s
+
+.PP
+\fB\-\-seccomp\-profile\-root\fP="/var/lib/kubelet/seccomp"
+    Directory path for seccomp profiles.
+
+.PP
 \fB\-\-serialize\-image\-pulls\fP=true
     Pull images one at a time. We recommend \fInot\fP changing the default value on nodes that run docker daemon with version < 1.9 or an Aufs storage backend. Issue #10959 has more details. [default=true]
 
 .PP
 \fB\-\-stderrthreshold\fP=2
     logs at or above this threshold go to stderr
-
-.PP
-\fB\-\-storage\-driver\-buffer\-duration\fP=0
-    Writes in the storage driver will be buffered for this duration, and committed to the non memory backends as a single transaction
-
-.PP
-\fB\-\-storage\-driver\-db\fP="cadvisor"
-    database name
-
-.PP
-\fB\-\-storage\-driver\-host\fP="localhost:8086"
-    database host:port
-
-.PP
-\fB\-\-storage\-driver\-password\fP="root"
-    database password
-
-.PP
-\fB\-\-storage\-driver\-secure\fP=false
-    use secure connection with database
-
-.PP
-\fB\-\-storage\-driver\-table\fP="stats"
-    table name
-
-.PP
-\fB\-\-storage\-driver\-user\fP="root"
-    database username
 
 .PP
 \fB\-\-streaming\-connection\-idle\-timeout\fP=0

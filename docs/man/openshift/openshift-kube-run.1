@@ -20,7 +20,7 @@ Creates a deployment or job to manage the created container(s).
 .SH OPTIONS
 .PP
 \fB\-\-attach\fP=false
-    If true, wait for the Pod to start running, and then attach to the Pod as if 'kubectl attach ...' were called.  Default false, unless '\-i/\-\-interactive' is set, in which case the default is true.
+    If true, wait for the Pod to start running, and then attach to the Pod as if 'kubectl attach ...' were called.  Default false, unless '\-i/\-\-stdin' is set, in which case the default is true.
 
 .PP
 \fB\-\-command\fP=false
@@ -40,7 +40,7 @@ Creates a deployment or job to manage the created container(s).
 
 .PP
 \fB\-\-generator\fP=""
-    The name of the API generator to use.  Default is 'deployment/v1beta1' if \-\-restart=Always, otherwise the default is 'job/v1'.  This will happen only for cluster version at least 1.2, for olders we will fallback to 'run/v1' for \-\-restart=Always, 'run\-pod/v1' for others.
+    The name of the API generator to use.  Default is 'deployment/v1beta1' if \-\-restart=Always, 'job/v1' for OnFailure and 'run\-pod/v1' for Never.  This will happen only for cluster version at least 1.3, for 1.2 we will fallback to 'deployment/v1beta1' for \-\-restart=Always, 'job/v1' for others, for olders we will fallback to 'run/v1' for \-\-restart=Always, 'run\-pod/v1' for others.
 
 .PP
 \fB\-\-hostport\fP=\-1
@@ -102,7 +102,7 @@ Creates a deployment or job to manage the created container(s).
 
 .PP
 \fB\-\-restart\fP="Always"
-    The restart policy for this Pod.  Legal values [Always, OnFailure, Never].  If set to 'Always' a deployment is created for this pod, if set to OnFailure or Never, a job is created for this pod and \-\-replicas must be 1.  Default 'Always'
+    The restart policy for this Pod.  Legal values [Always, OnFailure, Never].  If set to 'Always' a deployment is created for this pod, if set to 'OnFailure', a job is created for this pod, if set to 'Never', a regular pod is created. For the latter two \-\-replicas must be 1.  Default 'Always'
 
 .PP
 \fB\-\-rm\fP=false
@@ -156,16 +156,8 @@ Creates a deployment or job to manage the created container(s).
     DEPRECATED: The API version to use when talking to the server
 
 .PP
-\fB\-\-application\-metrics\-count\-limit\fP=100
-    Max number of application metrics to store (per container)
-
-.PP
 \fB\-\-as\fP=""
     Username to impersonate for the operation.
-
-.PP
-\fB\-\-boot\-id\-file\fP="/proc/sys/kernel/random/boot\_id"
-    Comma\-separated list of files to check for boot\-id. Use the first one that exists.
 
 .PP
 \fB\-\-certificate\-authority\fP=""
@@ -188,56 +180,12 @@ Creates a deployment or job to manage the created container(s).
     Path to the config file to use for CLI requests.
 
 .PP
-\fB\-\-container\-hints\fP="/etc/cadvisor/container\_hints.json"
-    location of the container hints file
-
-.PP
 \fB\-\-context\fP=""
     The name of the kubeconfig context to use
 
 .PP
-\fB\-\-docker\fP="unix:///var/run/docker.sock"
-    docker endpoint
-
-.PP
-\fB\-\-docker\-env\-metadata\-whitelist\fP=""
-    a comma\-separated list of environment variable keys that needs to be collected for docker containers
-
-.PP
-\fB\-\-docker\-only\fP=false
-    Only report docker containers in addition to root stats
-
-.PP
-\fB\-\-docker\-root\fP="/var/lib/docker"
-    Absolute path to the Docker state root directory (default: /var/lib/docker)
-
-.PP
-\fB\-\-docker\-run\fP="/var/run/docker"
-    Absolute path to the Docker run directory (default: /var/run/docker)
-
-.PP
-\fB\-\-enable\-load\-reader\fP=false
-    Whether to enable cpu load reader
-
-.PP
-\fB\-\-event\-storage\-age\-limit\fP="default=24h"
-    Max length of time for which to store events (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is a duration. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-event\-storage\-event\-limit\fP="default=100000"
-    Max number of events to store (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is an integer. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-global\-housekeeping\-interval\fP=0
-    Interval between global housekeepings
-
-.PP
 \fB\-\-google\-json\-key\fP=""
     The Google Cloud Platform Service Account JSON Key to use for authentication.
-
-.PP
-\fB\-\-housekeeping\-interval\fP=0
-    Interval between container housekeepings
 
 .PP
 \fB\-\-httptest.serve\fP=""
@@ -288,10 +236,6 @@ Creates a deployment or job to manage the created container(s).
     when logging hits line file:N, emit a stack trace
 
 .PP
-\fB\-\-log\-cadvisor\-usage\fP=false
-    Whether to log the usage of the cAdvisor container
-
-.PP
 \fB\-\-log\-dir\fP=""
     If non\-empty, write log files in this directory
 
@@ -302,10 +246,6 @@ Creates a deployment or job to manage the created container(s).
 .PP
 \fB\-\-logtostderr\fP=true
     log to standard error instead of files
-
-.PP
-\fB\-\-machine\-id\-file\fP="/etc/machine\-id,/var/lib/dbus/machine\-id"
-    Comma\-separated list of files to check for machine\-id. Use the first one that exists.
 
 .PP
 \fB\-\-match\-server\-version\fP=false
@@ -322,34 +262,6 @@ Creates a deployment or job to manage the created container(s).
 .PP
 \fB\-\-stderrthreshold\fP=2
     logs at or above this threshold go to stderr
-
-.PP
-\fB\-\-storage\-driver\-buffer\-duration\fP=0
-    Writes in the storage driver will be buffered for this duration, and committed to the non memory backends as a single transaction
-
-.PP
-\fB\-\-storage\-driver\-db\fP="cadvisor"
-    database name
-
-.PP
-\fB\-\-storage\-driver\-host\fP="localhost:8086"
-    database host:port
-
-.PP
-\fB\-\-storage\-driver\-password\fP="root"
-    database password
-
-.PP
-\fB\-\-storage\-driver\-secure\fP=false
-    use secure connection with database
-
-.PP
-\fB\-\-storage\-driver\-table\fP="stats"
-    table name
-
-.PP
-\fB\-\-storage\-driver\-user\fP="root"
-    database username
 
 .PP
 \fB\-\-token\fP=""
@@ -391,7 +303,7 @@ kubectl run nginx \-\-image=nginx \-\-dry\-run
 # Start a single instance of nginx, but overload the spec of the deployment with a partial set of values parsed from JSON.
 kubectl run nginx \-\-image=nginx \-\-overrides='{ "apiVersion": "v1", "spec": { ... } }'
 
-# Start a single instance of busybox and keep it in the foreground, don't restart it if it exits.
+# Start a pod of busybox and keep it in the foreground, don't restart it if it exits.
 kubectl run \-i \-t busybox \-\-image=busybox \-\-restart=Never
 
 # Start the nginx container using the default command, but use custom arguments (arg1 .. argN) for that command.

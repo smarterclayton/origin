@@ -26,7 +26,7 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
 
 .PP
 \fB\-\-admission\-control\fP="AlwaysAdmit"
-    Ordered list of plug\-ins to do admission control of resources into cluster. Comma\-delimited list of: AlwaysAdmit, AlwaysDeny, AlwaysPullImages, BuildByStrategy, BuildDefaults, BuildOverrides, ClusterResourceOverride, DenyEscalatingExec, DenyExecOnPrivileged, ExternalIPRanger, ImageLimitRange, InitialResources, JenkinsBootstrapper, LimitPodHardAntiAffinityTopology, LimitRanger, NamespaceAutoProvision, NamespaceExists, NamespaceLifecycle, OriginNamespaceLifecycle, OriginPodNodeEnvironment, OriginResourceQuota, PersistentVolumeLabel, PodNodeConstraints, ProjectRequestLimit, ResourceQuota, RunOnceDuration, SCCExecRestrictions, SecurityContextConstraint, SecurityContextDeny, ServiceAccount
+    Ordered list of plug\-ins to do admission control of resources into cluster. Comma\-delimited list of: AlwaysAdmit, AlwaysDeny, AlwaysPullImages, BuildByStrategy, BuildDefaults, BuildOverrides, ClusterResourceOverride, DenyEscalatingExec, DenyExecOnPrivileged, ExternalIPRanger, ImageLimitRange, InitialResources, JenkinsBootstrapper, LimitPodHardAntiAffinityTopology, LimitRanger, NamespaceAutoProvision, NamespaceExists, NamespaceLifecycle, OriginNamespaceLifecycle, OriginPodNodeEnvironment, OriginResourceQuota, PersistentVolumeLabel, PodNodeConstraints, PodSecurityPolicy, ProjectRequestLimit, ResourceQuota, RunOnceDuration, SCCExecRestrictions, SecurityContextConstraint, SecurityContextDeny, ServiceAccount
 
 .PP
 \fB\-\-admission\-control\-config\-file\fP=""
@@ -49,16 +49,32 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
     The number of apiservers running in the cluster
 
 .PP
-\fB\-\-application\-metrics\-count\-limit\fP=100
-    Max number of application metrics to store (per container)
+\fB\-\-authentication\-token\-webhook\-cache\-ttl\fP=0
+    The duration to cache responses from the webhook token authenticator. Default is 2m
+
+.PP
+\fB\-\-authentication\-token\-webhook\-config\-file\fP=""
+    File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
 
 .PP
 \fB\-\-authorization\-mode\fP="AlwaysAllow"
-    Ordered list of plug\-ins to do authorization on secure port. Comma\-delimited list of: AlwaysAllow,AlwaysDeny,ABAC,Webhook
+    Ordered list of plug\-ins to do authorization on secure port. Comma\-delimited list of: AlwaysAllow,AlwaysDeny,ABAC,Webhook,RBAC
 
 .PP
 \fB\-\-authorization\-policy\-file\fP=""
     File with authorization policy in csv format, used with \-\-authorization\-mode=ABAC, on the secure port.
+
+.PP
+\fB\-\-authorization\-rbac\-super\-user\fP=""
+    If specified, a username which avoids RBAC authorization checks and role binding privilege escalation checks, to be used with \-\-authorization\-mode=RBAC.
+
+.PP
+\fB\-\-authorization\-webhook\-cache\-authorized\-ttl\fP=0
+    The duration to cache 'authorized' responses from the webhook authorizer. Default is 5m.
+
+.PP
+\fB\-\-authorization\-webhook\-cache\-unauthorized\-ttl\fP=0
+    The duration to cache 'unauthorized' responses from the webhook authorizer. Default is 30s.
 
 .PP
 \fB\-\-authorization\-webhook\-config\-file\fP=""
@@ -71,10 +87,6 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
 .PP
 \fB\-\-bind\-address\fP=0.0.0.0
     The IP address on which to listen for the \-\-secure\-port port. The associated interface(s) must be reachable by the rest of the cluster, and by CLI/web clients. If blank, all interfaces will be used (0.0.0.0).
-
-.PP
-\fB\-\-boot\-id\-file\fP="/proc/sys/kernel/random/boot\_id"
-    Comma\-separated list of files to check for boot\-id. Use the first one that exists.
 
 .PP
 \fB\-\-cert\-dir\fP="/var/run/kubernetes"
@@ -93,10 +105,6 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
     The provider for cloud services.  Empty string for no provider.
 
 .PP
-\fB\-\-container\-hints\fP="/etc/cadvisor/container\_hints.json"
-    location of the container hints file
-
-.PP
 \fB\-\-cors\-allowed\-origins\fP=[]
     List of allowed origins for CORS, comma separated.  An allowed origin can be a regular expression to support subdomain matching.  If this list is empty CORS will not be enabled.
 
@@ -109,28 +117,8 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
     Number of deserialized json objects to cache in memory.
 
 .PP
-\fB\-\-docker\fP="unix:///var/run/docker.sock"
-    docker endpoint
-
-.PP
-\fB\-\-docker\-env\-metadata\-whitelist\fP=""
-    a comma\-separated list of environment variable keys that needs to be collected for docker containers
-
-.PP
-\fB\-\-docker\-only\fP=false
-    Only report docker containers in addition to root stats
-
-.PP
-\fB\-\-docker\-root\fP="/var/lib/docker"
-    Absolute path to the Docker state root directory (default: /var/lib/docker)
-
-.PP
-\fB\-\-docker\-run\fP="/var/run/docker"
-    Absolute path to the Docker run directory (default: /var/run/docker)
-
-.PP
-\fB\-\-enable\-load\-reader\fP=false
-    Whether to enable cpu load reader
+\fB\-\-enable\-garbage\-collector\fP=false
+    Enables the generic garbage collector. MUST be synced with the corresponding flag of the kube\-controller\-manager.
 
 .PP
 \fB\-\-enable\-swagger\-ui\fP=false
@@ -167,14 +155,6 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
 \[la]http://ip:port\[ra], semicolon separated.
 
 .PP
-\fB\-\-event\-storage\-age\-limit\fP="default=24h"
-    Max length of time for which to store events (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is a duration. Default is applied to all non\-specified event types
-
-.PP
-\fB\-\-event\-storage\-event\-limit\fP="default=100000"
-    Max number of events to store (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is an integer. Default is applied to all non\-specified event types
-
-.PP
 \fB\-\-event\-ttl\fP=0
     Amount of time to retain events. Default 1 hour.
 
@@ -185,14 +165,6 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
 .PP
 \fB\-\-external\-hostname\fP=""
     The hostname to use when generating externalized URLs for this master (e.g. Swagger API Docs.)
-
-.PP
-\fB\-\-global\-housekeeping\-interval\fP=0
-    Interval between global housekeepings
-
-.PP
-\fB\-\-housekeeping\-interval\fP=0
-    Interval between container housekeepings
 
 .PP
 \fB\-\-httptest.serve\fP=""
@@ -271,10 +243,6 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
     when logging hits line file:N, emit a stack trace
 
 .PP
-\fB\-\-log\-cadvisor\-usage\fP=false
-    Whether to log the usage of the cAdvisor container
-
-.PP
 \fB\-\-log\-dir\fP=""
     If non\-empty, write log files in this directory
 
@@ -285,10 +253,6 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
 .PP
 \fB\-\-long\-running\-request\-regexp\fP="(/|^)((watch|proxy)(/|$)|(logs?|portforward|exec|attach)/?$)"
     A regular expression matching long running requests which should be excluded from maximum inflight request handling.
-
-.PP
-\fB\-\-machine\-id\-file\fP="/etc/machine\-id,/var/lib/dbus/machine\-id"
-    Comma\-separated list of files to check for machine\-id. Use the first one that exists.
 
 .PP
 \fB\-\-master\-service\-namespace\fP="default"
@@ -391,34 +355,6 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
     The storage backend for persistence. Options: 'etcd2' (default), 'etcd3'.
 
 .PP
-\fB\-\-storage\-driver\-buffer\-duration\fP=0
-    Writes in the storage driver will be buffered for this duration, and committed to the non memory backends as a single transaction
-
-.PP
-\fB\-\-storage\-driver\-db\fP="cadvisor"
-    database name
-
-.PP
-\fB\-\-storage\-driver\-host\fP="localhost:8086"
-    database host:port
-
-.PP
-\fB\-\-storage\-driver\-password\fP="root"
-    database password
-
-.PP
-\fB\-\-storage\-driver\-secure\fP=false
-    use secure connection with database
-
-.PP
-\fB\-\-storage\-driver\-table\fP="stats"
-    table name
-
-.PP
-\fB\-\-storage\-driver\-user\fP="root"
-    database username
-
-.PP
 \fB\-\-storage\-media\-type\fP="application/json"
     The media type to use to store objects in storage. Defaults to application/json. Some resources may only support a specific media type and will ignore this setting.
 
@@ -427,7 +363,7 @@ This command launches an instance of the Kubernetes apiserver (kube\-apiserver).
     The version to store the legacy v1 resources with. Defaults to server preferred
 
 .PP
-\fB\-\-storage\-versions\fP="apps/v1alpha1,authorization.k8s.io/v1beta1,autoscaling/v1,batch/v1,componentconfig/v1alpha1,extensions/v1beta1,metrics/v1alpha1,policy/v1alpha1,v1"
+\fB\-\-storage\-versions\fP="apps/v1alpha1,authentication.k8s.io/v1beta1,authorization.k8s.io/v1beta1,autoscaling/v1,batch/v1,componentconfig/v1alpha1,extensions/v1beta1,federation/v1alpha1,policy/v1alpha1,rbac.authorization.k8s.io/v1alpha1,v1"
     The per\-group version to store resources in. Specified in the format "group1/version1,group2/version2,...". In the case where objects are moved from one group to the other, you may specify the format "group1=group2/v1beta1,group3/v1beta1,...". You only need to pass the groups you wish to change from the defaults. It defaults to a list of preferred versions of all registered groups, which is derived from the KUBE\_API\_VERSIONS environment variable.
 
 .PP
