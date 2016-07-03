@@ -65,6 +65,159 @@ func (f *podInformer) Lister() *cache.StoreToPodLister {
 	return &cache.StoreToPodLister{Indexer: informer.GetIndexer()}
 }
 
+type NodeInformer interface {
+	Informer() framework.SharedIndexInformer
+	Indexer() cache.Indexer
+	Lister() *cache.StoreToNodeLister
+}
+
+type nodeInformer struct {
+	*sharedInformerFactory
+}
+
+func (f *nodeInformer) Informer() framework.SharedIndexInformer {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+
+	informerObj := &kapi.Pod{}
+	informerType := reflect.TypeOf(informerObj)
+	informer, exists := f.informers[informerType]
+	if exists {
+		return informer
+	}
+
+	lw := f.customListerWatchers.GetListerWatcher(kapi.Resource("nodes"))
+	if lw == nil {
+		lw = &cache.ListWatch{
+			ListFunc: func(options kapi.ListOptions) (runtime.Object, error) {
+				return f.kubeClient.Nodes().List(options)
+			},
+			WatchFunc: func(options kapi.ListOptions) (watch.Interface, error) {
+				return f.kubeClient.Nodes().Watch(options)
+			},
+		}
+
+	}
+
+	informer = framework.NewSharedIndexInformer(
+		lw,
+		informerObj,
+		f.defaultResync,
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	)
+	f.informers[informerType] = informer
+
+	return informer
+}
+
+func (f *nodeInformer) Indexer() cache.Indexer {
+	informer := f.Informer()
+	return informer.GetIndexer()
+}
+
+func (f *nodeInformer) Lister() *cache.StoreToNodeLister {
+	informer := f.Informer()
+	return &cache.StoreToNodeLister{Store: informer.GetStore()}
+}
+
+type PersistentVolumeInformer interface {
+	Informer() framework.SharedIndexInformer
+	Indexer() cache.Indexer
+}
+
+type persistentVolumeInformer struct {
+	*sharedInformerFactory
+}
+
+func (f *persistentVolumeInformer) Informer() framework.SharedIndexInformer {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+
+	informerObj := &kapi.Pod{}
+	informerType := reflect.TypeOf(informerObj)
+	informer, exists := f.informers[informerType]
+	if exists {
+		return informer
+	}
+
+	lw := f.customListerWatchers.GetListerWatcher(kapi.Resource("persistentVolumes"))
+	if lw == nil {
+		lw = &cache.ListWatch{
+			ListFunc: func(options kapi.ListOptions) (runtime.Object, error) {
+				return f.kubeClient.PersistentVolumes().List(options)
+			},
+			WatchFunc: func(options kapi.ListOptions) (watch.Interface, error) {
+				return f.kubeClient.PersistentVolumes().Watch(options)
+			},
+		}
+
+	}
+
+	informer = framework.NewSharedIndexInformer(
+		lw,
+		informerObj,
+		f.defaultResync,
+		cache.Indexers{},
+	)
+	f.informers[informerType] = informer
+
+	return informer
+}
+
+func (f *persistentVolumeInformer) Indexer() cache.Indexer {
+	informer := f.Informer()
+	return informer.GetIndexer()
+}
+
+type PersistentVolumeClaimInformer interface {
+	Informer() framework.SharedIndexInformer
+	Indexer() cache.Indexer
+}
+
+type persistentVolumeClaimInformer struct {
+	*sharedInformerFactory
+}
+
+func (f *persistentVolumeClaimInformer) Informer() framework.SharedIndexInformer {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+
+	informerObj := &kapi.Pod{}
+	informerType := reflect.TypeOf(informerObj)
+	informer, exists := f.informers[informerType]
+	if exists {
+		return informer
+	}
+
+	lw := f.customListerWatchers.GetListerWatcher(kapi.Resource("persistentVolumeClaims"))
+	if lw == nil {
+		lw = &cache.ListWatch{
+			ListFunc: func(options kapi.ListOptions) (runtime.Object, error) {
+				return f.kubeClient.PersistentVolumeClaims(kapi.NamespaceAll).List(options)
+			},
+			WatchFunc: func(options kapi.ListOptions) (watch.Interface, error) {
+				return f.kubeClient.PersistentVolumeClaims(kapi.NamespaceAll).Watch(options)
+			},
+		}
+
+	}
+
+	informer = framework.NewSharedIndexInformer(
+		lw,
+		informerObj,
+		f.defaultResync,
+		cache.Indexers{},
+	)
+	f.informers[informerType] = informer
+
+	return informer
+}
+
+func (f *persistentVolumeClaimInformer) Indexer() cache.Indexer {
+	informer := f.Informer()
+	return informer.GetIndexer()
+}
+
 type ReplicationControllerInformer interface {
 	Informer() framework.SharedIndexInformer
 	Indexer() cache.Indexer
