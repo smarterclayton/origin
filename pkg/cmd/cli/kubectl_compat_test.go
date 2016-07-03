@@ -20,10 +20,13 @@ var MissingCommands = sets.NewString(
 	"namespace", "rolling-update",
 	"cluster-info", "api-versions",
 	"stop",
+	"rollout",
+
+	// are on admin commands
 	"cordon",
 	"drain",
 	"uncordon",
-	"rollout",
+	"taint",
 )
 
 // WhitelistedCommands is the list of commands we're never going to have in oc
