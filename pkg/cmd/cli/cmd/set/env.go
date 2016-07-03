@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/kubectl"
 	kcmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
@@ -160,7 +161,11 @@ func RunEnv(f *clientcmd.Factory, in io.Reader, out io.Writer, cmd *cobra.Comman
 	}
 	// Keep a copy of the original objects prior to updating their environment.
 	// Used in constructing the patch(es) that will be applied in the server.
-	oldObjects, err := resource.AsVersionedObjects(infos, clientConfig.GroupVersion.String(), kapi.Codecs.LegacyCodec(*clientConfig.GroupVersion))
+	var gv unversioned.GroupVersion
+	if clientConfig.GroupVersion != nil {
+		gv = *clientConfig.GroupVersion
+	}
+	oldObjects, err := resource.AsVersionedObjects(infos, gv, kapi.Codecs.LegacyCodec(*clientConfig.GroupVersion))
 	if err != nil {
 		return err
 	}
@@ -256,7 +261,7 @@ func RunEnv(f *clientcmd.Factory, in io.Reader, out io.Writer, cmd *cobra.Comman
 		if err != nil {
 			return err
 		}
-		objects, err := resource.AsVersionedObjects(infos, outputVersion.String(), kapi.Codecs.LegacyCodec(outputVersion))
+		objects, err := resource.AsVersionedObjects(infos, outputVersion, kapi.Codecs.LegacyCodec(outputVersion))
 		if err != nil {
 			return err
 		}
@@ -275,7 +280,7 @@ func RunEnv(f *clientcmd.Factory, in io.Reader, out io.Writer, cmd *cobra.Comman
 		return nil
 	}
 
-	objects, err := resource.AsVersionedObjects(infos, clientConfig.GroupVersion.String(), kapi.Codecs.LegacyCodec(*clientConfig.GroupVersion))
+	objects, err := resource.AsVersionedObjects(infos, gv, kapi.Codecs.LegacyCodec(*clientConfig.GroupVersion))
 	if err != nil {
 		return err
 	}
