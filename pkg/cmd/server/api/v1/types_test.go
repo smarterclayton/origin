@@ -599,7 +599,7 @@ volumeConfig:
 			t.Errorf("Error reading yaml: %s", err.Error())
 		}
 		if test.expected == "" && nodeConfig.VolumeConfig.LocalQuota.PerFSGroup != nil {
-			t.Errorf("Expected empty quota but got: %s", *nodeConfig.VolumeConfig.LocalQuota.PerFSGroup)
+			t.Errorf("Expected empty quota but got: %v", nodeConfig.VolumeConfig.LocalQuota.PerFSGroup)
 		}
 		if test.expected != "" {
 			if nodeConfig.VolumeConfig.LocalQuota.PerFSGroup == nil {
