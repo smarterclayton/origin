@@ -33,6 +33,14 @@ all build:
 	hack/build-go.sh $(WHAT)
 .PHONY: all build
 
+# Build the test binaries.
+#
+# Example:
+#   make build-tests
+build-tests:
+	hack/build-go.sh test/extended/extended.test test/extended/networking/extended.test test/integration/integration.test -tags='integration docker'
+.PHONY: build-tests
+
 # Run core verification and all self contained tests.
 #
 # Example:
@@ -46,8 +54,7 @@ check: | build verify
 #
 # Example:
 #   make verify
-verify: build
-	hack/build-go.sh test/extended/extended.test test/extended/networking/extended.test test/integration/integration.test -tags='integration docker'
+verify: build build-tests
 	hack/verify-upstream-commits.sh
 	hack/verify-gofmt.sh
 	hack/verify-govet.sh
