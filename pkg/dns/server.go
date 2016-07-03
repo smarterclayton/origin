@@ -45,7 +45,7 @@ func (s *Server) ListenAndServe() error {
 	resolver := NewServiceResolver(s.Config, s.Services, s.Endpoints, openshiftFallback)
 	resolvers := server.FirstBackend{resolver}
 	if len(s.MetricsName) > 0 {
-		metrics.RegisterMetrics(s.MetricsName, "")
+		metrics.RegisterPrometheusMetrics(s.MetricsName, "")
 	}
 	dns := server.New(resolvers, s.Config)
 	if s.Stop != nil {
