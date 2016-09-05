@@ -516,6 +516,13 @@ func init() {
 					Verbs:     sets.NewString("create", "update", "patch"),
 					Resources: sets.NewString("events"),
 				},
+				// PersistentVolumeBinder.findProvisionablePlugin()
+				{
+					// TODO: will be moving to its own group
+					APIGroups: []string{extensions.GroupName},
+					Verbs:     sets.NewString("list", "watch"),
+					Resources: sets.NewString("storageclasses"),
+				},
 			},
 		},
 	)
