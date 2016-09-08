@@ -8,6 +8,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/autoscaling"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
@@ -33,6 +34,7 @@ var (
 	autoscalingGroup = autoscaling.GroupName
 	batchGroup       = batch.GroupName
 	extensionsGroup  = extensions.GroupName
+	policyGroup      = policy.GroupName
 	authzGroup       = authorizationapi.GroupName
 	buildGroup       = buildapi.GroupName
 	deployGroup      = deployapi.GroupName
@@ -121,6 +123,8 @@ func GetBootstrapClusterRoles() []authorizationapi.ClusterRole {
 					"deployments/status", "horizontalpodautoscalers", "horizontalpodautoscalers/status", "ingresses", "ingresses/status", "jobs", "jobs/status",
 					"networkpolicies", "podsecuritypolicies", "replicasets", "replicasets/scale", "replicasets/status", "replicationcontrollers",
 					"replicationcontrollers/scale", "storageclasses", "thirdpartyresources").RuleOrDie(),
+
+				authorizationapi.NewRule(read...).Groups(policyGroup).Resources("poddisruptionbudgets").RuleOrDie(),
 
 				authorizationapi.NewRule(read...).Groups(authzGroup).Resources("clusterpolicies", "clusterpolicybindings", "clusterroles", "clusterrolebindings",
 					"policies", "policybindings", "roles", "rolebindings").RuleOrDie(),
