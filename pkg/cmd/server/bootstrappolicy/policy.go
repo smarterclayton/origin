@@ -480,7 +480,7 @@ func GetBootstrapClusterRoles() []authorizationapi.ClusterRole {
 				Name: DeployerRoleName,
 			},
 			Rules: []authorizationapi.PolicyRule{
-				authorizationapi.NewRule("get", "list", "update").Groups(kapiGroup).Resources("replicationcontrollers").RuleOrDie(),
+				authorizationapi.NewRule("get", "list", "watch", "update").Groups(kapiGroup).Resources("replicationcontrollers").RuleOrDie(),
 				authorizationapi.NewRule("get", "list", "watch", "create").Groups(kapiGroup).Resources("pods").RuleOrDie(),
 				authorizationapi.NewRule("get").Groups(kapiGroup).Resources("pods/log").RuleOrDie(),
 				authorizationapi.NewRule("create").Groups(kapiGroup).Resources("events").RuleOrDie(),
