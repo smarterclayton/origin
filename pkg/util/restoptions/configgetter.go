@@ -67,13 +67,11 @@ func NewConfigGetter(masterOptions configapi.MasterConfig, defaultResourceConfig
 }
 
 func (g *configRESTOptionsGetter) loadSettings() error {
-	if g.masterOptions.KubernetesMasterConfig == nil {
-		return nil
-	}
-
 	server := apiserveroptions.NewAPIServer()
-	if errs := cmdflags.Resolve(g.masterOptions.KubernetesMasterConfig.APIServerArguments, server.AddFlags); len(errs) > 0 {
-		return kerrors.NewAggregate(errs)
+	if g.masterOptions.KubernetesMasterConfig != nil {
+		if errs := cmdflags.Resolve(g.masterOptions.KubernetesMasterConfig.APIServerArguments, server.AddFlags); len(errs) > 0 {
+			return kerrors.NewAggregate(errs)
+		}
 	}
 
 	storageGroupsToEncodingVersion, err := server.StorageGroupsToEncodingVersion()
