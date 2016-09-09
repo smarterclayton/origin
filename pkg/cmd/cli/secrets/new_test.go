@@ -60,7 +60,6 @@ func TestCreateSecret(t *testing.T) {
 		{
 			testName: "invalidDNS",
 			args:     []string{"testSecret", "./bsFixtures/invalid/invalid-DNS"},
-			expErr:   true, // "/bsFixtures/invalid-DNS cannot be used as a key in a secret"
 		},
 		{
 			testName: "leadingDotsAllowed",
