@@ -26,8 +26,6 @@ func TestKubeletDefaults(t *testing.T) {
 		AuthPath:   util.NewStringFlag("/var/lib/kubelet/kubernetes_auth"),
 		KubeConfig: util.NewStringFlag("/var/lib/kubelet/kubeconfig"),
 
-		SystemReserved: utilconfig.ConfigurationMap{},
-		KubeReserved:   utilconfig.ConfigurationMap{},
 		KubeletConfiguration: componentconfig.KubeletConfiguration{
 			Address:                     "0.0.0.0", // overridden
 			AllowPrivileged:             false,     // overridden
@@ -106,6 +104,9 @@ func TestKubeletDefaults(t *testing.T) {
 			EnableControllerAttachDetach:   true,
 
 			EvictionPressureTransitionPeriod: unversioned.Duration{Duration: 5 * time.Minute},
+
+			SystemReserved: utilconfig.ConfigurationMap{},
+			KubeReserved:   utilconfig.ConfigurationMap{},
 		},
 	}
 

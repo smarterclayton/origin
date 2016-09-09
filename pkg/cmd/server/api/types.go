@@ -47,7 +47,7 @@ var (
 	APIGroupPolicy         = "policy"
 	APIGroupApps           = "apps"
 	APIGroupFederation     = "federation"
-	APIGroupCertificates   = "certificates"
+	APIGroupCertificates   = "certificates.k8s.io"
 
 	// Map of group names to allowed REST API versions
 	KubeAPIGroupsToAllowedVersions = map[string][]string{
