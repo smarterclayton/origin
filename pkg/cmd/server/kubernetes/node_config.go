@@ -133,6 +133,7 @@ func BuildKubernetesNodeConfig(options configapi.NodeConfig, enableProxy, enable
 	// Defaults are tested in TestKubeletDefaults
 	server := kubeletoptions.NewKubeletServer()
 	// Adjust defaults
+	server.RequireKubeConfig = true
 	server.PodManifestPath = path
 	server.RootDirectory = options.VolumeDirectory
 	server.NodeIP = options.NodeIP
