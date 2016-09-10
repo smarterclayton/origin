@@ -44,12 +44,14 @@ func TestAPIServerDefaults(t *testing.T) {
 			EnableProfiling:        true,
 			EnableWatchCache:       true,
 			MinRequestTimeout:      1800,
+			ServiceNodePortRange:   genericapiserveroptions.DefaultServiceNodePortRange,
 			RuntimeConfig:          utilconfig.ConfigurationMap{},
 			StorageVersions:        registered.AllPreferredGroupVersions(),
 			MasterCount:            1,
 			DefaultStorageVersions: registered.AllPreferredGroupVersions(),
 			StorageConfig: storagebackend.Config{
-				Prefix: "/registry",
+				ServerList: nil,
+				Prefix:     "/registry",
 				DeserializationCacheSize: genericapiserveroptions.DefaultDeserializationCacheSize,
 			},
 			DefaultStorageMediaType:                  "application/json",
@@ -94,6 +96,8 @@ func TestCMServerDefaults(t *testing.T) {
 			ConcurrentDeploymentSyncs:         5,
 			ConcurrentNamespaceSyncs:          2,
 			ConcurrentSATokenSyncs:            5,
+			ConcurrentServiceSyncs:            1,
+			ConcurrentGCSyncs:                 20,
 			LookupCacheSizeForRC:              4096,
 			LookupCacheSizeForRS:              4096,
 			LookupCacheSizeForDaemonSet:       1024,
@@ -130,11 +134,14 @@ func TestCMServerDefaults(t *testing.T) {
 			KubeAPIQPS:   20.0,
 			KubeAPIBurst: 30,
 			LeaderElection: componentconfig.LeaderElectionConfiguration{
-				LeaderElect:   false,
+				LeaderElect:   true,
 				LeaseDuration: unversioned.Duration{Duration: 15 * time.Second},
 				RenewDeadline: unversioned.Duration{Duration: 10 * time.Second},
 				RetryPeriod:   unversioned.Duration{Duration: 2 * time.Second},
 			},
+			ClusterSigningCertFile: "/etc/kubernetes/ca/ca.pem",
+			ClusterSigningKeyFile:  "/etc/kubernetes/ca/ca.key",
+			EnableGarbageCollector: true,
 		},
 	}
 
@@ -162,6 +169,7 @@ func TestSchedulerServerDefaults(t *testing.T) {
 			HardPodAffinitySymmetricWeight: 1,
 			FailureDomains:                 "kubernetes.io/hostname,failure-domain.beta.kubernetes.io/zone,failure-domain.beta.kubernetes.io/region",
 			LeaderElection: componentconfig.LeaderElectionConfiguration{
+				LeaderElect: true,
 				LeaseDuration: unversioned.Duration{
 					Duration: 15 * time.Second,
 				},
