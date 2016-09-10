@@ -159,6 +159,7 @@ func TestAdmit(t *testing.T) {
 	// create the annotated namespace and add it to the fake client
 	namespace := createNamespaceForTest()
 	serviceAccount := createSAForTest()
+	serviceAccount.Namespace = namespace.Name
 
 	// used for cases where things are preallocated
 	defaultGroup := int64(2)
