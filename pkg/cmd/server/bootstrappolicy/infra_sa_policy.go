@@ -9,6 +9,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/apis/policy"
+	"k8s.io/kubernetes/pkg/apis/storage"
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
@@ -522,8 +523,7 @@ func init() {
 				},
 				// PersistentVolumeBinder.findProvisionablePlugin()
 				{
-					// TODO: will be moving to its own group
-					APIGroups: []string{extensions.GroupName},
+					APIGroups: []string{storage.GroupName},
 					Verbs:     sets.NewString("list", "watch"),
 					Resources: sets.NewString("storageclasses"),
 				},

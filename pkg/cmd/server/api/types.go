@@ -48,6 +48,7 @@ var (
 	APIGroupApps           = "apps"
 	APIGroupFederation     = "federation"
 	APIGroupCertificates   = "certificates.k8s.io"
+	APIGroupStorage        = "storage.k8s.io"
 
 	// Map of group names to allowed REST API versions
 	KubeAPIGroupsToAllowedVersions = map[string][]string{
@@ -59,6 +60,7 @@ var (
 		APIGroupApps:           {"v1alpha1"},
 		APIGroupPolicy:         {"v1alpha1"},
 		APIGroupCertificates:   {"v1alpha1"},
+		APIGroupStorage:        {"v1beta1"},
 		// TODO: enable as part of a separate binary
 		//APIGroupFederation:  {"v1beta1"},
 	}

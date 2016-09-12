@@ -133,7 +133,6 @@ items:
     - replicasets/status
     - replicationcontrollers
     - replicationcontrollers/scale
-    - storageclasses
     - thirdpartyresources
     verbs:
     - get
@@ -145,6 +144,15 @@ items:
     resources:
     - poddisruptionbudgets
     - poddisruptionbudgets/status
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - storage.k8s.io
+    attributeRestrictions: null
+    resources:
+    - storageclasses
     verbs:
     - get
     - list
@@ -2900,7 +2908,7 @@ items:
     - patch
     - update
   - apiGroups:
-    - extensions
+    - storage.k8s.io
     attributeRestrictions: null
     resources:
     - storageclasses
