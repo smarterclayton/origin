@@ -797,6 +797,7 @@ func (test configCommandTest) run(t *testing.T) string {
 	if !api.Semantic.DeepEqual(test.expectedConfig, actualConfig) {
 		t.Errorf("diff: %v", diff.ObjectDiff(test.expectedConfig, actualConfig))
 		t.Errorf("expected: %#v\n actual:   %#v", test.expectedConfig, actualConfig)
+		t.Errorf("output: %v", out)
 	}
 
 	for _, expectedOutput := range test.expectedOutputs {
