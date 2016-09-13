@@ -203,6 +203,7 @@ message NamedRoleBinding {
 
 // OptionalNames is an array that may also be left nil to distinguish between set and unset.
 // +protobuf.nullable=true
+// +protobuf.options.(gogoproto.goproto_stringer)=false
 message OptionalNames {
   // items, if empty, will result in an empty slice
 
@@ -211,6 +212,7 @@ message OptionalNames {
 
 // OptionalScopes is an array that may also be left nil to distinguish between set and unset.
 // +protobuf.nullable=true
+// +protobuf.options.(gogoproto.goproto_stringer)=false
 message OptionalScopes {
   // items, if empty, will result in an empty slice
 
