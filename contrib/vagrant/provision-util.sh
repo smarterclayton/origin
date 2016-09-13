@@ -101,6 +101,8 @@ os::provision::init-certs() {
 
   pushd "${config_root}" > /dev/null
 
+  set -x
+
   # Master certs
   /usr/bin/openshift admin ca create-master-certs \
     --overwrite=false \
@@ -125,6 +127,8 @@ os::provision::init-certs() {
       --signer-serial="${cert_dir}/ca.serial.txt" \
       --volume-dir="${volumes_dir}"
   done
+
+  set +x
 
   popd > /dev/null
 
