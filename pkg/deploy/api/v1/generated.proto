@@ -273,6 +273,7 @@ message DeploymentTriggerImageChangeParams {
 // +protobuf.nullable=true
 message DeploymentTriggerPolicies {
   // items, if empty, will result in an empty slice
+
   repeated DeploymentTriggerPolicy items = 1;
 }
 
