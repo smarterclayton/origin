@@ -3449,7 +3449,7 @@ type DeprecatedDownwardAPIVolumeSource struct {
 	// Directories within the path are not affected by this setting.
 	// This might be in conflict with other options that affect the file
 	// mode, like fsGroup, and the result can be other mode bits set.
-	DefaultMode *int32 `json:"defaultMode,omitempty" protobuf:"varint,2,opt,name=defaultMode"`
+	DefaultMode *int32 `json:"defaultMode,omitempty" protobuf:"-"`
 }
 
 // DeprecatedDownwardAPIVolumeFile represents information to create the file containing the pod field
@@ -3466,7 +3466,7 @@ type DeprecatedDownwardAPIVolumeFile struct {
 	// and 0777. If not specified, the volume defaultMode will be used.
 	// This might be in conflict with other options that affect the file
 	// mode, like fsGroup, and the result can be other mode bits set.
-	Mode *int32 `json:"mode,omitempty" protobuf:"varint,4,opt,name=mode"`
+	Mode *int32 `json:"mode,omitempty" protobuf:"-"`
 }
 
 // SecurityContext holds security configuration that will be applied to a container.

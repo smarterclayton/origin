@@ -836,6 +836,7 @@ func Convert_v1_VolumeSource_To_api_VolumeSource(in *VolumeSource, out *api.Volu
 
 	// Metadata overrides DownwardAPI
 	if in.Metadata != nil {
+		SetDefaults_DeprecatedDownwardAPIVolumeSource(in.Metadata)
 		out.DownwardAPI = &api.DownwardAPIVolumeSource{
 			DefaultMode: in.Metadata.DefaultMode,
 		}

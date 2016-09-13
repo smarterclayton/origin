@@ -780,7 +780,7 @@ type DownwardAPIVolumeFile struct {
 // This type is deprecated and should be replaced by use of the downwardAPI volume source.
 type DeprecatedDownwardAPIVolumeSource struct {
 	// Items is a list of downward API volume file
-	Items []DeprecatedDownwardAPIVolumeFile `json:"items,omitempty" protobuf:"-"`
+	Items []DeprecatedDownwardAPIVolumeFile `json:"items,omitempty"`
 	// Mode bits to use on created files by default. Must be a value between
 	// 0 and 0777.
 	// Directories within the path are not affected by this setting.
@@ -793,12 +793,12 @@ type DeprecatedDownwardAPIVolumeSource struct {
 // This type is deprecated and should be replaced by use of the downwardAPI volume source.
 type DeprecatedDownwardAPIVolumeFile struct {
 	// Required: Name is the relative path name of the file to be created. Must not be absolute or contain the '..' path. Must be utf-8 encoded. The first item of the relative path must not start with '..'
-	Path string `json:"name" protobuf:"-"`
+	Path string `json:"name"`
 	// Required: Selects a field of the pod: only annotations, labels, name and namespace are supported.
-	FieldRef *ObjectFieldSelector `json:"fieldRef,omitempty" protobuf:"-"`
+	FieldRef *ObjectFieldSelector `json:"fieldRef,omitempty"`
 	// Selects a resource of the container: only resources limits and requests
 	// (limits.cpu, limits.memory, requests.cpu and requests.memory) are currently supported.
-	ResourceFieldRef *ResourceFieldSelector `json:"resourceFieldRef,omitempty" protobuf:"-"`
+	ResourceFieldRef *ResourceFieldSelector `json:"resourceFieldRef,omitempty"`
 	// Optional: mode bits to use on this file, must be a value between 0
 	// and 0777. If not specified, the volume defaultMode will be used.
 	// This might be in conflict with other options that affect the file
