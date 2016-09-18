@@ -55,4 +55,18 @@ do
         os::util::sed 's|https://127.0.0.1:38443|https://127.0.0.1:8443|g' "${SWAGGER_SPEC_OUT_DIR}/${type}-${endpoint}.json"
     done
 done
+
+# Swagger 2.0 / OpenAPI docs
+curl -w "\n" "${MASTER_ADDR}/swagger.json" > "${SWAGGER_SPEC_OUT_DIR}/openshift-openapi-spec.json"
+os::util::sed 's|https://127.0.0.1:38443|https://127.0.0.1:8443|g' "${SWAGGER_SPEC_OUT_DIR}/openshift-openapi-spec.json"
+os::util::sed -r 's|"version": "[^\"]+"|"version: "latest"|g' "${SWAGGER_SPEC_OUT_DIR}/openshift-openapi-spec.json"
+
+# Copy all protobuf generated specs into the api/protobuf-spec directory
+PROTO_SPEC_OUT_DIR="${OS_ROOT}/${SWAGGER_SPEC_REL_DIR}/api/protobuf-spec"
+mkdir -p "${PROTO_SPEC_OUT_DIR}" || true
+find pkg vendor/k8s.io/kubernetes/pkg -name generated.proto | \
+  xargs grep -E '^package' | \
+  sed -rn 's/(.+)\:package (.+);/\1\n\2/p' | \
+  xargs -n 2 bash -c 'cp "$1" "$0/$( echo $2 | sed -rn "s/\./_/pg" ).proto"' "${PROTO_SPEC_OUT_DIR}"
+
 echo "SUCCESS"
