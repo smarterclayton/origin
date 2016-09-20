@@ -63,8 +63,8 @@ os::util::sed -r 's|"version": "[^\"]+"|"version: "latest"|g' "${SWAGGER_SPEC_OU
 
 # Copy all protobuf generated specs into the api/protobuf-spec directory
 PROTO_SPEC_OUT_DIR="${OS_ROOT}/${SWAGGER_SPEC_REL_DIR}/api/protobuf-spec"
-mkdir -p "${PROTO_SPEC_OUT_DIR}" || true
-find pkg vendor/k8s.io/kubernetes/pkg -name generated.proto | \
+mkdir -p "${PROTO_SPEC_OUT_DIR}"
+find "${OS_ROOT}/pkg" "${OS_ROOT}/vendor/k8s.io/kubernetes/pkg" -name generated.proto | \
   xargs grep -E '^package' | \
   sed -rn 's/(.+)\:package (.+);/\1\n\2/p' | \
   xargs -n 2 bash -c 'cp "$1" "$0/$( echo $2 | sed -rn "s/\./_/pg" ).proto"' "${PROTO_SPEC_OUT_DIR}"

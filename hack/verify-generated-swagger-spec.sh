@@ -3,7 +3,6 @@ source "$(dirname "${BASH_SOURCE}")/lib/init.sh"
 
 echo "===== Verifying API Swagger Spec ====="
 
-SPECROOT_REL="api/swagger-spec"
 SPECROOT="${OS_ROOT}/api"
 REL_TMP_PATH="_output/verify-generated-swagger-spec"
 TMP_SPECROOT="${OS_ROOT}/${REL_TMP_PATH}/api"
