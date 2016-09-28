@@ -59,11 +59,23 @@ os::util::sed 's|https://127.0.0.1:38443|https://127.0.0.1:8443|g' "${SWAGGER_SP
 os::util::sed -r 's|"version": "[^\"]+"|"version: "latest"|g' "${SWAGGER_SPEC_OUT_DIR}/openshift-openapi-spec.json"
 
 # Copy all protobuf generated specs into the api/protobuf-spec directory
-PROTO_SPEC_OUT_DIR="${OS_ROOT}/${SWAGGER_SPEC_REL_DIR}/api/protobuf-spec"
-mkdir -p "${PROTO_SPEC_OUT_DIR}"
-find "${OS_ROOT}/pkg" "${OS_ROOT}/vendor/k8s.io/kubernetes/pkg" -name generated.proto | \
-  xargs grep -E '^package' | \
-  sed -rn 's/(.+)\:package (.+);/\1\n\2/p' | \
-  xargs -n 2 bash -c 'cp "$1" "$0/$( echo $2 | sed -rn "s/\./_/pg" ).proto"' "${PROTO_SPEC_OUT_DIR}"
+proto_spec_out_dir="${OS_ROOT}/${SWAGGER_SPEC_REL_DIR}/api/protobuf-spec"
+mkdir -p "${proto_spec_out_dir}"
+for proto_file in $( find "${OS_ROOT}/pkg" "${OS_ROOT}/vendor/k8s.io/kubernetes/pkg" -name generated.proto ); do
+    # package declaration lines will always begin with
+    # `package ` and end with `;` so to extract the
+    # package name without lookarounds we can simply
+    # strip characters
+    package="$( grep -E '^package ._;$' "${proto_file}" )"
+    package="${package#package }"
+    package="${package%;}"
+
+    # we want our OpenAPI documents to use underscores
+    # as separators for package specifiers, not periods
+    # as in the proto files
+    openapi_file="${package//./_}.proto"
+
+    cp "${proto_file}" "${proto_spec_out_dir}/${openapi_file}"
+done
 
 os::log::info "SUCCESS"
