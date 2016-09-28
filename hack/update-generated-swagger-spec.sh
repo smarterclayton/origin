@@ -3,8 +3,7 @@
 # Script to create latest swagger spec.
 source "$(dirname "${BASH_SOURCE}")/lib/init.sh"
 
-function cleanup()
-{
+function cleanup() {
     out=$?
     cleanup_openshift
 
@@ -33,23 +32,21 @@ reset_tmp_dir
 configure_os_server
 
 
-SWAGGER_SPEC_REL_DIR=${1:-""}
+SWAGGER_SPEC_REL_DIR="${1:-}"
 SWAGGER_SPEC_OUT_DIR="${OS_ROOT}/${SWAGGER_SPEC_REL_DIR}/api/swagger-spec"
-mkdir -p "${SWAGGER_SPEC_OUT_DIR}" || true
+mkdir -p "${SWAGGER_SPEC_OUT_DIR}"
 SWAGGER_API_PATH="${MASTER_ADDR}/swaggerapi/"
 
 # Start openshift
 start_os_master
 
-echo "Updating ${SWAGGER_SPEC_OUT_DIR}:"
+os::log::info "Updating ${SWAGGER_SPEC_OUT_DIR}:"
 
-ENDPOINT_TYPES="oapi api"
-for type in $ENDPOINT_TYPES
-do
-    ENDPOINTS=(v1)
-    for endpoint in $ENDPOINTS
-    do
-        echo "Updating ${SWAGGER_SPEC_OUT_DIR}/${type}-${endpoint}.json from ${SWAGGER_API_PATH}${type}/${endpoint}..."
+endpoint_types=("oapi" "api")
+for type in "${endpoint_types[@]}"; do
+    endpoints=("v1")
+    for endpoint in "${endpoints[@]}"; do
+        os::log::info "Updating ${SWAGGER_SPEC_OUT_DIR}/${type}-${endpoint}.json from ${SWAGGER_API_PATH}${type}/${endpoint}..."
         curl -w "\n" "${SWAGGER_API_PATH}${type}/${endpoint}" > "${SWAGGER_SPEC_OUT_DIR}/${type}-${endpoint}.json"
 
         os::util::sed 's|https://127.0.0.1:38443|https://127.0.0.1:8443|g' "${SWAGGER_SPEC_OUT_DIR}/${type}-${endpoint}.json"
@@ -69,4 +66,4 @@ find "${OS_ROOT}/pkg" "${OS_ROOT}/vendor/k8s.io/kubernetes/pkg" -name generated.
   sed -rn 's/(.+)\:package (.+);/\1\n\2/p' | \
   xargs -n 2 bash -c 'cp "$1" "$0/$( echo $2 | sed -rn "s/\./_/pg" ).proto"' "${PROTO_SPEC_OUT_DIR}"
 
-echo "SUCCESS"
+os::log::info "SUCCESS"
