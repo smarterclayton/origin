@@ -5,11 +5,11 @@ import (
 
 	osgraph "github.com/openshift/origin/pkg/api/graph"
 	kubegraph "github.com/openshift/origin/pkg/api/kubegraph/nodes"
-	depoyapi "github.com/openshift/origin/pkg/deploy/api"
+	deployapi "github.com/openshift/origin/pkg/deploy/api"
 )
 
 // EnsureDeploymentConfigNode adds the provided deployment config to the graph if it does not exist
-func EnsureDeploymentConfigNode(g osgraph.MutableUniqueGraph, dc *depoyapi.DeploymentConfig) *DeploymentConfigNode {
+func EnsureDeploymentConfigNode(g osgraph.MutableUniqueGraph, dc *deployapi.DeploymentConfig) *DeploymentConfigNode {
 	dcName := DeploymentConfigNodeName(dc)
 	dcNode := osgraph.EnsureUnique(
 		g,
@@ -27,7 +27,7 @@ func EnsureDeploymentConfigNode(g osgraph.MutableUniqueGraph, dc *depoyapi.Deplo
 	return dcNode
 }
 
-func FindOrCreateSyntheticDeploymentConfigNode(g osgraph.MutableUniqueGraph, dc *depoyapi.DeploymentConfig) *DeploymentConfigNode {
+func FindOrCreateSyntheticDeploymentConfigNode(g osgraph.MutableUniqueGraph, dc *deployapi.DeploymentConfig) *DeploymentConfigNode {
 	return osgraph.EnsureUnique(
 		g,
 		DeploymentConfigNodeName(dc),
