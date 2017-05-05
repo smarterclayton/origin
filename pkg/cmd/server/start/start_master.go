@@ -595,6 +595,9 @@ func startControllers(oc *origin.MasterConfig, kc *kubernetes.MasterConfig) erro
 	// Start these first, because they provide credentials for other controllers' clients
 	oc.RunServiceAccountsController()
 	oc.RunServiceAccountTokensController(controllerManagerOptions)
+	// Must start a few informers now
+	oc.Informers.KubernetesInformers().Start(utilwait.NeverStop)
+
 	// used by admission controllers
 	oc.RunServiceAccountPullSecretsControllers()
 	oc.RunSecurityAllocationController()
