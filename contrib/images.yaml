@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Template
+parameters:
+- name: REPOSITORY
+  value: https://github.com/openshift/origin.git
+- name: COMMIT
+  value: master
+- name: RELEASE_IMAGE
+  value: openshift/origin-release:golang-1.7
+objects:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: origin-${COMMIT}
+- kind: Build
+  apiVersion: v1
+  metadata:
+    name: origin-binary
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: origin-${COMMIT}:binaries
+    source:
+      git:
+        uri: ${REPOSITORY}
+        ref: ${COMMIT}
+      type: Git
+      dockerfile: |
+        COPY . /go/src/github.com/openshift/origin
+        RUN cd /go/src/github.com/openshift/origin && \
+            make build-rpms
+    strategy:
+      dockerStrategy:
+        from:
+          kind: DockerImage
+          name: ${RELEASE_IMAGE}
+        imageOptimizationPolicy: SkipLayers
+- kind: Build
+  apiVersion: v1
+  metadata:
+    name: origin-source
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: origin-${COMMIT}:binaries
+    source:
+      type: Git
+      git:
+        uri: ${REPOSITORY}
+        ref: ${COMMIT}
+      images:
+      - from:
+          kind: ImageStreamTag
+          name: origin-${COMMIT}:binaries
+        paths:
+        - sourcePath: /go/src/github.com/openshift/origin/_output/local/release/rpms
+          destinationDir: rpms/
+      dockerfile: |
+        COPY rpms/ /tmp/rpms/
+        RUN  sed -i "s|baseurl =.*|baseurl = file:///tmp/rpms/|g" /tmp/rpms/*.repo &&
+             yum install origin &&
+             yum clean all
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: origin-${COMMIT}:base
+        imageOptimizationPolicy: SkipLayers
