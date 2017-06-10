@@ -834,7 +834,7 @@ func (c *MasterConfig) GetRestStorage() map[schema.GroupVersion]map[string]rest.
 		"clusterResourceQuotas/status": clusterResourceQuotaStatusStorage,
 		"appliedClusterResourceQuotas": appliedclusterresourcequotaregistry.NewREST(
 			c.ClusterQuotaMappingController.GetClusterQuotaMapper(),
-			c.Informers.ClusterResourceQuotas().Lister(),
+			c.QuotaInformers.Quota().InternalVersion().ClusterResourceQuotas().Lister(),
 			c.Informers.InternalKubernetesInformers().Core().InternalVersion().Namespaces().Lister(),
 		),
 	}
