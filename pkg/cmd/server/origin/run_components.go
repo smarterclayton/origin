@@ -181,8 +181,8 @@ func (c *MasterConfig) RunImageTriggerController() {
 	if !c.Options.DisabledFeatures.Has("triggers.image.openshift.io/deployments") {
 		sources = append(sources, imagetriggercontroller.TriggerSource{
 			Resource:  schema.GroupResource{Group: "extensions", Resource: "deployments"},
-			Informer:  c.Informers.KubernetesInformers().Apps().V1beta1().Deployments().Informer(),
-			Store:     c.Informers.KubernetesInformers().Apps().V1beta1().Deployments().Informer().GetIndexer(),
+			Informer:  c.Informers.KubernetesInformers().Extensions().V1beta1().Deployments().Informer(),
+			Store:     c.Informers.KubernetesInformers().Extensions().V1beta1().Deployments().Informer().GetIndexer(),
 			TriggerFn: triggerannotations.NewAnnotationTriggerIndexer,
 			Reactor:   &triggerannotations.AnnotationReactor{Updater: updater, Copier: kapi.Scheme},
 		})
