@@ -673,8 +673,12 @@ func (c *MasterConfig) GetRestStorage() map[schema.GroupVersion]map[string]rest.
 	checkStorageErr(err)
 	clusterPolicyBindingRegistry := clusterpolicybindingregistry.NewRegistry(clusterPolicyBindingStorage)
 
-	selfSubjectRulesReviewStorage := selfsubjectrulesreview.NewREST(c.RuleResolver, c.Informers.ClusterPolicies().Lister().ClusterPolicies())
-	subjectRulesReviewStorage := subjectrulesreview.NewREST(c.RuleResolver, c.Informers.ClusterPolicies().Lister().ClusterPolicies())
+	clusterPolicies := clusterPolicyLister{
+		ClusterPolicyLister: c.AuthorizationInformers.Authorization().InternalVersion().ClusterPolicies().Lister(),
+		versioner:           c.AuthorizationInformers.Authorization().InternalVersion().ClusterPolicies().Informer(),
+	}
+	selfSubjectRulesReviewStorage := selfsubjectrulesreview.NewREST(c.RuleResolver, clusterPolicies)
+	subjectRulesReviewStorage := subjectrulesreview.NewREST(c.RuleResolver, clusterPolicies)
 
 	roleStorage := rolestorage.NewVirtualStorage(policyRegistry, c.RuleResolver, nil, authorizationapi.Resource("role"))
 	roleBindingStorage := rolebindingstorage.NewVirtualStorage(policyBindingRegistry, c.RuleResolver, nil, authorizationapi.Resource("rolebinding"))
@@ -767,7 +771,11 @@ func (c *MasterConfig) GetRestStorage() map[schema.GroupVersion]map[string]rest.
 		glog.Errorf("Error parsing project request template value: %v", err)
 		// we can continue on, the storage that gets created will be valid, it simply won't work properly.  There's no reason to kill the master
 	}
-	projectRequestStorage := projectrequeststorage.NewREST(c.Options.ProjectConfig.ProjectRequestMessage, namespace, templateName, c.PrivilegedLoopbackOpenShiftClient, c.PrivilegedLoopbackKubernetesClientsetInternal, c.Informers.PolicyBindings().Lister())
+	policyBindings := policyBindingLister{
+		PolicyBindingLister: c.AuthorizationInformers.Authorization().InternalVersion().PolicyBindings().Lister(),
+		versioner:           c.AuthorizationInformers.Authorization().InternalVersion().PolicyBindings().Informer(),
+	}
+	projectRequestStorage := projectrequeststorage.NewREST(c.Options.ProjectConfig.ProjectRequestMessage, namespace, templateName, c.PrivilegedLoopbackOpenShiftClient, c.PrivilegedLoopbackKubernetesClientsetInternal, policyBindings)
 
 	bcClient := c.BuildConfigWebHookClient()
 	buildConfigWebHooks := buildconfigregistry.NewWebHookREST(
