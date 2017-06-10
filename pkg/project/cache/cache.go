@@ -9,8 +9,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
-	kapi "k8s.io/kubernetes/pkg/api"
-	kcoreclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
+	"k8s.io/kubernetes/pkg/api/v1"
+	kcoreclient "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
 
 	projectapi "github.com/openshift/origin/pkg/project/api"
 	"github.com/openshift/origin/pkg/util/labelselector"
@@ -38,8 +38,8 @@ type ProjectCache struct {
 	DefaultNodeSelector string
 }
 
-func (p *ProjectCache) GetNamespace(name string) (*kapi.Namespace, error) {
-	key := &kapi.Namespace{ObjectMeta: metav1.ObjectMeta{Name: name}}
+func (p *ProjectCache) GetNamespace(name string) (*v1.Namespace, error) {
+	key := &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: name}}
 
 	// check for namespace in the cache
 	namespaceObj, exists, err := p.Store.Get(key)
@@ -59,9 +59,9 @@ func (p *ProjectCache) GetNamespace(name string) (*kapi.Namespace, error) {
 		}
 	}
 
-	var namespace *kapi.Namespace
+	var namespace *v1.Namespace
 	if exists {
-		namespace = namespaceObj.(*kapi.Namespace)
+		namespace = namespaceObj.(*v1.Namespace)
 	} else {
 		// Our watch maybe latent, so we make a best effort to get the object, and only fail if not found
 		namespace, err = p.Client.Get(name, metav1.GetOptions{})
@@ -74,7 +74,7 @@ func (p *ProjectCache) GetNamespace(name string) (*kapi.Namespace, error) {
 	return namespace, nil
 }
 
-func (p *ProjectCache) GetNodeSelector(namespace *kapi.Namespace) string {
+func (p *ProjectCache) GetNodeSelector(namespace *v1.Namespace) string {
 	selector := ""
 	found := false
 	if len(namespace.ObjectMeta.Annotations) > 0 {
@@ -89,7 +89,7 @@ func (p *ProjectCache) GetNodeSelector(namespace *kapi.Namespace) string {
 	return selector
 }
 
-func (p *ProjectCache) GetNodeSelectorMap(namespace *kapi.Namespace) (map[string]string, error) {
+func (p *ProjectCache) GetNodeSelectorMap(namespace *v1.Namespace) (map[string]string, error) {
 	selector := p.GetNodeSelector(namespace)
 	labelsMap, err := labelselector.Parse(selector)
 	if err != nil {
@@ -130,6 +130,6 @@ func NewCacheStore(keyFn cache.KeyFunc) cache.Indexer {
 
 // indexNamespaceByRequester returns the requester for a given namespace object as an index value
 func indexNamespaceByRequester(obj interface{}) ([]string, error) {
-	requester := obj.(*kapi.Namespace).Annotations[projectapi.ProjectRequester]
+	requester := obj.(*v1.Namespace).Annotations[projectapi.ProjectRequester]
 	return []string{requester}, nil
 }

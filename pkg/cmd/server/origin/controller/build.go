@@ -27,6 +27,7 @@ type BuildControllerConfig struct {
 func (c *BuildControllerConfig) RunController(ctx ControllerContext) (bool, error) {
 	pluginInitializer := kubeadmission.NewPluginInitializer(
 		ctx.ClientBuilder.KubeInternalClientOrDie(bootstrappolicy.InfraBuildControllerServiceAccountName),
+		ctx.ClientBuilder.ClientOrDie(bootstrappolicy.InfraBuildControllerServiceAccountName),
 		ctx.DeprecatedOpenshiftInformers.InternalKubernetesInformers(),
 		nil, // api authorizer, only used by PSP
 		nil, // cloud config

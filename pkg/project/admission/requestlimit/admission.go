@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apiserver/pkg/admission"
 	"k8s.io/apiserver/pkg/authentication/serviceaccount"
-	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 
 	"github.com/openshift/origin/pkg/client"
 	oadmission "github.com/openshift/origin/pkg/cmd/server/admission"
@@ -148,11 +148,11 @@ func (o *projectRequestLimit) projectCountByRequester(userName string) (int, err
 
 	terminatingCount := 0
 	for _, obj := range namespaces {
-		ns, ok := obj.(*kapi.Namespace)
+		ns, ok := obj.(*v1.Namespace)
 		if !ok {
 			return 0, fmt.Errorf("object in cache is not a namespace: %#v", obj)
 		}
-		if ns.Status.Phase == kapi.NamespaceTerminating {
+		if ns.Status.Phase == v1.NamespaceTerminating {
 			terminatingCount++
 		}
 	}
@@ -190,6 +190,6 @@ func NewProjectRequestLimit(config *requestlimitapi.ProjectRequestLimitConfig) (
 	}, nil
 }
 
-func projectRequester(ns *kapi.Namespace) string {
+func projectRequester(ns *v1.Namespace) string {
 	return ns.Annotations[projectapi.ProjectRequester]
 }

@@ -12,8 +12,8 @@ import (
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 	kstorage "k8s.io/apiserver/pkg/storage"
-	kapi "k8s.io/kubernetes/pkg/api"
-	kcoreclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
+	"k8s.io/kubernetes/pkg/api/v1"
+	kcoreclient "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
 	nsregistry "k8s.io/kubernetes/pkg/registry/core/namespace"
 
 	oapi "github.com/openshift/origin/pkg/api"
@@ -82,7 +82,7 @@ func (s *REST) List(ctx apirequest.Context, options *metainternal.ListOptions) (
 	if err != nil {
 		return nil, err
 	}
-	return projectutil.ConvertNamespaceList(list.(*kapi.NamespaceList)), nil
+	return projectutil.ConvertNamespaceListV1(list.(*v1.NamespaceList)), nil
 }
 
 func (s *REST) Watch(ctx apirequest.Context, options *metainternal.ListOptions) (watch.Interface, error) {
@@ -120,7 +120,7 @@ func (s *REST) Get(ctx apirequest.Context, name string, options *metav1.GetOptio
 	if err != nil {
 		return nil, err
 	}
-	return projectutil.ConvertNamespace(namespace), nil
+	return projectutil.ConvertNamespaceV1(namespace), nil
 }
 
 var _ = rest.Creater(&REST{})
@@ -136,11 +136,11 @@ func (s *REST) Create(ctx apirequest.Context, obj runtime.Object) (runtime.Objec
 	if errs := s.createStrategy.Validate(ctx, obj); len(errs) > 0 {
 		return nil, kerrors.NewInvalid(projectapi.Kind("Project"), project.Name, errs)
 	}
-	namespace, err := s.client.Create(projectutil.ConvertProject(project))
+	namespace, err := s.client.Create(projectutil.ConvertProjectV1(project))
 	if err != nil {
 		return nil, err
 	}
-	return projectutil.ConvertNamespace(namespace), nil
+	return projectutil.ConvertNamespaceV1(namespace), nil
 }
 
 var _ = rest.Updater(&REST{})
@@ -166,12 +166,12 @@ func (s *REST) Update(ctx apirequest.Context, name string, objInfo rest.UpdatedO
 		return nil, false, kerrors.NewInvalid(projectapi.Kind("Project"), project.Name, errs)
 	}
 
-	namespace, err := s.client.Update(projectutil.ConvertProject(project))
+	namespace, err := s.client.Update(projectutil.ConvertProjectV1(project))
 	if err != nil {
 		return nil, false, err
 	}
 
-	return projectutil.ConvertNamespace(namespace), false, nil
+	return projectutil.ConvertNamespaceV1(namespace), false, nil
 }
 
 var _ = rest.Deleter(&REST{})

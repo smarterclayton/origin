@@ -11,7 +11,8 @@ import (
 	clientgotesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 
 	buildapi "github.com/openshift/origin/pkg/build/api"
 	projectcache "github.com/openshift/origin/pkg/project/cache"
@@ -41,7 +42,7 @@ func TestIgnoreThatWhichCannotBeKnown(t *testing.T) {
 func TestAdmissionExists(t *testing.T) {
 	mockClient := &fake.Clientset{}
 	mockClient.AddReactor("*", "*", func(action clientgotesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, &kapi.Namespace{}, fmt.Errorf("DOES NOT EXIST")
+		return true, &v1.Namespace{}, fmt.Errorf("DOES NOT EXIST")
 	})
 
 	cache := projectcache.NewFake(mockClient.Core().Namespaces(), projectcache.NewCacheStore(cache.MetaNamespaceKeyFunc), "")

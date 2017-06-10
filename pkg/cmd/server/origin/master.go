@@ -764,7 +764,7 @@ func (c *MasterConfig) GetRestStorage() map[schema.GroupVersion]map[string]rest.
 	}
 	deployConfigRollbackStorage := deployrollback.NewREST(configClient, kclient, c.ExternalVersionCodec)
 
-	projectStorage := projectproxy.NewREST(c.PrivilegedLoopbackKubernetesClientsetInternal.Core().Namespaces(), c.ProjectAuthorizationCache, c.ProjectAuthorizationCache, c.ProjectCache)
+	projectStorage := projectproxy.NewREST(c.PrivilegedLoopbackKubernetesClientsetExternal.CoreV1().Namespaces(), c.ProjectAuthorizationCache, c.ProjectAuthorizationCache, c.ProjectCache)
 
 	namespace, templateName, err := configapi.ParseNamespaceAndName(c.Options.ProjectConfig.ProjectRequestTemplate)
 	if err != nil {
@@ -835,7 +835,6 @@ func (c *MasterConfig) GetRestStorage() map[schema.GroupVersion]map[string]rest.
 		"appliedClusterResourceQuotas": appliedclusterresourcequotaregistry.NewREST(
 			c.ClusterQuotaMappingController.GetClusterQuotaMapper(),
 			c.QuotaInformers.Quota().InternalVersion().ClusterResourceQuotas().Lister(),
-			c.Informers.InternalKubernetesInformers().Core().InternalVersion().Namespaces().Lister(),
 		),
 	}
 

@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apiserver/pkg/admission"
 	kapi "k8s.io/kubernetes/pkg/api"
-	kclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	kclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	kadmission "k8s.io/kubernetes/pkg/kubeapiserver/admission"
 
 	"github.com/openshift/origin/pkg/api/latest"
@@ -55,7 +55,7 @@ var recommendedCreatableResources = map[schema.GroupResource]bool{
 	authorizationapi.LegacyResource("subjectrulesreviews"):        true,
 }
 var _ = oadmission.WantsProjectCache(&lifecycle{})
-var _ = kadmission.WantsInternalKubeClientSet(&lifecycle{})
+var _ = kadmission.WantsExternalKubeClientSet(&lifecycle{})
 
 // Admit enforces that a namespace must have the openshift finalizer associated with it in order to create origin API objects within it
 func (e *lifecycle) Admit(a admission.Attributes) (err error) {
@@ -99,7 +99,7 @@ func (e *lifecycle) Admit(a admission.Attributes) (err error) {
 	for retry := 1; retry <= numRetries; retry++ {
 
 		// associate this namespace with openshift
-		_, err = projectutil.Associate(e.client, namespace)
+		_, err = projectutil.Associate(e.client.Core(), namespace)
 		if err == nil {
 			break
 		}
@@ -129,7 +129,7 @@ func (e *lifecycle) SetProjectCache(c *cache.ProjectCache) {
 	e.cache = c
 }
 
-func (q *lifecycle) SetInternalKubeClientSet(c kclientset.Interface) {
+func (q *lifecycle) SetExternalKubeClientSet(c kclientset.Interface) {
 	q.client = c
 }
 

@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
-	"github.com/openshift/origin/pkg/client"
+	authorizationlister "github.com/openshift/origin/pkg/authorization/generated/listers/authorization/internalversion"
 	"github.com/openshift/origin/pkg/cmd/server/bootstrappolicy"
 )
 

@@ -6,6 +6,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 
 	quotaapi "github.com/openshift/origin/pkg/quota/api"
 )
@@ -145,7 +146,7 @@ func (m *clusterQuotaMapper) removeQuota(quotaName string) {
 
 // requireNamespace updates the label requirements for the given namespace.  This prevents stale updates to the mapping itself.
 // returns true if a modification was made
-func (m *clusterQuotaMapper) requireNamespace(namespace *kapi.Namespace) bool {
+func (m *clusterQuotaMapper) requireNamespace(namespace *v1.Namespace) bool {
 	m.lock.RLock()
 	selectionFields, exists := m.requiredNamespaceToLabels[namespace.Name]
 	m.lock.RUnlock()
@@ -167,7 +168,7 @@ func (m *clusterQuotaMapper) requireNamespace(namespace *kapi.Namespace) bool {
 
 // completeNamespace updates the latest selectionFields used to generate the mappings for this namespace.  The value is returned
 // by the Get methods for the mapping so that callers can determine staleness
-func (m *clusterQuotaMapper) completeNamespace(namespace *kapi.Namespace) {
+func (m *clusterQuotaMapper) completeNamespace(namespace *v1.Namespace) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	m.completedNamespaceToLabels[namespace.Name] = GetSelectionFields(namespace)
@@ -194,14 +195,14 @@ func (m *clusterQuotaMapper) removeNamespace(namespaceName string) {
 func selectorMatches(selector quotaapi.ClusterResourceQuotaSelector, exists bool, quota *quotaapi.ClusterResourceQuota) bool {
 	return exists && kapi.Semantic.DeepEqual(selector, quota.Spec.Selector)
 }
-func selectionFieldsMatch(selectionFields SelectionFields, exists bool, namespace *kapi.Namespace) bool {
+func selectionFieldsMatch(selectionFields SelectionFields, exists bool, namespace *v1.Namespace) bool {
 	return exists && reflect.DeepEqual(selectionFields, GetSelectionFields(namespace))
 }
 
 // setMapping maps (or removes a mapping) between a clusterquota and a namespace
 // It returns whether the action worked, whether the quota is out of date, whether the namespace is out of date
 // This allows callers to decide whether to pull new information from the cache or simply skip execution
-func (m *clusterQuotaMapper) setMapping(quota *quotaapi.ClusterResourceQuota, namespace *kapi.Namespace, remove bool) (bool /*added*/, bool /*quota matches*/, bool /*namespace matches*/) {
+func (m *clusterQuotaMapper) setMapping(quota *quotaapi.ClusterResourceQuota, namespace *v1.Namespace, remove bool) (bool /*added*/, bool /*quota matches*/, bool /*namespace matches*/) {
 	m.lock.RLock()
 	selector, selectorExists := m.requiredQuotaToSelector[quota.Name]
 	selectionFields, selectionFieldsExist := m.requiredNamespaceToLabels[namespace.Name]
@@ -283,6 +284,6 @@ func (m *clusterQuotaMapper) setMapping(quota *quotaapi.ClusterResourceQuota, na
 
 }
 
-func GetSelectionFields(namespace *kapi.Namespace) SelectionFields {
+func GetSelectionFields(namespace *v1.Namespace) SelectionFields {
 	return SelectionFields{Labels: namespace.Labels, Annotations: namespace.Annotations}
 }

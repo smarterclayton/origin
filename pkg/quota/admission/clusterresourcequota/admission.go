@@ -10,7 +10,7 @@ import (
 	utilwait "k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/admission"
 	kapi "k8s.io/kubernetes/pkg/api"
-	kcorelisters "k8s.io/kubernetes/pkg/client/listers/core/internalversion"
+	kcorelisters "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	"k8s.io/kubernetes/pkg/quota"
 	"k8s.io/kubernetes/plugin/pkg/admission/resourcequota"
 	resourcequotaapi "k8s.io/kubernetes/plugin/pkg/admission/resourcequota/apis/resourcequota"
@@ -128,8 +128,8 @@ func (q *clusterQuotaAdmission) SetOriginQuotaRegistry(registry quota.Registry) 
 }
 
 func (q *clusterQuotaAdmission) SetInformers(informers shared.InformerFactory) {
-	q.namespaceLister = informers.InternalKubernetesInformers().Core().InternalVersion().Namespaces().Lister()
-	q.namespaceSynced = informers.InternalKubernetesInformers().Core().InternalVersion().Namespaces().Informer().HasSynced
+	q.namespaceLister = informers.KubernetesInformers().Core().V1().Namespaces().Lister()
+	q.namespaceSynced = informers.KubernetesInformers().Core().V1().Namespaces().Informer().HasSynced
 }
 
 func (q *clusterQuotaAdmission) SetOpenshiftClient(client oclient.Interface) {

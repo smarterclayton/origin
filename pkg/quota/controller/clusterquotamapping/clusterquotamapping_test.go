@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	clientgotesting "k8s.io/client-go/testing"
 	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	externalfake "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 	internalfake "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 	kexternalinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
@@ -74,14 +75,14 @@ func runFuzzer(t *testing.T) {
 	quotaClient := quotaclient.NewSimpleClientset(startingQuotas...)
 	quotaClient.PrependWatchReactor("clusterresourcequotas", clientgotesting.DefaultWatchReactor(quotaWatch, nil))
 	quotaFactory := quotainformer.NewSharedInformerFactory(quotaClient, 0)
-	controller := NewClusterQuotaMappingController(internalKubeInformerFactory.Core().InternalVersion().Namespaces(), quotaFactory.Quota().InternalVersion().ClusterResourceQuotas())
+	controller := NewClusterQuotaMappingController(externalKubeInformerFactory.Core().V1().Namespaces(), quotaFactory.Quota().InternalVersion().ClusterResourceQuotas())
 	go controller.Run(5, stopCh)
 	informerFactory.Start(stopCh)
 	quotaFactory.Start(stopCh)
 	internalKubeInformerFactory.Start(stopCh)
 	externalKubeInformerFactory.Start(stopCh)
 
-	finalNamespaces := map[string]*kapi.Namespace{}
+	finalNamespaces := map[string]*v1.Namespace{}
 	finalQuotas := map[string]*quotaapi.ClusterResourceQuota{}
 	quotaActions := map[string][]string{}
 	namespaceActions := map[string][]string{}
@@ -94,9 +95,9 @@ func runFuzzer(t *testing.T) {
 		finalQuotas[name] = quota.(*quotaapi.ClusterResourceQuota)
 	}
 	for _, namespace := range startingNamespaces {
-		name := namespace.(*kapi.Namespace).Name
-		namespaceActions[name] = append(namespaceActions[name], fmt.Sprintf("inserting %v to %v", name, namespace.(*kapi.Namespace).Labels))
-		finalNamespaces[name] = namespace.(*kapi.Namespace)
+		name := namespace.(*v1.Namespace).Name
+		namespaceActions[name] = append(namespaceActions[name], fmt.Sprintf("inserting %v to %v", name, namespace.(*v1.Namespace).Labels))
+		finalNamespaces[name] = namespace.(*v1.Namespace)
 	}
 
 	go func() {
@@ -197,7 +198,7 @@ func runFuzzer(t *testing.T) {
 	}
 }
 
-func checkState(controller *ClusterQuotaMappingController, finalNamespaces map[string]*kapi.Namespace, finalQuotas map[string]*quotaapi.ClusterResourceQuota, t *testing.T, quotaActions, namespaceActions map[string][]string) []string {
+func checkState(controller *ClusterQuotaMappingController, finalNamespaces map[string]*v1.Namespace, finalQuotas map[string]*quotaapi.ClusterResourceQuota, t *testing.T, quotaActions, namespaceActions map[string][]string) []string {
 	failures := []string{}
 
 	quotaToNamespaces := map[string]sets.String{}
@@ -308,8 +309,8 @@ func NewQuota(name string) *quotaapi.ClusterResourceQuota {
 	return ret
 }
 
-func NewNamespace(name string) *kapi.Namespace {
-	ret := &kapi.Namespace{}
+func NewNamespace(name string) *v1.Namespace {
+	ret := &v1.Namespace{}
 	ret.Name = name
 
 	numLabels := rand.Intn(maxLabels) + 1

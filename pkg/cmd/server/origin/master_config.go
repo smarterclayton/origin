@@ -290,8 +290,8 @@ func BuildMasterConfig(options configapi.MasterConfig) (*MasterConfig, error) {
 		return nil, err
 	}
 	groupCache := usercache.NewGroupCache(groupregistry.NewRegistry(groupStorage))
-	projectCache := projectcache.NewProjectCache(informerFactory.InternalKubernetesInformers().Core().InternalVersion().Namespaces().Informer(), privilegedLoopbackKubeClientsetInternal.Core().Namespaces(), options.ProjectConfig.DefaultNodeSelector)
-	clusterQuotaMappingController := clusterquotamapping.NewClusterQuotaMappingController(internalkubeInformerFactory.Core().InternalVersion().Namespaces(), quotaInformers.Quota().InternalVersion().ClusterResourceQuotas())
+	projectCache := projectcache.NewProjectCache(informerFactory.KubernetesInformers().Core().V1().Namespaces().Informer(), privilegedLoopbackKubeClientsetExternal.Core().Namespaces(), options.ProjectConfig.DefaultNodeSelector)
+	clusterQuotaMappingController := clusterquotamapping.NewClusterQuotaMappingController(informerFactory.KubernetesInformers().Core().V1().Namespaces(), quotaInformers.Quota().InternalVersion().ClusterResourceQuotas())
 
 	kubeletClientConfig := configapi.GetKubeletClientConfig(options)
 
@@ -334,7 +334,7 @@ func BuildMasterConfig(options configapi.MasterConfig) (*MasterConfig, error) {
 		}
 	}
 	// note: we are passing a combined quota registry here...
-	kubePluginInitializer := kadmission.NewPluginInitializer(privilegedLoopbackKubeClientsetInternal, internalkubeInformerFactory, authorizer, cloudConfig, quotaRegistry)
+	kubePluginInitializer := kadmission.NewPluginInitializer(privilegedLoopbackKubeClientsetInternal, privilegedLoopbackKubeClientsetExternal, internalkubeInformerFactory, authorizer, cloudConfig, quotaRegistry)
 	originAdmission, kubeAdmission, err := buildAdmissionChains(options, privilegedLoopbackKubeClientsetInternal, pluginInitializer, kubePluginInitializer)
 	if err != nil {
 		return nil, err
@@ -830,7 +830,7 @@ func newAuthenticator(config configapi.MasterConfig, restOptionsGetter restoptio
 
 func newProjectAuthorizationCache(subjectLocator authorizer.SubjectLocator, kubeClient kclientsetinternal.Interface, informerFactory shared.InformerFactory, authorizationInformers authorizationinternalinformer.Interface) *projectauth.AuthorizationCache {
 	return projectauth.NewAuthorizationCache(
-		informerFactory.InternalKubernetesInformers().Core().InternalVersion().Namespaces().Informer(),
+		informerFactory.KubernetesInformers().Core().V1().Namespaces().Informer(),
 		projectauth.NewAuthorizerReviewer(subjectLocator),
 		clusterPolicyLister{authorizationInformers.ClusterPolicies().Lister(), authorizationInformers.ClusterPolicies().Informer()},
 		clusterPolicyBindingLister{authorizationInformers.ClusterPolicyBindings().Lister(), authorizationInformers.ClusterPolicyBindings().Informer()},
@@ -1096,8 +1096,8 @@ func (c *MasterConfig) DeploymentLogClient() kclientsetinternal.Interface {
 }
 
 // SecurityAllocationControllerClient returns the security allocation controller client object
-func (c *MasterConfig) SecurityAllocationControllerClient() kclientsetinternal.Interface {
-	return c.PrivilegedLoopbackKubernetesClientsetInternal
+func (c *MasterConfig) SecurityAllocationControllerClient() kclientsetexternal.Interface {
+	return c.PrivilegedLoopbackKubernetesClientsetExternal
 }
 
 // SDNControllerClients returns the SDN controller client objects

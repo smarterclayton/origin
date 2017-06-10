@@ -329,7 +329,7 @@ func (c *MasterConfig) RunSecurityAllocationController() {
 	}
 
 	controller := securitycontroller.NewNamespaceSecurityDefaultsController(
-		c.Informers.InternalKubernetesInformers().Core().InternalVersion().Namespaces(),
+		c.Informers.KubernetesInformers().Core().V1().Namespaces(),
 		kclient.Core().Namespaces(),
 		uidAllocator,
 		securitycontroller.DefaultMCSAllocation(uidRange, mcsRange, alloc.MCSLabelsPerProject),

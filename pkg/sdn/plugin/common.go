@@ -19,7 +19,9 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	kcache "k8s.io/client-go/tools/cache"
 	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	kexternalinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
 	kinternalinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion"
 	kcontainer "k8s.io/kubernetes/pkg/kubelet/container"
 )
@@ -215,7 +217,9 @@ func RunEventQueue(client kcache.Getter, resourceName ResourceName, process Proc
 
 // RegisterSharedInformerEventHandlers registers addOrUpdateFunc and delFunc event handlers with
 // kubernetes shared informers for the given resource name.
-func RegisterSharedInformerEventHandlers(kubeInformers kinternalinformers.SharedInformerFactory,
+func RegisterSharedInformerEventHandlers(
+	kubeInformers kinternalinformers.SharedInformerFactory,
+	kubeExternalInformers kexternalinformers.SharedInformerFactory,
 	addOrUpdateFunc func(interface{}, interface{}, watch.EventType),
 	delFunc func(interface{}), resourceName ResourceName) {
 
@@ -229,8 +233,8 @@ func RegisterSharedInformerEventHandlers(kubeInformers kinternalinformers.Shared
 		informer = internalVersion.Nodes().Informer()
 		expectedObjType = &kapi.Node{}
 	case Namespaces:
-		informer = internalVersion.Namespaces().Informer()
-		expectedObjType = &kapi.Namespace{}
+		informer = kubeExternalInformers.Core().V1().Namespaces().Informer()
+		expectedObjType = &v1.Namespace{}
 	case Services:
 		informer = internalVersion.Services().Informer()
 		expectedObjType = &kapi.Service{}

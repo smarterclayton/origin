@@ -11,7 +11,7 @@ import (
 	utilwait "k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
-	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 
 	osclient "github.com/openshift/origin/pkg/client"
 	osapi "github.com/openshift/origin/pkg/sdn/api"
@@ -281,12 +281,14 @@ func (master *OsdnMaster) VnidStartMaster() error {
 }
 
 func (master *OsdnMaster) watchNamespaces() {
-	RegisterSharedInformerEventHandlers(master.informers.InternalKubernetesInformers(),
+	RegisterSharedInformerEventHandlers(
+		master.informers.InternalKubernetesInformers(),
+		master.informers.KubernetesInformers(),
 		master.handleAddOrUpdateNamespace, master.handleDeleteNamespace, Namespaces)
 }
 
 func (master *OsdnMaster) handleAddOrUpdateNamespace(obj, _ interface{}, eventType watch.EventType) {
-	ns := obj.(*kapi.Namespace)
+	ns := obj.(*v1.Namespace)
 	log.V(5).Infof("Watch %s event for Namespace %q", eventType, ns.Name)
 	if err := master.vnids.assignVNID(master.osClient, ns.Name); err != nil {
 		log.Errorf("Error assigning netid: %v", err)
@@ -294,7 +296,7 @@ func (master *OsdnMaster) handleAddOrUpdateNamespace(obj, _ interface{}, eventTy
 }
 
 func (master *OsdnMaster) handleDeleteNamespace(obj interface{}) {
-	ns := obj.(*kapi.Namespace)
+	ns := obj.(*v1.Namespace)
 	log.V(5).Infof("Watch %s event for Namespace %q", watch.Deleted, ns.Name)
 	if err := master.vnids.revokeVNID(master.osClient, ns.Name); err != nil {
 		log.Errorf("Error revoking netid: %v", err)

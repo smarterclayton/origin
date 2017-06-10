@@ -7,7 +7,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apiserver/pkg/admission"
 	kapi "k8s.io/kubernetes/pkg/api"
-	kclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	kclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	kadmission "k8s.io/kubernetes/pkg/kubeapiserver/admission"
 
 	oadmission "github.com/openshift/origin/pkg/cmd/server/admission"
@@ -29,7 +29,7 @@ type podNodeEnvironment struct {
 }
 
 var _ = oadmission.WantsProjectCache(&podNodeEnvironment{})
-var _ = kadmission.WantsInternalKubeClientSet(&podNodeEnvironment{})
+var _ = kadmission.WantsExternalKubeClientSet(&podNodeEnvironment{})
 
 // Admit enforces that pod and its project node label selectors matches at least a node in the cluster.
 func (p *podNodeEnvironment) Admit(a admission.Attributes) (err error) {
@@ -76,7 +76,7 @@ func (p *podNodeEnvironment) SetProjectCache(c *cache.ProjectCache) {
 	p.cache = c
 }
 
-func (q *podNodeEnvironment) SetInternalKubeClientSet(c kclientset.Interface) {
+func (q *podNodeEnvironment) SetExternalKubeClientSet(c kclientset.Interface) {
 	q.client = c
 }
 

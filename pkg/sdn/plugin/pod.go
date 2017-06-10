@@ -11,7 +11,7 @@ import (
 
 	"github.com/golang/glog"
 
-	kclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	kclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
 	knetwork "k8s.io/kubernetes/pkg/kubelet/network"
 	kubehostport "k8s.io/kubernetes/pkg/kubelet/network/hostport"
 
@@ -41,7 +41,7 @@ type podManager struct {
 	runningPodsLock sync.Mutex
 
 	// Live pod setup/teardown stuff not used in testing code
-	kClient kclientset.Interface
+	kClient kclientset.CoreV1Interface
 	policy  osdnPolicy
 	mtu     uint32
 	ovs     *ovsController
@@ -54,7 +54,7 @@ type podManager struct {
 }
 
 // Creates a new live podManager; used by node code0
-func newPodManager(kClient kclientset.Interface, policy osdnPolicy, mtu uint32, ovs *ovsController) *podManager {
+func newPodManager(kClient kclientset.CoreV1Interface, policy osdnPolicy, mtu uint32, ovs *ovsController) *podManager {
 	pm := newDefaultPodManager()
 	pm.kClient = kClient
 	pm.policy = policy

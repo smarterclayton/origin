@@ -15,7 +15,7 @@ import (
 	utilwait "k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/client-go/tools/cache"
-	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
 	"github.com/openshift/origin/pkg/authorization/authorizer/scope"
@@ -25,7 +25,7 @@ import (
 // Lister enforces ability to enumerate a resource based on policy
 type Lister interface {
 	// List returns the list of Namespace items that the user can access
-	List(user user.Info) (*kapi.NamespaceList, error)
+	List(user user.Info) (*v1.NamespaceList, error)
 }
 
 // subjectRecord is a cache record for the set of namespaces a subject can access
@@ -237,7 +237,7 @@ func (ac *AuthorizationCache) synchronizeNamespaces(userSubjectRecordStore cache
 	namespaceSet := sets.NewString()
 	items := ac.namespaceStore.List()
 	for i := range items {
-		namespace := items[i].(*kapi.Namespace)
+		namespace := items[i].(*v1.Namespace)
 		namespaceSet.Insert(namespace.Name)
 		reviewRequest := &reviewRequest{
 			namespace:                namespace.Name,
@@ -419,7 +419,7 @@ func (ac *AuthorizationCache) syncRequest(request *reviewRequest, userSubjectRec
 }
 
 // List returns the set of namespace names the user has access to view
-func (ac *AuthorizationCache) List(userInfo user.Info) (*kapi.NamespaceList, error) {
+func (ac *AuthorizationCache) List(userInfo user.Info) (*v1.NamespaceList, error) {
 	keys := sets.String{}
 	user := userInfo.GetName()
 	groups := userInfo.GetGroups()
@@ -443,14 +443,14 @@ func (ac *AuthorizationCache) List(userInfo user.Info) (*kapi.NamespaceList, err
 		return nil, err
 	}
 
-	namespaceList := &kapi.NamespaceList{}
+	namespaceList := &v1.NamespaceList{}
 	for _, key := range keys.List() {
 		namespaceObj, exists, err := ac.namespaceStore.GetByKey(key)
 		if err != nil {
 			return nil, err
 		}
 		if exists {
-			namespace := *namespaceObj.(*kapi.Namespace)
+			namespace := *namespaceObj.(*v1.Namespace)
 			if allowedNamespaces.Has("*") || allowedNamespaces.Has(namespace.Name) {
 				namespaceList.Items = append(namespaceList.Items, namespace)
 			}

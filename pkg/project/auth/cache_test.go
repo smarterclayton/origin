@@ -138,8 +138,8 @@ func validateList(t *testing.T, lister Lister, user user.Info, expectedSet sets.
 }
 
 func TestSyncNamespace(t *testing.T) {
-	namespaceList := kapi.NamespaceList{
-		Items: []kapi.Namespace{
+	namespaceList := v1.NamespaceList{
+		Items: []v1.Namespace{
 			{
 				ObjectMeta: metav1.ObjectMeta{Name: "foo", ResourceVersion: "1"},
 			},
@@ -173,7 +173,7 @@ func TestSyncNamespace(t *testing.T) {
 	informers := informers.NewSharedInformerFactory(mockKubeClient, controller.NoResyncPeriodFunc())
 
 	authorizationCache := NewAuthorizationCache(
-		informers.Core().InternalVersion().Namespaces().Informer(),
+		informers.Core().V1().Namespaces().Informer(),
 		reviewer,
 		MockClusterPolicyGetter{}, MockClusterPolicyBindingGetter{},
 		MockPolicyGetter{}, MockPolicyBindingGetter{},

@@ -34,7 +34,7 @@ func TestRepair(t *testing.T) {
 	client := &fake.Clientset{}
 	client.AddReactor("*", "*", func(a clientgotesting.Action) (bool, runtime.Object, error) {
 		list := &kapi.NamespaceList{
-			Items: []kapi.Namespace{
+			Items: []v1.Namespace{
 				{ObjectMeta: metav1.ObjectMeta{Name: "default"}},
 			},
 		}
@@ -67,7 +67,7 @@ func TestRepairIgnoresMismatch(t *testing.T) {
 	client := &fake.Clientset{}
 	client.AddReactor("*", "*", func(a clientgotesting.Action) (bool, runtime.Object, error) {
 		list := &kapi.NamespaceList{
-			Items: []kapi.Namespace{
+			Items: []v1.Namespace{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:        "default",

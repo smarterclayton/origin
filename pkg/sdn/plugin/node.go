@@ -27,7 +27,9 @@ import (
 	kwait "k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	kapi "k8s.io/kubernetes/pkg/api"
-	kclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	kclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
+	kinternalclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	kexternalinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
 	kinternalinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion"
 	knetwork "k8s.io/kubernetes/pkg/kubelet/network"
 	kexec "k8s.io/kubernetes/pkg/util/exec"
@@ -51,7 +53,8 @@ type osdnPolicy interface {
 
 type OsdnNode struct {
 	policy             osdnPolicy
-	kClient            kclientset.Interface
+	kClient            kclientset.CoreV1Interface
+	kInternalClient    kinternalclientset.Interface
 	osClient           *osclient.Client
 	oc                 *ovsController
 	networkInfo        *NetworkInfo
@@ -74,11 +77,12 @@ type OsdnNode struct {
 
 	clearLbr0IptablesRule bool
 
-	kubeInformers kinternalinformers.SharedInformerFactory
+	kubeInformers         kinternalinformers.SharedInformerFactory
+	kubeExternalInformers kexternalinformers.SharedInformerFactory
 }
 
 // Called by higher layers to create the plugin SDN node instance
-func NewNodePlugin(pluginName string, osClient *osclient.Client, kClient kclientset.Interface, hostname string, selfIP string, iptablesSyncPeriod time.Duration, mtu uint32, kubeInformers kinternalinformers.SharedInformerFactory) (*OsdnNode, error) {
+func NewNodePlugin(pluginName string, osClient *osclient.Client, kClient kclientset.CoreV1Interface, kInternalClient kinternalclientset.Interface, hostname string, selfIP string, iptablesSyncPeriod time.Duration, mtu uint32, kubeInformers kinternalinformers.SharedInformerFactory, kubeExternalInformers kexternalinformers.SharedInformerFactory) (*OsdnNode, error) {
 	var policy osdnPolicy
 	var pluginId int
 	var minOvsVersion string
@@ -129,20 +133,22 @@ func NewNodePlugin(pluginName string, osClient *osclient.Client, kClient kclient
 	oc := NewOVSController(ovsif, pluginId)
 
 	plugin := &OsdnNode{
-		policy:             policy,
-		kClient:            kClient,
-		osClient:           osClient,
-		oc:                 oc,
-		podManager:         newPodManager(kClient, policy, mtu, oc),
-		localIP:            selfIP,
-		hostName:           hostname,
-		podNetworkReady:    make(chan struct{}),
-		kubeletInitReady:   make(chan struct{}),
-		iptablesSyncPeriod: iptablesSyncPeriod,
-		mtu:                mtu,
-		egressPolicies:     make(map[uint32][]osapi.EgressNetworkPolicy),
-		egressDNS:          NewEgressDNS(),
-		kubeInformers:      kubeInformers,
+		policy:                policy,
+		kClient:               kClient,
+		kInternalClient:       kInternalClient,
+		osClient:              osClient,
+		oc:                    oc,
+		podManager:            newPodManager(kClient, policy, mtu, oc),
+		localIP:               selfIP,
+		hostName:              hostname,
+		podNetworkReady:       make(chan struct{}),
+		kubeletInitReady:      make(chan struct{}),
+		iptablesSyncPeriod:    iptablesSyncPeriod,
+		mtu:                   mtu,
+		egressPolicies:        make(map[uint32][]osapi.EgressNetworkPolicy),
+		egressDNS:             NewEgressDNS(),
+		kubeInformers:         kubeInformers,
+		kubeExternalInformers: kubeExternalInformers,
 	}
 
 	if err := plugin.dockerPreCNICleanup(); err != nil {
@@ -318,7 +324,7 @@ func (node *OsdnNode) GetLocalPods(namespace string) ([]kapi.Pod, error) {
 		LabelSelector: labels.Everything().String(),
 		FieldSelector: fieldSelector.String(),
 	}
-	podList, err := node.kClient.Core().Pods(namespace).List(opts)
+	podList, err := node.kInternalClient.Core().Pods(namespace).List(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -360,7 +366,9 @@ func isServiceChanged(oldsvc, newsvc *kapi.Service) bool {
 }
 
 func (node *OsdnNode) watchServices() {
-	RegisterSharedInformerEventHandlers(node.kubeInformers,
+	RegisterSharedInformerEventHandlers(
+		node.kubeInformers,
+		node.kubeExternalInformers,
 		node.handleAddOrUpdateService, node.handleDeleteService, Services)
 }
 

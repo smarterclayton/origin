@@ -7,7 +7,8 @@ import (
 	"k8s.io/apiserver/pkg/admission"
 	"k8s.io/client-go/tools/cache"
 	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 
 	projectcache "github.com/openshift/origin/pkg/project/cache"
 	"github.com/openshift/origin/pkg/util/labelselector"
@@ -15,7 +16,7 @@ import (
 
 // TestPodAdmission verifies various scenarios involving pod/project/global node label selectors
 func TestPodAdmission(t *testing.T) {
-	project := &kapi.Namespace{
+	project := &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "testProject",
 			Namespace: "",

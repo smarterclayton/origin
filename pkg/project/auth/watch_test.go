@@ -10,16 +10,16 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/apiserver/pkg/authentication/user"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
-	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
+	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
 	"k8s.io/kubernetes/pkg/controller"
 
 	projectapi "github.com/openshift/origin/pkg/project/api"
 	projectcache "github.com/openshift/origin/pkg/project/cache"
 )
 
-func newTestWatcher(username string, groups []string, namespaces ...*kapi.Namespace) (*userProjectWatcher, *fakeAuthCache, chan struct{}) {
+func newTestWatcher(username string, groups []string, namespaces ...*v1.Namespace) (*userProjectWatcher, *fakeAuthCache, chan struct{}) {
 	objects := []runtime.Object{}
 	for i := range namespaces {
 		objects = append(objects, namespaces[i])
@@ -28,7 +28,7 @@ func newTestWatcher(username string, groups []string, namespaces ...*kapi.Namesp
 
 	informers := informers.NewSharedInformerFactory(mockClient, controller.NoResyncPeriodFunc())
 	projectCache := projectcache.NewProjectCache(
-		informers.Core().InternalVersion().Namespaces().Informer(),
+		informers.Core().V1().Namespaces().Informer(),
 		mockClient.Core().Namespaces(),
 		"",
 	)
@@ -41,7 +41,7 @@ func newTestWatcher(username string, groups []string, namespaces ...*kapi.Namesp
 }
 
 type fakeAuthCache struct {
-	namespaces []*kapi.Namespace
+	namespaces []*v1.Namespace
 
 	removed []CacheWatcher
 }
@@ -50,14 +50,13 @@ func (w *fakeAuthCache) RemoveWatcher(watcher CacheWatcher) {
 	w.removed = append(w.removed, watcher)
 }
 
-func (w *fakeAuthCache) List(userInfo user.Info) (*kapi.NamespaceList, error) {
-	ret := &kapi.NamespaceList{}
+func (w *fakeAuthCache) List(userInfo user.Info) (*v1.NamespaceList, error) {
+	ret := &v1.NamespaceList{}
 	if w.namespaces != nil {
 		for i := range w.namespaces {
 			ret.Items = append(ret.Items, *w.namespaces[i])
 		}
 	}
-
 	return ret, nil
 }
 
@@ -190,10 +189,10 @@ func TestAddModifyDeleteEventsByGroup(t *testing.T) {
 	}
 }
 
-func newNamespaces(names ...string) []*kapi.Namespace {
-	ret := []*kapi.Namespace{}
+func newNamespaces(names ...string) []*v1.Namespace {
+	ret := []*v1.Namespace{}
 	for _, name := range names {
-		ret = append(ret, &kapi.Namespace{ObjectMeta: metav1.ObjectMeta{Name: name}})
+		ret = append(ret, &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: name}})
 	}
 
 	return ret

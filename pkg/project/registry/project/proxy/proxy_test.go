@@ -8,8 +8,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apiserver/pkg/authentication/user"
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 
 	oapi "github.com/openshift/origin/pkg/api"
 	"github.com/openshift/origin/pkg/project/api"
@@ -17,16 +17,16 @@ import (
 
 // mockLister returns the namespaces in the list
 type mockLister struct {
-	namespaceList *kapi.NamespaceList
+	namespaceList *v1.NamespaceList
 }
 
-func (ml *mockLister) List(user user.Info) (*kapi.NamespaceList, error) {
+func (ml *mockLister) List(user user.Info) (*v1.NamespaceList, error) {
 	return ml.namespaceList, nil
 }
 
 func TestListProjects(t *testing.T) {
-	namespaceList := kapi.NamespaceList{
-		Items: []kapi.Namespace{
+	namespaceList := v1.NamespaceList{
+		Items: []v1.Namespace{
 			{
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 			},
@@ -100,7 +100,7 @@ func TestCreateProjectOK(t *testing.T) {
 }
 
 func TestGetProjectOK(t *testing.T) {
-	mockClient := fake.NewSimpleClientset(&kapi.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
+	mockClient := fake.NewSimpleClientset(&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "foo"}})
 	storage := NewREST(mockClient.Core().Namespaces(), &mockLister{}, nil, nil)
 	project, err := storage.Get(apirequest.NewContext(), "foo", &metav1.GetOptions{})
 	if project == nil {

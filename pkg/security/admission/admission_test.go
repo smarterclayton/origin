@@ -508,7 +508,7 @@ func hasSupGroup(group int64, groups []int64) bool {
 }
 
 func TestCreateProvidersFromConstraints(t *testing.T) {
-	namespaceValid := &kapi.Namespace{
+	namespaceValid := &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "default",
 			Annotations: map[string]string{
@@ -518,7 +518,7 @@ func TestCreateProvidersFromConstraints(t *testing.T) {
 			},
 		},
 	}
-	namespaceNoUID := &kapi.Namespace{
+	namespaceNoUID := &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "default",
 			Annotations: map[string]string{
@@ -527,7 +527,7 @@ func TestCreateProvidersFromConstraints(t *testing.T) {
 			},
 		},
 	}
-	namespaceNoMCS := &kapi.Namespace{
+	namespaceNoMCS := &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "default",
 			Annotations: map[string]string{
@@ -537,7 +537,7 @@ func TestCreateProvidersFromConstraints(t *testing.T) {
 		},
 	}
 
-	namespaceNoSupplementalGroupsFallbackToUID := &kapi.Namespace{
+	namespaceNoSupplementalGroupsFallbackToUID := &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "default",
 			Annotations: map[string]string{
@@ -547,7 +547,7 @@ func TestCreateProvidersFromConstraints(t *testing.T) {
 		},
 	}
 
-	namespaceBadSupGroups := &kapi.Namespace{
+	namespaceBadSupGroups := &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "default",
 			Annotations: map[string]string{
@@ -561,7 +561,7 @@ func TestCreateProvidersFromConstraints(t *testing.T) {
 	testCases := map[string]struct {
 		// use a generating function so we can test for non-mutation
 		scc         func() *kapi.SecurityContextConstraints
-		namespace   *kapi.Namespace
+		namespace   *v1.Namespace
 		expectedErr string
 	}{
 		"valid non-preallocated scc": {

@@ -9,7 +9,7 @@ import (
 	utilwait "k8s.io/apimachinery/pkg/util/wait"
 	etcd "k8s.io/apiserver/pkg/storage/etcd"
 	kapi "k8s.io/kubernetes/pkg/api"
-	kcorelisters "k8s.io/kubernetes/pkg/client/listers/core/internalversion"
+	kcorelisters "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	utilquota "k8s.io/kubernetes/pkg/quota"
 
 	oclient "github.com/openshift/origin/pkg/client"

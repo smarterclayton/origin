@@ -539,6 +539,7 @@ func StartAPI(oc *origin.MasterConfig, kc *kubernetes.MasterConfig) error {
 
 	// start up the informers that we're trying to use in the API server
 	oc.Informers.InternalKubernetesInformers().Start(utilwait.NeverStop)
+	oc.Informers.KubernetesInformers().Start(utilwait.NeverStop)
 	oc.Informers.Start(utilwait.NeverStop)
 	oc.InitializeObjects()
 
@@ -656,7 +657,10 @@ func startControllers(oc *origin.MasterConfig, kc *kubernetes.MasterConfig) erro
 	// requires privileged 'rootClientBuilder' iow. have to start before any other
 	// controller starts (including kubernetes controllers).
 	openshiftControllerContext := origincontrollers.ControllerContext{
-		KubeControllerContext: kctrlmgr.ControllerContext{Options: *controllerManagerOptions},
+		KubeControllerContext: kctrlmgr.ControllerContext{
+			Options:         *controllerManagerOptions,
+			InformerFactory: oc.Informers.KubernetesInformers(),
+		},
 		ClientBuilder: origincontrollers.OpenshiftControllerClientBuilder{
 			ControllerClientBuilder: controller.SAControllerClientBuilder{
 				ClientConfig:         restclient.AnonymousClientConfig(&oc.PrivilegedLoopbackClientConfig),

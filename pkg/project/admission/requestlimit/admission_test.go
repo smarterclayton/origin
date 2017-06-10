@@ -11,8 +11,8 @@ import (
 	"k8s.io/apiserver/pkg/storage/names"
 	clientgotesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 
 	"github.com/openshift/origin/pkg/client/testclient"
 	oadmission "github.com/openshift/origin/pkg/cmd/server/admission"
@@ -339,14 +339,14 @@ func configEquals(a, b *requestlimitapi.ProjectRequestLimitConfig) bool {
 	return true
 }
 
-func fakeNs(name string, terminating bool) *kapi.Namespace {
-	ns := &kapi.Namespace{}
+func fakeNs(name string, terminating bool) *v1.Namespace {
+	ns := &v1.Namespace{}
 	ns.Name = names.SimpleNameGenerator.GenerateName("testns")
 	ns.Annotations = map[string]string{
 		"openshift.io/requester": name,
 	}
 	if terminating {
-		ns.Status.Phase = kapi.NamespaceTerminating
+		ns.Status.Phase = v1.NamespaceTerminating
 	}
 	return ns
 }

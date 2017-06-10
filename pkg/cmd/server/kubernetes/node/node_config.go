@@ -27,6 +27,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/componentconfig/v1alpha1"
 	kclientsetexternal "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	kclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	kinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
 	kinternalinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 	"k8s.io/kubernetes/pkg/kubelet"
@@ -65,6 +66,8 @@ type NodeConfig struct {
 	ExternalKubeClientset kclientsetexternal.Interface
 	// Internal kubernetes shared informer factory.
 	InternalKubeInformers kinternalinformers.SharedInformerFactory
+	// External kubernetes shared informer factory.
+	ExternalKubeInformers kinformers.SharedInformerFactory
 	// DockerClient is a client to connect to Docker
 	DockerClient dockertools.DockerInterface
 	// KubeletServer contains the KubeletServer configuration
@@ -242,8 +245,9 @@ func BuildKubernetesNodeConfig(options configapi.NodeConfig, enableProxy, enable
 	}
 
 	internalKubeInformers := kinternalinformers.NewSharedInformerFactory(kubeClient, proxyconfig.ConfigSyncPeriod)
+	externalKubeInformers := kinformers.NewSharedInformerFactory(externalKubeClient, proxyconfig.ConfigSyncPeriod)
 
-	sdnPlugin, err := sdnplugin.NewNodePlugin(options.NetworkConfig.NetworkPluginName, originClient, kubeClient, options.NodeName, options.NodeIP, iptablesSyncPeriod, options.NetworkConfig.MTU, internalKubeInformers)
+	sdnPlugin, err := sdnplugin.NewNodePlugin(options.NetworkConfig.NetworkPluginName, originClient, externalKubeClient.CoreV1(), kubeClient, options.NodeName, options.NodeIP, iptablesSyncPeriod, options.NetworkConfig.MTU, internalKubeInformers, externalKubeInformers)
 	if err != nil {
 		return nil, fmt.Errorf("SDN initialization failed: %v", err)
 	}
@@ -325,6 +329,7 @@ func BuildKubernetesNodeConfig(options configapi.NodeConfig, enableProxy, enable
 		Client:                kubeClient,
 		ExternalKubeClientset: externalKubeClient,
 		InternalKubeInformers: internalKubeInformers,
+		ExternalKubeInformers: externalKubeInformers,
 
 		VolumeDir: options.VolumeDirectory,
 

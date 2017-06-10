@@ -12,7 +12,8 @@ import (
 	clientgotesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 	kapi "k8s.io/kubernetes/pkg/api"
-	kcorelisters "k8s.io/kubernetes/pkg/client/listers/core/internalversion"
+	"k8s.io/kubernetes/pkg/api/v1"
+	kcorelisters "k8s.io/kubernetes/pkg/client/listers/core/v1"
 
 	"github.com/openshift/origin/pkg/client/testclient"
 	quotaapi "github.com/openshift/origin/pkg/quota/api"
@@ -170,7 +171,7 @@ func TestGetQuota(t *testing.T) {
 	testCases := []struct {
 		name                string
 		availableQuotas     func() []*quotaapi.ClusterResourceQuota
-		availableNamespaces []*kapi.Namespace
+		availableNamespaces []*v1.Namespace
 		mapperFunc          func() clusterquotamapping.ClusterQuotaMapper
 		requestedNamespace  string
 
@@ -182,7 +183,7 @@ func TestGetQuota(t *testing.T) {
 			availableQuotas: func() []*quotaapi.ClusterResourceQuota {
 				return nil
 			},
-			availableNamespaces: []*kapi.Namespace{
+			availableNamespaces: []*v1.Namespace{
 				{ObjectMeta: metav1.ObjectMeta{Name: "foo", Labels: map[string]string{"one": "alfa"}}},
 			},
 			mapperFunc: func() clusterquotamapping.ClusterQuotaMapper {
@@ -200,7 +201,7 @@ func TestGetQuota(t *testing.T) {
 			availableQuotas: func() []*quotaapi.ClusterResourceQuota {
 				return nil
 			},
-			availableNamespaces: []*kapi.Namespace{
+			availableNamespaces: []*v1.Namespace{
 				{ObjectMeta: metav1.ObjectMeta{Name: "foo", Labels: map[string]string{"one": "alfa"}}},
 			},
 			mapperFunc: func() clusterquotamapping.ClusterQuotaMapper {
@@ -245,7 +246,7 @@ func TestGetQuota(t *testing.T) {
 
 				return []*quotaapi.ClusterResourceQuota{user1, user2}
 			},
-			availableNamespaces: []*kapi.Namespace{
+			availableNamespaces: []*v1.Namespace{
 				{ObjectMeta: metav1.ObjectMeta{Name: "foo", Labels: map[string]string{"one": "alfa"}}},
 			},
 			mapperFunc: func() clusterquotamapping.ClusterQuotaMapper {

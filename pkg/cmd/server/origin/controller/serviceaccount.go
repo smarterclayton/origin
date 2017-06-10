@@ -34,7 +34,7 @@ func (c *ServiceAccountControllerOptions) RunController(ctx ControllerContext) (
 
 	go sacontroller.NewServiceAccountsController(
 		ctx.DeprecatedOpenshiftInformers.KubernetesInformers().Core().V1().ServiceAccounts(),
-		ctx.DeprecatedOpenshiftInformers.KubernetesInformers().Core().V1().Namespaces(),
+		ctx.KubeControllerContext.InformerFactory.Core().V1().Namespaces(),
 		ctx.ClientBuilder.ClientOrDie(bootstrappolicy.InfraServiceAccountControllerServiceAccountName),
 		options).Run(3, ctx.Stop)
 

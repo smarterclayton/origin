@@ -13,6 +13,7 @@ import (
 	"k8s.io/apiserver/pkg/authentication/user"
 	kstorage "k8s.io/apiserver/pkg/storage"
 	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 
 	projectcache "github.com/openshift/origin/pkg/project/cache"
 	projectutil "github.com/openshift/origin/pkg/project/util"
@@ -28,7 +29,7 @@ type WatchableCache interface {
 	// RemoveWatcher removes a watcher
 	RemoveWatcher(CacheWatcher)
 	// List returns the set of namespace names the user has access to view
-	List(userInfo user.Info) (*kapi.NamespaceList, error)
+	List(userInfo user.Info) (*v1.NamespaceList, error)
 }
 
 // userProjectWatcher converts a native etcd watch to a watch.Interface.
@@ -59,7 +60,7 @@ type userProjectWatcher struct {
 	projectCache *projectcache.ProjectCache
 	authCache    WatchableCache
 
-	initialProjects []kapi.Namespace
+	initialProjects []v1.Namespace
 	// knownProjects maps name to resourceVersion
 	knownProjects map[string]string
 }
@@ -78,7 +79,7 @@ func NewUserProjectWatcher(user user.Info, visibleNamespaces sets.String, projec
 	}
 
 	// this is optional.  If they don't request it, don't include it.
-	initialProjects := []kapi.Namespace{}
+	initialProjects := []v1.Namespace{}
 	if includeAllExistingProjects {
 		initialProjects = append(initialProjects, namespaces.Items...)
 	}
@@ -140,7 +141,7 @@ func (w *userProjectWatcher) GroupMembershipChanged(namespaceName string, users,
 
 		event := watch.Event{
 			Type:   watch.Added,
-			Object: projectutil.ConvertNamespace(namespace),
+			Object: projectutil.ConvertNamespaceV1(namespace),
 		}
 
 		// if we already have this in our list, then we're getting notified because the object changed
@@ -188,7 +189,7 @@ func (w *userProjectWatcher) Watch() {
 
 		w.emit(watch.Event{
 			Type:   watch.Added,
-			Object: projectutil.ConvertNamespace(&w.initialProjects[i]),
+			Object: projectutil.ConvertNamespaceV1(&w.initialProjects[i]),
 		})
 	}
 

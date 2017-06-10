@@ -13,9 +13,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-	kapi "k8s.io/kubernetes/pkg/api"
-	kcoreinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion/core/internalversion"
-	kcorelisters "k8s.io/kubernetes/pkg/client/listers/core/internalversion"
+	"k8s.io/kubernetes/pkg/api/v1"
+	kcoreinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions/core/v1"
+	kcorelisters "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	"k8s.io/kubernetes/pkg/controller"
 
 	quotaapi "github.com/openshift/origin/pkg/quota/api"
@@ -165,7 +165,7 @@ func (c *ClusterQuotaMappingController) syncQuota(quota *quotaapi.ClusterResourc
 	return nil
 }
 
-func (c *ClusterQuotaMappingController) syncNamespace(namespace *kapi.Namespace) error {
+func (c *ClusterQuotaMappingController) syncNamespace(namespace *v1.Namespace) error {
 	allQuotas, err1 := c.quotaLister.List(labels.Everything())
 	if err1 != nil {
 		return err1
@@ -300,14 +300,14 @@ func (c *ClusterQuotaMappingController) namespaceWorker() {
 }
 
 func (c *ClusterQuotaMappingController) deleteNamespace(obj interface{}) {
-	ns, ok1 := obj.(*kapi.Namespace)
+	ns, ok1 := obj.(*v1.Namespace)
 	if !ok1 {
 		tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
 		if !ok {
 			utilruntime.HandleError(fmt.Errorf("couldn't get object from tombstone %v", obj))
 			return
 		}
-		ns, ok = tombstone.Obj.(*kapi.Namespace)
+		ns, ok = tombstone.Obj.(*v1.Namespace)
 		if !ok {
 			utilruntime.HandleError(fmt.Errorf("tombstone contained object that is not a Namespace %v", obj))
 			return
@@ -324,7 +324,7 @@ func (c *ClusterQuotaMappingController) updateNamespace(old, cur interface{}) {
 	c.enqueueNamespace(cur)
 }
 func (c *ClusterQuotaMappingController) enqueueNamespace(obj interface{}) {
-	ns, ok := obj.(*kapi.Namespace)
+	ns, ok := obj.(*v1.Namespace)
 	if !ok {
 		utilruntime.HandleError(fmt.Errorf("not a Namespace %v", obj))
 		return

@@ -13,7 +13,8 @@ import (
 	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/client-go/tools/cache"
 	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 
 	configapilatest "github.com/openshift/origin/pkg/cmd/server/api/latest"
 	projectcache "github.com/openshift/origin/pkg/project/cache"
@@ -128,7 +129,7 @@ func TestLimitRequestAdmission(t *testing.T) {
 		expectedMemRequest resource.Quantity
 		expectedCpuLimit   resource.Quantity
 		expectedCpuRequest resource.Quantity
-		namespace          *kapi.Namespace
+		namespace          *v1.Namespace
 	}{
 		{
 			name:               "ignore pods that have no memory limit specified",
@@ -309,9 +310,9 @@ func fakeUser() user.Info {
 
 var nsIndex = 0
 
-func fakeNamespace(pluginEnabled bool) *kapi.Namespace {
+func fakeNamespace(pluginEnabled bool) *v1.Namespace {
 	nsIndex++
-	ns := &kapi.Namespace{
+	ns := &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf("fakeNS%d", nsIndex),
 			Annotations: map[string]string{},
@@ -323,7 +324,7 @@ func fakeNamespace(pluginEnabled bool) *kapi.Namespace {
 	return ns
 }
 
-func fakeProjectCache(ns *kapi.Namespace) *projectcache.ProjectCache {
+func fakeProjectCache(ns *v1.Namespace) *projectcache.ProjectCache {
 	store := projectcache.NewCacheStore(cache.MetaNamespaceKeyFunc)
 	store.Add(ns)
 	return projectcache.NewFake((&fake.Clientset{}).Core().Namespaces(), store, "")

@@ -375,6 +375,7 @@ func StartNode(nodeConfig configapi.NodeConfig, components *utilflags.ComponentF
 	}
 
 	config.InternalKubeInformers.Start(wait.NeverStop)
+	config.ExternalKubeInformers.Start(wait.NeverStop)
 
 	return nil
 }

@@ -19,7 +19,9 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	kexternalinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
 	kinternalinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion"
 
 	osapi "github.com/openshift/origin/pkg/sdn/api"
@@ -36,10 +38,11 @@ type networkPolicyPlugin struct {
 
 	lock        sync.Mutex
 	namespaces  map[uint32]*npNamespace
-	kNamespaces map[string]kapi.Namespace
+	kNamespaces map[string]*v1.Namespace
 	pods        map[ktypes.UID]kapi.Pod
 
-	kubeInformers kinternalinformers.SharedInformerFactory
+	kubeInformers         kinternalinformers.SharedInformerFactory
+	kubeExternalInformers kexternalinformers.SharedInformerFactory
 }
 
 // npNamespace tracks NetworkPolicy-related data for a Namespace
@@ -65,7 +68,7 @@ type npPolicy struct {
 func NewNetworkPolicyPlugin() osdnPolicy {
 	return &networkPolicyPlugin{
 		namespaces:  make(map[uint32]*npNamespace),
-		kNamespaces: make(map[string]kapi.Namespace),
+		kNamespaces: make(map[string]*v1.Namespace),
 		pods:        make(map[ktypes.UID]kapi.Pod),
 	}
 }
@@ -77,6 +80,7 @@ func (np *networkPolicyPlugin) Name() string {
 func (np *networkPolicyPlugin) Start(node *OsdnNode) error {
 	np.node = node
 	np.kubeInformers = node.kubeInformers
+	np.kubeExternalInformers = node.kubeExternalInformers
 	np.vnids = newNodeVNIDMap(np, node.osClient)
 	if err := np.vnids.Start(); err != nil {
 		return err
@@ -109,12 +113,12 @@ func (np *networkPolicyPlugin) initNamespaces() error {
 	np.lock.Lock()
 	defer np.lock.Unlock()
 
-	namespaces, err := np.node.kClient.Core().Namespaces().List(metav1.ListOptions{})
+	namespaces, err := np.node.kClient.Namespaces().List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 	for _, ns := range namespaces.Items {
-		np.kNamespaces[ns.Name] = ns
+		np.kNamespaces[ns.Name] = &ns
 
 		if vnid, err := np.vnids.WaitAndGetVNID(ns.Name); err == nil {
 			np.namespaces[vnid] = &npNamespace{
@@ -127,7 +131,7 @@ func (np *networkPolicyPlugin) initNamespaces() error {
 		}
 	}
 
-	policies, err := np.node.kClient.Extensions().NetworkPolicies(kapi.NamespaceAll).List(metav1.ListOptions{})
+	policies, err := np.node.kInternalClient.Extensions().NetworkPolicies(kapi.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		if kapierrs.IsForbidden(err) {
 			glog.Errorf("Unable to query NetworkPolicies (%v) - please ensure your nodes have access to view NetworkPolicy (eg, 'oadm policy reconcile-cluster-roles')", err)
@@ -157,7 +161,7 @@ func (np *networkPolicyPlugin) AddNetNamespace(netns *osapi.NetNamespace) {
 
 	isolated := false
 	if kns, exists := np.kNamespaces[netns.NetName]; exists {
-		isolated = namespaceIsIsolated(&kns)
+		isolated = namespaceIsIsolated(kns)
 	}
 
 	np.namespaces[netns.NetID] = &npNamespace{
@@ -387,7 +391,7 @@ func (np *networkPolicyPlugin) updateNetworkPolicy(npns *npNamespace, policy *ex
 }
 
 func (np *networkPolicyPlugin) watchNetworkPolicies() {
-	RunEventQueue(np.node.kClient.Extensions().RESTClient(), NetworkPolicies, func(delta cache.Delta) error {
+	RunEventQueue(np.node.kInternalClient.Extensions().RESTClient(), NetworkPolicies, func(delta cache.Delta) error {
 		policy := delta.Object.(*extensions.NetworkPolicy)
 
 		glog.V(5).Infof("Watch %s event for NetworkPolicy %s/%s", delta.Type, policy.Namespace, policy.Name)
@@ -437,7 +441,7 @@ type NamespaceIngressPolicy struct {
 	Isolation *IngressIsolationPolicy `json:"isolation,omitempty"`
 }
 
-func namespaceIsIsolated(ns *kapi.Namespace) bool {
+func namespaceIsIsolated(ns *v1.Namespace) bool {
 	annotation, exists := ns.Annotations[NetworkPolicyAnnotation]
 	if !exists {
 		return false
@@ -454,7 +458,9 @@ func namespaceIsIsolated(ns *kapi.Namespace) bool {
 }
 
 func (np *networkPolicyPlugin) watchPods() {
-	RegisterSharedInformerEventHandlers(np.kubeInformers,
+	RegisterSharedInformerEventHandlers(
+		np.kubeInformers,
+		np.kubeExternalInformers,
 		np.handleAddOrUpdatePod, np.handleDeletePod, Pods)
 }
 
@@ -503,12 +509,14 @@ func (np *networkPolicyPlugin) handleDeletePod(obj interface{}) {
 }
 
 func (np *networkPolicyPlugin) watchNamespaces() {
-	RegisterSharedInformerEventHandlers(np.kubeInformers,
+	RegisterSharedInformerEventHandlers(
+		np.kubeInformers,
+		np.kubeExternalInformers,
 		np.handleAddOrUpdateNamespace, np.handleDeleteNamespace, Namespaces)
 }
 
 func (np *networkPolicyPlugin) handleAddOrUpdateNamespace(obj, _ interface{}, eventType watch.EventType) {
-	ns := obj.(*kapi.Namespace)
+	ns := obj.(*v1.Namespace)
 	glog.V(5).Infof("Watch %s event for Namespace %q", eventType, ns.Name)
 	// Don't grab the lock yet since this may block
 	vnid, err := np.vnids.WaitAndGetVNID(ns.Name)
@@ -519,19 +527,19 @@ func (np *networkPolicyPlugin) handleAddOrUpdateNamespace(obj, _ interface{}, ev
 
 	np.lock.Lock()
 	defer np.lock.Unlock()
-	np.kNamespaces[ns.Name] = *ns
+	np.kNamespaces[ns.Name] = ns
 	if npns, exists := np.namespaces[vnid]; exists {
 		npns.isolated = namespaceIsIsolated(ns)
 		np.syncNamespace(npns)
 	}
 	// else the NetNamespace doesn't exist yet, but we will initialize
-	// npns.isolated from the kapi.Namespace when it's created
+	// npns.isolated from the v1.Namespace when it's created
 
 	np.refreshNetworkPolicies(Namespaces)
 }
 
 func (np *networkPolicyPlugin) handleDeleteNamespace(obj interface{}) {
-	ns := obj.(*kapi.Namespace)
+	ns := obj.(*v1.Namespace)
 	glog.V(5).Infof("Watch %s event for Namespace %q", watch.Deleted, ns.Name)
 	np.lock.Lock()
 	defer np.lock.Unlock()

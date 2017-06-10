@@ -168,7 +168,9 @@ func (master *OsdnMaster) clearInitialNodeNetworkUnavailableCondition(node *kapi
 }
 
 func (master *OsdnMaster) watchNodes() {
-	RegisterSharedInformerEventHandlers(master.informers.InternalKubernetesInformers(),
+	RegisterSharedInformerEventHandlers(
+		master.informers.InternalKubernetesInformers(),
+		master.informers.KubernetesInformers(),
 		master.handleAddOrUpdateNode, master.handleDeleteNode, Nodes)
 }
 
