@@ -463,6 +463,7 @@ func (m *Master) Start() error {
 			openshiftConfig.AppInformers.Start(utilwait.NeverStop)
 			openshiftConfig.AuthorizationInformers.Start(utilwait.NeverStop)
 			openshiftConfig.ImageInformers.Start(utilwait.NeverStop)
+			openshiftConfig.QuotaInformers.Start(utilwait.NeverStop)
 			openshiftConfig.TemplateInformers.Start(utilwait.NeverStop)
 		}()
 	} else {
@@ -472,6 +473,7 @@ func (m *Master) Start() error {
 		openshiftConfig.AppInformers.Start(utilwait.NeverStop)
 		openshiftConfig.AuthorizationInformers.Start(utilwait.NeverStop)
 		openshiftConfig.ImageInformers.Start(utilwait.NeverStop)
+		openshiftConfig.QuotaInformers.Start(utilwait.NeverStop)
 		openshiftConfig.TemplateInformers.Start(utilwait.NeverStop)
 	}
 
