@@ -59,6 +59,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/capabilities"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion"
 	"k8s.io/kubernetes/pkg/cloudprovider"
@@ -341,6 +342,10 @@ func BuildGenericConfig(s *options.ServerRunOptions) (*genericapiserver.Config, 
 		// TODO: get rid of KUBE_API_VERSIONS or define sane behaviour if set
 		glog.Errorf("Failed to create clientset with KUBE_API_VERSIONS=%q. KUBE_API_VERSIONS is only for testing. Things will break.", kubeAPIVersions)
 	}
+	externalClient, err := clientset.NewForConfig(genericConfig.LoopbackClientConfig)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create clientset: %v", err)
+	}
 	sharedInformers := informers.NewSharedInformerFactory(client, 10*time.Minute)
 
 	genericConfig.Authenticator, genericConfig.OpenAPIConfig.SecurityDefinitions, err = BuildAuthenticator(s, storageFactory, client, sharedInformers)
@@ -356,7 +361,7 @@ func BuildGenericConfig(s *options.ServerRunOptions) (*genericapiserver.Config, 
 		genericConfig.DisabledPostStartHooks.Insert(rbacrest.PostStartHookName)
 	}
 
-	genericConfig.AdmissionControl, err = BuildAdmission(s, client, sharedInformers, genericConfig.Authorizer)
+	genericConfig.AdmissionControl, err = BuildAdmission(s, client, externalClient, sharedInformers, genericConfig.Authorizer)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to initialize admission: %v", err)
 	}
@@ -365,7 +370,7 @@ func BuildGenericConfig(s *options.ServerRunOptions) (*genericapiserver.Config, 
 }
 
 // BuildAdmission constructs the admission chain
-func BuildAdmission(s *options.ServerRunOptions, client internalclientset.Interface, sharedInformers informers.SharedInformerFactory, apiAuthorizer authorizer.Authorizer) (admission.Interface, error) {
+func BuildAdmission(s *options.ServerRunOptions, client internalclientset.Interface, externalClient clientset.Interface, sharedInformers informers.SharedInformerFactory, apiAuthorizer authorizer.Authorizer) (admission.Interface, error) {
 	admissionControlPluginNames := strings.Split(s.GenericServerRunOptions.AdmissionControl, ",")
 	var cloudConfig []byte
 	var err error
@@ -381,7 +386,7 @@ func BuildAdmission(s *options.ServerRunOptions, client internalclientset.Interf
 	// does not require us to open watches for all items tracked by quota.
 	quotaRegistry := quotainstall.NewRegistry(nil, nil)
 
-	pluginInitializer := kubeadmission.NewPluginInitializer(client, sharedInformers, apiAuthorizer, cloudConfig, quotaRegistry)
+	pluginInitializer := kubeadmission.NewPluginInitializer(client, externalClient, sharedInformers, apiAuthorizer, cloudConfig, quotaRegistry)
 	admissionConfigProvider, err := admission.ReadAdmissionConfiguration(admissionControlPluginNames, s.GenericServerRunOptions.AdmissionControlConfigFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read plugin config: %v", err)

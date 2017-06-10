@@ -19,6 +19,7 @@ package admission
 import (
 	"k8s.io/apiserver/pkg/admission"
 	"k8s.io/apiserver/pkg/authorization/authorizer"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion"
 	"k8s.io/kubernetes/pkg/quota"
@@ -29,6 +30,12 @@ import (
 // WantsInternalKubeClientSet defines a function which sets ClientSet for admission plugins that need it
 type WantsInternalKubeClientSet interface {
 	SetInternalKubeClientSet(internalclientset.Interface)
+	admission.Validator
+}
+
+// WantsExternalKubeClientSet defines a function which sets ClientSet for admission plugins that need it
+type WantsExternalKubeClientSet interface {
+	SetExternalKubeClientSet(clientset.Interface)
 	admission.Validator
 }
 
@@ -57,6 +64,7 @@ type WantsQuotaRegistry interface {
 
 type pluginInitializer struct {
 	internalClient internalclientset.Interface
+	externalClient clientset.Interface
 	informers      informers.SharedInformerFactory
 	authorizer     authorizer.Authorizer
 	cloudConfig    []byte
@@ -66,13 +74,16 @@ type pluginInitializer struct {
 var _ admission.PluginInitializer = pluginInitializer{}
 
 // NewPluginInitializer constructs new instance of PluginInitializer
-func NewPluginInitializer(internalClient internalclientset.Interface,
+func NewPluginInitializer(
+	internalClient internalclientset.Interface,
+	externalClient clientset.Interface,
 	sharedInformers informers.SharedInformerFactory,
 	authz authorizer.Authorizer,
 	cloudConfig []byte,
 	quotaRegistry quota.Registry) admission.PluginInitializer {
 	return pluginInitializer{
 		internalClient: internalClient,
+		externalClient: externalClient,
 		informers:      sharedInformers,
 		authorizer:     authz,
 		cloudConfig:    cloudConfig,
@@ -85,6 +96,10 @@ func NewPluginInitializer(internalClient internalclientset.Interface,
 func (i pluginInitializer) Initialize(plugin admission.Interface) {
 	if wants, ok := plugin.(WantsInternalKubeClientSet); ok {
 		wants.SetInternalKubeClientSet(i.internalClient)
+	}
+
+	if wants, ok := plugin.(WantsExternalKubeClientSet); ok {
+		wants.SetExternalKubeClientSet(i.externalClient)
 	}
 
 	if wants, ok := plugin.(WantsInternalKubeInformerFactory); ok {
