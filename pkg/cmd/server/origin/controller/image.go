@@ -120,6 +120,9 @@ func (u podSpecUpdater) Update(obj runtime.Object) error {
 	case *kappsv1beta1.Deployment:
 		_, err := u.kclient.Apps().Deployments(t.Namespace).Update(t)
 		return err
+	case *kextensionsv1beta1.Deployment:
+		_, err := u.kclient.Extensions().Deployments(t.Namespace).Update(t)
+		return err
 	case *kappsv1beta1.StatefulSet:
 		_, err := u.kclient.Apps().StatefulSets(t.Namespace).Update(t)
 		return err
