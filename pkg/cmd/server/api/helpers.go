@@ -241,6 +241,14 @@ func GetMasterFileReferences(config *MasterConfig) []*string {
 
 		refs = append(refs, &config.KubernetesMasterConfig.ProxyClientInfo.CertFile)
 		refs = append(refs, &config.KubernetesMasterConfig.ProxyClientInfo.KeyFile)
+
+		for _, key := range []string{"cluster-signing-cert-file", "cluster-signing-key-file"} {
+			if s, ok := config.KubernetesMasterConfig.ControllerArguments[key]; ok {
+				for i := range s {
+					refs = append(refs, &s[i])
+				}
+			}
+		}
 	}
 
 	if config.AuthConfig.RequestHeader != nil {
