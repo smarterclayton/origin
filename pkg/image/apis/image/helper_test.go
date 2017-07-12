@@ -1317,6 +1317,7 @@ func TestJoinImageStreamTag(t *testing.T) {
 func TestResolveImageID(t *testing.T) {
 	tests := map[string]struct {
 		tags     map[string]TagEventList
+		specTags map[string]TagReference
 		imageID  string
 		expErr   string
 		expEvent TagEvent
@@ -1336,6 +1337,31 @@ func TestResolveImageID(t *testing.T) {
 			expErr:  "",
 			expEvent: TagEvent{
 				DockerImageReference: "repo@sha256:3c87c572822935df60f0f5d3665bd376841a7fcfeb806b5f212de6a00e9a7b25",
+				Image:                "sha256:3c87c572822935df60f0f5d3665bd376841a7fcfeb806b5f212de6a00e9a7b25",
+			},
+		},
+		"single tag, spec tag has local reference policy, match and resolve to registry": {
+			specTags: map[string]TagReference{
+				"tag1": {
+					ReferencePolicy: TagReferencePolicy{
+						Type: LocalTagReferencePolicy,
+					},
+				},
+			},
+			tags: map[string]TagEventList{
+				"tag1": {
+					Items: []TagEvent{
+						{
+							DockerImageReference: "repo@sha256:3c87c572822935df60f0f5d3665bd376841a7fcfeb806b5f212de6a00e9a7b25",
+							Image:                "sha256:3c87c572822935df60f0f5d3665bd376841a7fcfeb806b5f212de6a00e9a7b25",
+						},
+					},
+				},
+			},
+			imageID: "3c87c572822935df60f0f5d3665bd376841a7fcfeb806b5f212de6a00e9a7b25",
+			expErr:  "",
+			expEvent: TagEvent{
+				DockerImageReference: "mycluster.com/test/other@sha256:3c87c572822935df60f0f5d3665bd376841a7fcfeb806b5f212de6a00e9a7b25",
 				Image:                "sha256:3c87c572822935df60f0f5d3665bd376841a7fcfeb806b5f212de6a00e9a7b25",
 			},
 		},
@@ -1467,7 +1493,9 @@ func TestResolveImageID(t *testing.T) {
 
 	for name, test := range tests {
 		stream := &ImageStream{}
+		stream.Spec.Tags = test.specTags
 		stream.Status.Tags = test.tags
+		stream.Status.DockerImageRepository = "mycluster.com/test/other"
 		event, err := ResolveImageID(stream, test.imageID)
 		if len(test.expErr) > 0 {
 			if err == nil || !strings.Contains(err.Error(), test.expErr) {

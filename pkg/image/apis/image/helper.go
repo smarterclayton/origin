@@ -885,11 +885,13 @@ func digestOrImageMatch(image, imageID string) bool {
 // there's more than one image matching the ID or when one does not exist.
 func ResolveImageID(stream *ImageStream, imageID string) (*TagEvent, error) {
 	var event *TagEvent
+	var lastEventTag string
 	set := sets.NewString()
-	for _, history := range stream.Status.Tags {
+	for tag, history := range stream.Status.Tags {
 		for i := range history.Items {
 			tagging := &history.Items[i]
 			if digestOrImageMatch(tagging.Image, imageID) {
+				lastEventTag = tag
 				event = tagging
 				set.Insert(tagging.Image)
 			}
@@ -897,11 +899,13 @@ func ResolveImageID(stream *ImageStream, imageID string) (*TagEvent, error) {
 	}
 	switch len(set) {
 	case 1:
-		return &TagEvent{
+		event := &TagEvent{
 			Created:              metav1.Now(),
 			DockerImageReference: event.DockerImageReference,
 			Image:                event.Image,
-		}, nil
+		}
+		event.DockerImageReference = ResolveReferenceForTagEvent(stream, lastEventTag, event)
+		return event, nil
 	case 0:
 		return nil, errors.NewNotFound(Resource("imagestreamimage"), imageID)
 	default:
