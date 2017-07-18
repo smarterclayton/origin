@@ -52,3 +52,10 @@ type Config struct {
 	// other operations that do not have an explicit context.
 	Context context.Context
 }
+
+func NewCompressionOptions() []grpc.DialOption {
+	return []grpc.DialOption{
+		grpc.WithCompressor(grpc.NewGZIPCompressor()),
+		grpc.WithDecompressor(grpc.NewGZIPDecompressor()),
+	}
+}
