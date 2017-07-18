@@ -34,7 +34,9 @@ import (
 	"github.com/golang/glog"
 	cadvisorapi "github.com/google/cadvisor/info/v1"
 	cadvisorapiv2 "github.com/google/cadvisor/info/v2"
+	"github.com/google/cadvisor/metrics"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,6 +60,7 @@ import (
 	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
 	"k8s.io/kubernetes/pkg/kubelet/server/stats"
 	"k8s.io/kubernetes/pkg/kubelet/server/streaming"
+	kubelettypes "k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/pkg/util/configz"
 	"k8s.io/kubernetes/pkg/util/limitwriter"
 	"k8s.io/kubernetes/pkg/volume"
@@ -174,6 +177,7 @@ type HostInterface interface {
 	GetContainerInfoV2(name string, options cadvisorapiv2.RequestOptions) (map[string]cadvisorapiv2.ContainerInfo, error)
 	GetRawContainerInfo(containerName string, req *cadvisorapi.ContainerInfoRequest, subcontainers bool) (map[string]*cadvisorapi.ContainerInfo, error)
 	GetCachedMachineInfo() (*cadvisorapi.MachineInfo, error)
+	GetVersionInfo() (*cadvisorapi.VersionInfo, error)
 	GetPods() []*v1.Pod
 	GetRunningPods() ([]*v1.Pod, error)
 	GetPodByName(namespace, name string) (*v1.Pod, bool)
@@ -284,6 +288,14 @@ func (s *Server) InstallDefaultHandlers() {
 	s.restfulCont.Add(stats.CreateHandlers(statsPath, s.host, s.resourceAnalyzer))
 	s.restfulCont.Handle(metricsPath, prometheus.Handler())
 
+	// to offer a semblance of backwards compatibility expose cAdvisor metrics for
+	// prometheus at a subpath of metrics, ensuring metrics are still properly secured
+	r := prometheus.NewRegistry()
+	r.MustRegister(metrics.NewPrometheusCollector(prometheusHostAdapter{s.host}, containerPrometheusLabels))
+	s.restfulCont.Handle(metricsPath+"/container",
+		promhttp.HandlerFor(r, promhttp.HandlerOpts{ErrorHandling: promhttp.ContinueOnError}),
+	)
+
 	ws = new(restful.WebService)
 	ws.
 		Path(specPath).
@@ -296,6 +308,45 @@ func (s *Server) InstallDefaultHandlers() {
 }
 
 const pprofBasePath = "/debug/pprof/"
+
+type prometheusHostAdapter struct {
+	host HostInterface
+}
+
+func (a prometheusHostAdapter) SubcontainersInfo(containerName string, query *cadvisorapi.ContainerInfoRequest) ([]*cadvisorapi.ContainerInfo, error) {
+	all, err := a.host.GetRawContainerInfo(containerName, query, true)
+	items := make([]*cadvisorapi.ContainerInfo, 0, len(all))
+	for _, v := range all {
+		items = append(items, v)
+	}
+	return items, err
+}
+func (a prometheusHostAdapter) GetVersionInfo() (*cadvisorapi.VersionInfo, error) {
+	return a.host.GetVersionInfo()
+}
+func (a prometheusHostAdapter) GetMachineInfo() (*cadvisorapi.MachineInfo, error) {
+	return a.host.GetCachedMachineInfo()
+}
+
+func containerPrometheusLabels(c *cadvisorapi.ContainerInfo) map[string]string {
+	set := map[string]string{metrics.LabelID: c.Name}
+	if len(c.Aliases) > 0 {
+		set[metrics.LabelName] = c.Aliases[0]
+	}
+	if image := c.Spec.Image; len(image) > 0 {
+		set[metrics.LabelImage] = image
+	}
+	if v, ok := c.Spec.Labels[kubelettypes.KubernetesPodNameLabel]; ok {
+		set["pod_name"] = v
+	}
+	if v, ok := c.Spec.Labels[kubelettypes.KubernetesPodNamespaceLabel]; ok {
+		set["namespace"] = v
+	}
+	if v, ok := c.Spec.Labels[kubelettypes.KubernetesContainerNameLabel]; ok {
+		set["container_name"] = v
+	}
+	return set
+}
 
 // InstallDebuggingHandlers registers the HTTP request patterns that serve logs or run commands/containers
 func (s *Server) InstallDebuggingHandlers(criHandler http.Handler) {

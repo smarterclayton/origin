@@ -173,6 +173,10 @@ func (_ *fakeKubelet) RootFsInfo() (cadvisorapiv2.FsInfo, error) {
 	return cadvisorapiv2.FsInfo{}, fmt.Errorf("Unsupport Operation RootFsInfo")
 }
 
+func (_ *fakeKubelet) VersionInfo() (*cadvisorapi.VersionInfo, error) {
+	return cadvisorapi.VersionInfo{}, fmt.Errorf("Unsupport Operation VersionInfo")
+}
+
 func (_ *fakeKubelet) GetNode() (*v1.Node, error)   { return nil, nil }
 func (_ *fakeKubelet) GetNodeConfig() cm.NodeConfig { return cm.NodeConfig{} }
 

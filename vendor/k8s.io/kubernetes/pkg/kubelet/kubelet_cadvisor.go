@@ -99,3 +99,7 @@ func (kl *Kubelet) GetCachedRootFsInfo() (cadvisorapiv2.FsInfo, error) {
 	}
 	return *kl.rootfsInfo, nil
 }
+
+func (kl *Kubelet) GetVersionInfo() (*cadvisorapi.VersionInfo, error) {
+	return kl.cadvisor.VersionInfo()
+}
