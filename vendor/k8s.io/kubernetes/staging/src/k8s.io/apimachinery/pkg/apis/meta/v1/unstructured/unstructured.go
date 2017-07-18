@@ -69,6 +69,39 @@ func (obj *Unstructured) IsList() bool {
 }
 func (obj *UnstructuredList) IsList() bool { return true }
 
+func (obj *Unstructured) EachListItem(fn func(runtime.Object) error) error {
+	if obj.Object == nil {
+		return fmt.Errorf("content is not a list")
+	}
+	field, ok := obj.Object["items"]
+	if !ok {
+		return fmt.Errorf("content is not a list")
+	}
+	items, ok := field.([]interface{})
+	if !ok {
+		return nil
+	}
+	for _, item := range items {
+		child, ok := item.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("items member is not an object")
+		}
+		if err := fn(&Unstructured{Object: child}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (obj *UnstructuredList) EachListItem(fn func(runtime.Object) error) error {
+	for i := range obj.Items {
+		if err := fn(&obj.Items[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (obj *Unstructured) UnstructuredContent() map[string]interface{} {
 	if obj.Object == nil {
 		obj.Object = make(map[string]interface{})
@@ -136,10 +169,15 @@ func getNestedInt64(obj map[string]interface{}, fields ...string) int64 {
 }
 
 func getNestedInt64Pointer(obj map[string]interface{}, fields ...string) *int64 {
-	if str, ok := getNestedField(obj, fields...).(*int64); ok {
-		return str
+	nested := getNestedField(obj, fields...)
+	switch n := nested.(type) {
+	case int64:
+		return &n
+	case *int64:
+		return n
+	default:
+		return nil
 	}
-	return nil
 }
 
 func getNestedSlice(obj map[string]interface{}, fields ...string) []string {
@@ -470,11 +508,14 @@ func (u *Unstructured) GetInitializers() *metav1.Initializers {
 }
 
 func (u *Unstructured) SetInitializers(initializers *metav1.Initializers) {
+	if u.Object == nil {
+		u.Object = make(map[string]interface{})
+	}
 	if initializers == nil {
 		setNestedField(u.Object, nil, "metadata", "initializers")
 		return
 	}
-	out := make(map[string]interface{})
+	var out map[string]interface{}
 	if err := converter.ToUnstructured(initializers, &out); err != nil {
 		utilruntime.HandleError(fmt.Errorf("unable to retrieve initializers for object: %v", err))
 	}
@@ -506,6 +547,8 @@ type UnstructuredList struct {
 	// Items is a list of unstructured objects.
 	Items []Unstructured `json:"items"`
 }
+
+var _ metav1.ListInterface = &UnstructuredList{}
 
 // MarshalJSON ensures that the unstructured list object produces proper
 // JSON when passed to Go's standard JSON library.
@@ -559,6 +602,14 @@ func (u *UnstructuredList) GetSelfLink() string {
 
 func (u *UnstructuredList) SetSelfLink(selfLink string) {
 	u.setNestedField(selfLink, "metadata", "selfLink")
+}
+
+func (u *UnstructuredList) GetNext() string {
+	return getNestedString(u.Object, "metadata", "next")
+}
+
+func (u *UnstructuredList) SetNext(version string) {
+	u.setNestedField(version, "metadata", "next")
 }
 
 func (u *UnstructuredList) SetGroupVersionKind(gvk schema.GroupVersionKind) {

@@ -261,6 +261,8 @@ func (e *Store) ListPredicate(ctx genericapirequest.Context, p storage.Selection
 		options = &metainternalversion.ListOptions{ResourceVersion: ""}
 	}
 	p.IncludeUninitialized = options.IncludeUninitialized
+	p.From = options.From
+	p.Limit = options.Limit
 	list := e.NewListFunc()
 	if name, ok := p.MatchesSingle(); ok {
 		if key, err := e.KeyFunc(ctx, name); err == nil {

@@ -399,7 +399,7 @@ func (c *Cacher) Get(ctx context.Context, key string, resourceVersion string, ob
 
 // Implements storage.Interface.
 func (c *Cacher) GetToList(ctx context.Context, key string, resourceVersion string, pred SelectionPredicate, listObj runtime.Object) error {
-	if resourceVersion == "" {
+	if resourceVersion == "" || len(pred.From) > 0 || pred.Limit > 0 {
 		// If resourceVersion is not specified, serve it from underlying
 		// storage (for backward compatibility).
 		return c.storage.GetToList(ctx, key, resourceVersion, pred, listObj)
@@ -446,7 +446,7 @@ func (c *Cacher) GetToList(ctx context.Context, key string, resourceVersion stri
 		}
 	}
 	if c.versioner != nil {
-		if err := c.versioner.UpdateList(listObj, readResourceVersion); err != nil {
+		if err := c.versioner.UpdateList(listObj, readResourceVersion, ""); err != nil {
 			return err
 		}
 	}
@@ -455,7 +455,7 @@ func (c *Cacher) GetToList(ctx context.Context, key string, resourceVersion stri
 
 // Implements storage.Interface.
 func (c *Cacher) List(ctx context.Context, key string, resourceVersion string, pred SelectionPredicate, listObj runtime.Object) error {
-	if resourceVersion == "" {
+	if resourceVersion == "" || len(pred.From) > 0 || pred.Limit > 0 {
 		// If resourceVersion is not specified, serve it from underlying
 		// storage (for backward compatibility).
 		return c.storage.List(ctx, key, resourceVersion, pred, listObj)
@@ -508,7 +508,7 @@ func (c *Cacher) List(ctx context.Context, key string, resourceVersion string, p
 	}
 	trace.Step(fmt.Sprintf("Filtered %d items", listVal.Len()))
 	if c.versioner != nil {
-		if err := c.versioner.UpdateList(listObj, readResourceVersion); err != nil {
+		if err := c.versioner.UpdateList(listObj, readResourceVersion, ""); err != nil {
 			return err
 		}
 	}

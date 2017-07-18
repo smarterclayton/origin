@@ -291,6 +291,17 @@ message LabelSelectorRequirement {
   repeated string values = 3;
 }
 
+// List holds a list of objects, which may not be known by the server.
+message List {
+  // Standard list metadata.
+  // More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+  // +optional
+  optional ListMeta metadata = 1;
+
+  // List of objects
+  repeated k8s.io.apimachinery.pkg.runtime.RawExtension items = 2;
+}
+
 // ListMeta describes metadata that synthetic resources must have, including lists and
 // various status objects. A resource may have only one of {ObjectMeta, ListMeta}.
 message ListMeta {
@@ -308,6 +319,10 @@ message ListMeta {
   // More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#concurrency-control-and-consistency
   // +optional
   optional string resourceVersion = 2;
+
+  // Next may be set if the user set a limit on the number of responses. The value is opaque
+  // and may be passed to the same endpoint as the from field with or without a limit.
+  optional string next = 3;
 }
 
 // ListOptions is the query options to a standard REST list call.
@@ -343,6 +358,16 @@ message ListOptions {
   // Timeout for the list/watch call.
   // +optional
   optional int64 timeoutSeconds = 5;
+
+  // From is the continuation of a previous list call and will begin the list at the appropriate
+  // location. It is an qpaque value and may change serialization across server versions. If the
+  // continuation is not possible an error will be returned and you must start over. This may
+  // return an empty response in the event all requested fields are filtered out.
+  optional string from = 7;
+
+  // Limit is a maximum number of responses to return for a list call. If more items exist, the
+  // server will set the next field on the list metadata to a token you can pass as from.
+  optional int64 limit = 8;
 }
 
 // MicroTime is version of Time with microsecond level precision.

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +k8s:deepcopy-gen=package
-// +k8s:openapi-gen=true
-// +k8s:defaulter-gen=TypeMeta
+// +k8s:deepcopy-gen=package,register
+// +k8s:conversion-gen=k8s.io/kubernetes/vendor/k8s.io/apimachinery/pkg/apis/meta/v1
 
 // +groupName=meta.k8s.io
-package v1 // import "k8s.io/apimachinery/pkg/apis/meta/v1"
+package internalversion // import "k8s.io/apimachinery/pkg/apis/meta/internalversion"

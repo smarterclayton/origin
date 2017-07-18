@@ -128,6 +128,9 @@ func (h *etcdHelper) Create(ctx context.Context, key string, obj, out runtime.Ob
 	if version, err := h.versioner.ObjectResourceVersion(obj); err == nil && version != 0 {
 		return errors.New("resourceVersion may not be set on objects to be created")
 	}
+	if err := h.versioner.PrepareObjectForStorage(obj); err != nil {
+		return fmt.Errorf("PrepareObjectForStorage returned an error: %v", err)
+	}
 	trace.Step("Version checked")
 
 	startTime := time.Now()
@@ -362,7 +365,7 @@ func (h *etcdHelper) GetToList(ctx context.Context, key string, resourceVersion 
 		return err
 	}
 	trace.Step("Object decoded")
-	if err := h.versioner.UpdateList(listObj, response.Index); err != nil {
+	if err := h.versioner.UpdateList(listObj, response.Index, ""); err != nil {
 		return err
 	}
 	return nil
@@ -442,7 +445,7 @@ func (h *etcdHelper) List(ctx context.Context, key string, resourceVersion strin
 		return err
 	}
 	trace.Step("Node list decoded")
-	if err := h.versioner.UpdateList(listObj, index); err != nil {
+	if err := h.versioner.UpdateList(listObj, index, ""); err != nil {
 		return err
 	}
 	return nil
@@ -530,7 +533,7 @@ func (h *etcdHelper) GuaranteedUpdate(
 		}
 
 		// Since update object may have a resourceVersion set, we need to clear it here.
-		if err := h.versioner.UpdateObject(ret, 0); err != nil {
+		if err := h.versioner.PrepareObjectForStorage(ret); err != nil {
 			return errors.New("resourceVersion cannot be set on objects store in etcd")
 		}
 
