@@ -34,8 +34,6 @@ func Server(s *etcdserver.EtcdServer, tls *tls.Config) *grpc.Server {
 	if tls != nil {
 		opts = append(opts, grpc.Creds(credentials.NewTLS(tls)))
 	}
-	opts = append(opts, grpc.RPCDecompressor(grpc.NewGZIPDecompressor()))
-	opts = append(opts, grpc.RPCCompressor(grpc.NewGZIPCompressor()))
 	opts = append(opts, grpc.UnaryInterceptor(newUnaryInterceptor(s)))
 	opts = append(opts, grpc.StreamInterceptor(newStreamInterceptor(s)))
 
