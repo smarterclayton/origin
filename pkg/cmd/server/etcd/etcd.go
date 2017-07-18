@@ -107,11 +107,13 @@ func MakeEtcdClientV3Config(etcdClientInfo configapi.EtcdConnectionInfo) (*clien
 	if err != nil {
 		return nil, err
 	}
+	options := clientv3.NewCompressionOptions()
 
 	return &clientv3.Config{
 		Endpoints:   etcdClientInfo.URLs,
 		DialTimeout: 30 * time.Second,
 		TLS:         tlsConfig,
+		DialOptions: options,
 	}, nil
 }
 

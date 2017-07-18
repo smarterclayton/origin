@@ -111,3 +111,10 @@ func configFromFile(fpath string) (*Config, error) {
 
 	return cfg, nil
 }
+
+func NewCompressionOptions() []grpc.DialOption {
+	return []grpc.DialOption{
+		grpc.WithCompressor(grpc.NewGZIPCompressor()),
+		grpc.WithDecompressor(grpc.NewGZIPDecompressor()),
+	}
+}
