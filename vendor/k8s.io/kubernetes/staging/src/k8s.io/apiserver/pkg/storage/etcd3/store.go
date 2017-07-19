@@ -407,16 +407,16 @@ func decodeFrom(from, keyPrefix string) (fromKey string, rv int64, err error) {
 	if len(parts) == 0 {
 		return "", 0, fmt.Errorf("from key is not valid: no encoded data")
 	}
-	apiVersion, ok := parts[0].(int)
+	apiVersion, ok := parts[0].(float64)
 	if !ok {
-		return "", 0, fmt.Errorf("from key is not valid: no encoded version")
+		return "", 0, fmt.Errorf("from key is not valid: no encoded version %T", parts[0])
 	}
 	switch apiVersion {
 	case 0:
 		if len(parts) != 3 {
 			return "", 0, fmt.Errorf("from key is not valid: incorrect encoded data size (version 0)")
 		}
-		resourceVersion, ok := parts[1].(int64)
+		resourceVersion, ok := parts[1].(float64)
 		if !ok {
 			return "", 0, fmt.Errorf("from key is not valid: incorrect encoded start resourceVersion (version 0)")
 		}
@@ -431,7 +431,7 @@ func decodeFrom(from, keyPrefix string) (fromKey string, rv int64, err error) {
 		if len(cleaned) == 0 {
 			return "", 0, fmt.Errorf("from key is not valid: encoded start key empty (version 0)")
 		}
-		return keyPrefix + cleaned, resourceVersion, nil
+		return keyPrefix + cleaned, int64(resourceVersion), nil
 	default:
 		// TODO: if we change the version of the encoded from, we can't start encoding the new version
 		// until all other servers are upgraded (i.e. we need to support rolling schema)

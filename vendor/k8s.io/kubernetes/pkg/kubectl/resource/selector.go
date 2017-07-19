@@ -47,37 +47,54 @@ func NewSelector(client RESTClient, mapping *meta.RESTMapping, namespace string,
 
 // Visit implements Visitor
 func (r *Selector) Visit(fn VisitorFunc) error {
-	list, err := NewHelper(r.Client, r.Mapping).List(r.Namespace, r.ResourceMapping().GroupVersionKind.GroupVersion().String(), r.Selector, r.Export)
-	if err != nil {
-		if errors.IsBadRequest(err) || errors.IsNotFound(err) {
-			if se, ok := err.(*errors.StatusError); ok {
-				// modify the message without hiding this is an API error
-				if r.Selector.Empty() {
-					se.ErrStatus.Message = fmt.Sprintf("Unable to list %q: %v", r.Mapping.Resource, se.ErrStatus.Message)
-				} else {
-					se.ErrStatus.Message = fmt.Sprintf("Unable to find %q that match the selector %q: %v", r.Mapping.Resource, r.Selector, se.ErrStatus.Message)
+	limit := int64(500)
+	var from string
+	for {
+		list, err := NewHelper(r.Client, r.Mapping).ListPage(r.Namespace, r.ResourceMapping().GroupVersionKind.GroupVersion().String(), r.Selector, r.Export, limit, from)
+		if err != nil {
+			if errors.IsResourceExpired(err) {
+				return err
+			}
+			if errors.IsBadRequest(err) || errors.IsNotFound(err) {
+				if se, ok := err.(*errors.StatusError); ok {
+					// modify the message without hiding this is an API error
+					if r.Selector.Empty() {
+						se.ErrStatus.Message = fmt.Sprintf("Unable to list %q: %v", r.Mapping.Resource, se.ErrStatus.Message)
+					} else {
+						se.ErrStatus.Message = fmt.Sprintf("Unable to find %q that match the selector %q: %v", r.Mapping.Resource, r.Selector, se.ErrStatus.Message)
+					}
+					return se
 				}
-				return se
+				if r.Selector.Empty() {
+					return fmt.Errorf("Unable to list %q: %v", r.Mapping.Resource, err)
+				} else {
+					return fmt.Errorf("Unable to find %q that match the selector %q: %v", r.Mapping.Resource, r.Selector, err)
+				}
 			}
-			if r.Selector.Empty() {
-				return fmt.Errorf("Unable to list %q: %v", r.Mapping.Resource, err)
-			} else {
-				return fmt.Errorf("Unable to find %q that match the selector %q: %v", r.Mapping.Resource, r.Selector, err)
+			if err := fn(nil, err); err != nil {
+				return err
 			}
+			continue
 		}
-		return err
-	}
-	accessor := r.Mapping.MetadataAccessor
-	resourceVersion, _ := accessor.ResourceVersion(list)
-	info := &Info{
-		Client:    r.Client,
-		Mapping:   r.Mapping,
-		Namespace: r.Namespace,
+		accessor := r.Mapping.MetadataAccessor
+		resourceVersion, _ := accessor.ResourceVersion(list)
+		next, _ := accessor.Next(list)
+		info := &Info{
+			Client:    r.Client,
+			Mapping:   r.Mapping,
+			Namespace: r.Namespace,
 
-		Object:          list,
-		ResourceVersion: resourceVersion,
+			Object:          list,
+			ResourceVersion: resourceVersion,
+		}
+		if err := fn(info, nil); err != nil {
+			return err
+		}
+		if len(next) == 0 {
+			return nil
+		}
+		from = next
 	}
-	return fn(info, nil)
 }
 
 func (r *Selector) Watch(resourceVersion string) (watch.Interface, error) {

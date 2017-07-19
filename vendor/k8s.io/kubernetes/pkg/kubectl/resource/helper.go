@@ -75,6 +75,21 @@ func (m *Helper) List(namespace, apiVersion string, selector labels.Selector, ex
 	return req.Do().Get()
 }
 
+func (m *Helper) ListPage(namespace, apiVersion string, selector labels.Selector, export bool, limit int64, from string) (runtime.Object, error) {
+	req := m.RESTClient.Get().
+		NamespaceIfScoped(namespace, m.NamespaceScoped).
+		Resource(m.Resource).
+		VersionedParams(&metav1.ListOptions{
+			From:          from,
+			Limit:         limit,
+			LabelSelector: selector.String(),
+		}, metav1.ParameterCodec)
+	if export {
+		req.Param("export", strconv.FormatBool(export))
+	}
+	return req.Do().Get()
+}
+
 func (m *Helper) Watch(namespace, resourceVersion, apiVersion string, labelSelector labels.Selector) (watch.Interface, error) {
 	return m.RESTClient.Get().
 		NamespaceIfScoped(namespace, m.NamespaceScoped).

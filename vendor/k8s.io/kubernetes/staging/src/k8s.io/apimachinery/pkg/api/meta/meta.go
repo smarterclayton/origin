@@ -316,6 +316,23 @@ func (resourceAccessor) SetSelfLink(obj runtime.Object, selfLink string) error {
 	return nil
 }
 
+func (resourceAccessor) Next(obj runtime.Object) (string, error) {
+	accessor, err := ListAccessor(obj)
+	if err != nil {
+		return "", err
+	}
+	return accessor.GetNext(), nil
+}
+
+func (resourceAccessor) SetNext(obj runtime.Object, next string) error {
+	accessor, err := ListAccessor(obj)
+	if err != nil {
+		return err
+	}
+	accessor.SetNext(next)
+	return nil
+}
+
 func (resourceAccessor) Labels(obj runtime.Object) (map[string]string, error) {
 	accessor, err := Accessor(obj)
 	if err != nil {
