@@ -17,6 +17,7 @@ import (
 
 	"github.com/openshift/origin/pkg/cmd/flagtypes"
 	"github.com/openshift/origin/pkg/cmd/infra/builder"
+	"github.com/openshift/origin/pkg/cmd/infra/buildproxy"
 	"github.com/openshift/origin/pkg/cmd/infra/deployer"
 	irouter "github.com/openshift/origin/pkg/cmd/infra/router"
 	"github.com/openshift/origin/pkg/cmd/recycle"
@@ -63,6 +64,8 @@ func CommandFor(basename string) *cobra.Command {
 		cmd = builder.NewCommandS2IBuilder(basename)
 	case "openshift-docker-build":
 		cmd = builder.NewCommandDockerBuilder(basename)
+	case "openshift-build-proxy":
+		cmd = buildproxy.NewCommandBuildProxy(basename)
 	case "openshift-git-clone":
 		cmd = builder.NewCommandGitClone(basename)
 	case "openshift-manage-dockerfile":

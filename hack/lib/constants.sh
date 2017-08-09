@@ -66,6 +66,7 @@ readonly OPENSHIFT_BINARY_SYMLINKS=(
   openshift-deploy
   openshift-recycle
   openshift-sti-build
+  openshift-build-proxy
   openshift-docker-build
   openshift-git-clone
   openshift-manage-dockerfile
