@@ -166,6 +166,7 @@ func BuildKubeAPIserverOptions(masterConfig configapi.MasterConfig) (*kapiserver
 
 	server.KubeletConfig.ReadOnlyPort = 0
 
+	glog.V(4).Infof("Storage caching default %d", server.Etcd.DefaultWatchCacheSize)
 	// resolve extended arguments
 	args := map[string][]string{}
 	for k, v := range masterConfig.KubernetesMasterConfig.APIServerArguments {
@@ -184,6 +185,7 @@ func BuildKubeAPIserverOptions(masterConfig configapi.MasterConfig) (*kapiserver
 	if err := cmdflags.Resolve(masterConfig.KubernetesMasterConfig.APIServerArguments, server.AddFlags); len(err) > 0 {
 		return nil, kerrors.NewAggregate(err)
 	}
+	glog.V(4).Infof("Storage caching default %d", server.Etcd.DefaultWatchCacheSize)
 
 	return server, nil
 }

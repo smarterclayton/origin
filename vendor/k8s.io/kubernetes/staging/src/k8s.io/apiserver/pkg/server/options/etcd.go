@@ -87,6 +87,9 @@ func (s *EtcdOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&s.EnableWatchCache, "watch-cache", s.EnableWatchCache,
 		"Enable watch caching in the apiserver")
 
+	fs.IntVar(&s.DefaultWatchCacheSize, "default-watch-cache-size", s.DefaultWatchCacheSize,
+		"Default watch cache size. If zero, watch cache will be disabled for resources that do not have a default watch size set.")
+
 	fs.StringVar(&s.StorageConfig.Type, "storage-backend", s.StorageConfig.Type,
 		"The storage backend for persistence. Options: 'etcd3' (default), 'etcd2'.")
 

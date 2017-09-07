@@ -17,6 +17,8 @@ limitations under the License.
 package registry
 
 import (
+	"github.com/golang/glog"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/storage"
@@ -38,15 +40,18 @@ func StorageWithCacher(defaultCapacity int) generic.StorageDecorator {
 		getAttrsFunc storage.AttrFunc,
 		triggerFunc storage.TriggerPublisherFunc) (storage.Interface, factory.DestroyFunc) {
 
+		s, d := generic.NewRawStorage(storageConfig)
+
 		capacity := defaultCapacity
-		if requestedSize != nil && *requestedSize == 0 {
-			panic("StorageWithCacher must not be called with zero cache size")
-		}
-		if requestedSize != nil {
+		if requestedSize != nil && *requestedSize != 0 {
 			capacity = *requestedSize
 		}
+		if capacity <= 0 {
+			glog.V(5).Infof("Storage caching is disabled %T", objectType)
+			return s, d
+		}
+		glog.V(5).Infof("Storage caching is enabled for %T: %d", objectType, capacity)
 
-		s, d := generic.NewRawStorage(storageConfig)
 		// TODO: we would change this later to make storage always have cacher and hide low level KV layer inside.
 		// Currently it has two layers of same storage interface -- cacher and low level kv.
 		cacherConfig := storage.CacherConfig{
