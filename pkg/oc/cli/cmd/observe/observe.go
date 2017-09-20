@@ -298,13 +298,24 @@ func (o *ObserveOptions) Complete(f *clientcmd.Factory, cmd *cobra.Command, args
 
 	mapper, _ := f.Object()
 
-	version, err := mapper.KindFor(gr.WithVersion(""))
+	versions, err := mapper.KindsFor(gr.WithVersion(""))
 	if err != nil {
-		return err
+		unstructuredMapper, _, unstructuredErr := f.UnstructuredObject()
+		if unstructuredErr != nil {
+			glog.V(3).Infof("Unable to load type from default mapper: %v", err)
+			return fmt.Errorf("unable to find the requested resource: %v", unstructuredErr)
+		}
+		versions, err = unstructuredMapper.KindsFor(gr.WithVersion(""))
+		if err != nil {
+			return fmt.Errorf("unable to identify the requested resource: %v", err)
+		}
+		mapper = unstructuredMapper
 	}
-	mapping, err := mapper.RESTMapping(version.GroupKind())
+	glog.V(4).Infof("Found versions: %v", versions)
+	version := versions[0]
+	mapping, err := mapper.RESTMapping(version.GroupKind(), version.Version)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to lookup version info: %v", err)
 	}
 	o.mapping = mapping
 	o.includeNamespace = mapping.Scope.Name() == meta.RESTScopeNamespace.Name()
