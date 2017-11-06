@@ -190,6 +190,12 @@ os::build::internal::build_binaries() {
     local -a nonstatics=()
     local -a tests=()
     for binary in "${binaries[@]}"; do
+      # skip binaries that are not in the accepted list (does not use arrays to be backwards compatible with bash3)
+      if [[ -n "${OS_ONLY_BUILD_BINARIES-}" ]]; then
+        if [[ "${OS_ONLY_BUILD_BINARIES}" != *" ${binary} "* ]]; then
+          continue
+        fi
+      fi
       if [[ "${binary}" =~ ".test"$ ]]; then
         tests+=($binary)
       else
@@ -200,7 +206,10 @@ os::build::internal::build_binaries() {
     local host_platform=$(os::build::host_platform)
     local platform
     for platform in "${platforms[@]+"${platforms[@]}"}"; do
-      echo "++ Building go targets for ${platform}:" "${targets[@]}"
+      if [[ ! "${platform}" =~ "${OS_ONLY_BUILD_PLATFORMS-}" ]]; then
+        continue
+      fi
+
       mkdir -p "${OS_OUTPUT_BINPATH}/${platform}"
 
       # output directly to the desired location
@@ -219,12 +228,13 @@ os::build::internal::build_binaries() {
         local_ldflags+=" -s"
       fi
 
-      #Add Windows File Properties/Version Info and Icon Resource for oc.exe
-      if [[ "$platform" == "windows/amd64" ]]; then
-        os::build::generate_windows_versioninfo
-      fi
-
       if [[ ${#nonstatics[@]} -gt 0 ]]; then
+        #Add Windows File Properties/Version Info and Icon Resource for oc.exe
+        if [[ "$platform" == "windows/amd64" ]]; then
+          os::build::generate_windows_versioninfo
+        fi
+
+        echo "++ Building go targets for ${platform}:" "${nonstatics[@]}"
         GOOS=${platform%/*} GOARCH=${platform##*/} go install \
           -pkgdir "${OS_OUTPUT_PKGDIR}/${platform}" \
           -tags "${OS_GOFLAGS_TAGS-} ${!platform_gotags_envvar:-}" \
@@ -237,23 +247,25 @@ os::build::internal::build_binaries() {
           local platform_src="/${platform//\//_}"
           mv "${OS_TARGET_BIN}/${platform_src}/"* "${OS_OUTPUT_BINPATH}/${platform}/"
         fi
+        if [[ "$platform" == "windows/amd64" ]]; then
+          rm ${OS_ROOT}/cmd/oc/oc.syso
+        fi
       fi
 
-      if [[ "$platform" == "windows/amd64" ]]; then
-        rm ${OS_ROOT}/cmd/oc/oc.syso
+      if [[ ${#tests[@]} -gt 0 ]]; then
+        echo "++ Building go targets for ${platform}:" "${tests[@]}"
+        for test in "${tests[@]:+${tests[@]}}"; do
+          local outfile="${OS_OUTPUT_BINPATH}/${platform}/$(basename ${test})"
+          # disabling cgo allows use of delve
+          CGO_ENABLED="${OS_TEST_CGO_ENABLED:-}" GOOS=${platform%/*} GOARCH=${platform##*/} go test \
+            -pkgdir "${OS_OUTPUT_PKGDIR}/${platform}" \
+            -tags "${OS_GOFLAGS_TAGS-} ${!platform_gotags_test_envvar:-}" \
+            -ldflags "${local_ldflags}" \
+            -i -c -o "${outfile}" \
+            "${goflags[@]:+${goflags[@]}}" \
+            "$(dirname ${test})"
+        done
       fi
-
-      for test in "${tests[@]:+${tests[@]}}"; do
-        local outfile="${OS_OUTPUT_BINPATH}/${platform}/$(basename ${test})"
-        # disabling cgo allows use of delve
-        CGO_ENABLED="${OS_TEST_CGO_ENABLED:-}" GOOS=${platform%/*} GOARCH=${platform##*/} go test \
-          -pkgdir "${OS_OUTPUT_PKGDIR}/${platform}" \
-          -tags "${OS_GOFLAGS_TAGS-} ${!platform_gotags_test_envvar:-}" \
-          -ldflags "${local_ldflags}" \
-          -i -c -o "${outfile}" \
-          "${goflags[@]:+${goflags[@]}}" \
-          "$(dirname ${test})"
-      done
     done
 }
 readonly -f os::build::build_binaries
@@ -314,6 +326,8 @@ EOF
 }
 readonly -f os::build::generate_windows_versioninfo
 
+
+
  # Generates the set of target packages, binaries, and platforms to build for.
 # Accepts binaries via $@, and platforms via OS_BUILD_PLATFORMS, or defaults to
 # the current platform.
@@ -360,6 +374,10 @@ function os::build::place_bins() {
 
     os::build::export_targets "$@"
     for platform in "${platforms[@]+"${platforms[@]}"}"; do
+      if [[ ! "${platform}" =~ "${OS_ONLY_BUILD_PLATFORMS-}" ]]; then
+        continue
+      fi
+
       # The substitution on platform_src below will replace all slashes with
       # underscores.  It'll transform darwin/amd64 -> darwin_amd64.
       local platform_src="/${platform//\//_}"

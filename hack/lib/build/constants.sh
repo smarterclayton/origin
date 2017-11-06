@@ -17,6 +17,7 @@ readonly OS_OUTPUT_BINPATH="${OS_OUTPUT}/bin"
 readonly OS_OUTPUT_PKGDIR="${OS_OUTPUT}/pkgdir"
 
 readonly OS_GO_PACKAGE=github.com/openshift/origin
+readonly OS_GOFLAGS_TAGS="include_gcs include_oss containers_image_openpgp"
 
 readonly OS_SDN_COMPILE_TARGETS_LINUX=(
   pkg/network/sdn-cni-plugin

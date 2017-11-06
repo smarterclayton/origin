@@ -7,8 +7,13 @@ source "$(dirname "${BASH_SOURCE}")/lib/init.sh"
 host_platform="$(os::build::host_platform)"
 
 # Set build tags for these binaries
-readonly OS_GOFLAGS_TAGS="include_gcs include_oss containers_image_openpgp"
-readonly OS_GOFLAGS_TAGS_$(os::build::platform_arch)="gssapi"
+readonly OS_GOFLAGS_TAGS_DARWIN_AMD64=""
+
+# Set our exclusion list
+OS_ONLY_BUILD_BINARIES=""
+for binary in $@; do
+  OS_ONLY_BUILD_BINARIES+=" ${OS_GO_PACKAGE}/${binary} "
+done
 
 # by default, build for these platforms
 platforms=(
@@ -20,6 +25,12 @@ image_platforms=( )
 test_platforms=( "${host_platform}" )
 
 targets=( "${OS_CROSS_COMPILE_TARGETS[@]}" )
+
+# On linux platforms, build images and use gssapi
+if [[ "${host_platform}" == linux/* ]]; then
+  readonly OS_GOFLAGS_TAGS_$(os::build::platform_arch)="gssapi"
+  image_platforms+=( "${host_platform}" )
+fi
 
 # Special case ppc64le
 if [[ "${host_platform}" == "linux/ppc64le" ]]; then
@@ -36,38 +47,6 @@ if [[ "${host_platform}" == "linux/s390x" ]]; then
   platforms+=( "linux/s390x" )
 fi
 
-# On linux platforms, build images
-if [[ "${host_platform}" == linux/* ]]; then
-  image_platforms+=( "${host_platform}" )
-fi
-
-# filter platform list
-if [[ -n "${OS_ONLY_BUILD_PLATFORMS-}" ]]; then
-  filtered=( )
-  for platform in ${platforms[@]}; do
-    if [[ "${platform}" =~ "${OS_ONLY_BUILD_PLATFORMS}" ]]; then
-      filtered+=("${platform}")
-    fi
-  done
-  platforms=("${filtered[@]+"${filtered[@]}"}")
-
-  filtered=( )
-  for platform in ${image_platforms[@]}; do
-    if [[ "${platform}" =~ "${OS_ONLY_BUILD_PLATFORMS}" ]]; then
-      filtered+=("${platform}")
-    fi
-  done
-  image_platforms=("${filtered[@]+"${filtered[@]}"}")
-
-  filtered=( )
-  for platform in ${test_platforms[@]}; do
-    if [[ "${platform}" =~ "${OS_ONLY_BUILD_PLATFORMS}" ]]; then
-      filtered+=("${platform}")
-    fi
-  done
-  test_platforms=("${filtered[@]+"${filtered[@]}"}")
-fi
-
 # Build image binaries for a subset of platforms. Image binaries are currently
 # linux-only, and a subset of them are compiled with flags to make them static
 # for use in Docker images "FROM scratch".
@@ -82,6 +61,8 @@ os::build::build_binaries "${OS_CROSS_COMPILE_TARGETS[@]}"
 # Build the test binaries for the host platform
 OS_BUILD_PLATFORMS=("${test_platforms[@]+"${test_platforms[@]}"}")
 os::build::build_binaries "${OS_TEST_TARGETS[@]}"
+
+os::build::make_openshift_binary_symlinks
 
 if [[ "${OS_BUILD_RELEASE_ARCHIVES-}" != "n" ]]; then
   # Make the primary client/server release.
