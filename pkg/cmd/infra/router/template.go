@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -356,6 +357,10 @@ func (o *TemplateRouterOptions) Run() error {
 			})
 		}
 		l.Listen()
+	}
+
+	if len(util.Env("ROUTER_THREAD_COUNT", "")) == 0 {
+		os.Setenv("ROUTER_THREAD_COUNT", strconv.Itoa(runtime.NumCPU()))
 	}
 
 	pluginCfg := templateplugin.TemplatePluginConfig{
