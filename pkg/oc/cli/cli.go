@@ -24,7 +24,6 @@ import (
 	"github.com/openshift/origin/pkg/oc/cli/cmd"
 	"github.com/openshift/origin/pkg/oc/cli/cmd/cluster"
 	"github.com/openshift/origin/pkg/oc/cli/cmd/image"
-	"github.com/openshift/origin/pkg/oc/cli/cmd/importer"
 	"github.com/openshift/origin/pkg/oc/cli/cmd/login"
 	"github.com/openshift/origin/pkg/oc/cli/cmd/observe"
 	"github.com/openshift/origin/pkg/oc/cli/cmd/registry"
@@ -55,18 +54,22 @@ var (
     To create a new application, login to your server and then run new-app:
 
         %[1]s login https://mycluster.mycompany.com
-        %[1]s new-app centos/ruby-22-centos7~https://github.com/openshift/ruby-ex.git
+        %[1]s new-app nodejs-mongodb-example
         %[1]s logs -f bc/ruby-ex
 
-    This will create an application based on the Docker image 'centos/ruby-22-centos7' that builds the source code from GitHub. A build will start automatically, push the resulting image to the registry, and a deployment will roll that change out in your project.
+		This will create an application from the 'nodejs-mongodb-example' template installed with OpenShift. A build will 
+		start automatically, push the resulting image to the registry, and a deployment will roll that change out in your 
+		project.
 
-    Once your application is deployed, use the status, describe, and get commands to see more about the created components:
+		Once your application is deployed, use the status, describe, and get commands to see more about the created 
+		components:
 
         %[1]s status
         %[1]s describe deploymentconfig ruby-ex
         %[1]s get pods
 
-    To make this application visible outside of the cluster, use the expose command on the service we just created to create a 'route' (which will connect your application over the HTTP port to a public domain name).
+		To make this application visible outside of the cluster, use the expose command on the service we just created 
+		to create a 'route' (which will connect your application over the HTTP port to a public domain name).
 
         %[1]s expose svc/ruby-ex
         %[1]s status
@@ -100,7 +103,6 @@ func NewCommandCLI(name, fullName string, in io.Reader, out, errout io.Writer) *
 		{
 			Message: "Basic Commands:",
 			Commands: []*cobra.Command{
-				cmd.NewCmdTypes(fullName, f, out),
 				loginCmd,
 				cmd.NewCmdRequestProject(cmd.RequestProjectRecommendedCommandName, fullName, f, out, errout),
 				cmd.NewCmdNewApplication(cmd.NewAppRecommendedCommandName, fullName, f, in, out, errout),
@@ -108,7 +110,7 @@ func NewCommandCLI(name, fullName string, in io.Reader, out, errout io.Writer) *
 				cmd.NewCmdProject(fullName+" project", f, out),
 				cmd.NewCmdProjects(fullName, f, out),
 				cmd.NewCmdExplain(fullName, f, out, errout),
-				cluster.NewCmdCluster(cluster.ClusterRecommendedName, fullName+" "+cluster.ClusterRecommendedName, f, in, out, errout),
+				cmd.NewCmdCreate(fullName, f, out, errout),
 			},
 		},
 		{
@@ -119,7 +121,6 @@ func NewCommandCLI(name, fullName string, in io.Reader, out, errout io.Writer) *
 				cmd.NewCmdNewBuild(cmd.NewBuildRecommendedCommandName, fullName, f, in, out, errout),
 				cmd.NewCmdStartBuild(fullName, f, in, out, errout),
 				cmd.NewCmdCancelBuild(cmd.CancelBuildRecommendedCommandName, fullName, f, in, out, errout),
-				cmd.NewCmdImportImage(fullName, f, out, errout),
 				cmd.NewCmdTag(fullName, f, out),
 			},
 		},
@@ -129,15 +130,13 @@ func NewCommandCLI(name, fullName string, in io.Reader, out, errout io.Writer) *
 				cmd.NewCmdGet(fullName, f, out, errout),
 				cmd.NewCmdDescribe(fullName, f, out, errout),
 				cmd.NewCmdEdit(fullName, f, out, errout),
-				set.NewCmdSet(fullName, f, in, out, errout),
+				cmd.NewCmdDelete(fullName, f, out, errout),
 				cmd.NewCmdLabel(fullName, f, out),
 				cmd.NewCmdAnnotate(fullName, f, out),
 				cmd.NewCmdExpose(fullName, f, out),
-				cmd.NewCmdDelete(fullName, f, out, errout),
+				set.NewCmdSet(fullName, f, in, out, errout),
 				cmd.NewCmdScale(fullName, f, out, errout),
 				cmd.NewCmdAutoscale(fullName, f, out),
-				secretcmds,
-				sa.NewCmdServiceAccounts(sa.ServiceAccountsRecommendedName, fullName+" "+sa.ServiceAccountsRecommendedName, f, out, errout),
 			},
 		},
 		{
@@ -148,32 +147,39 @@ func NewCommandCLI(name, fullName string, in io.Reader, out, errout io.Writer) *
 				rsync.NewCmdRsync(rsync.RsyncRecommendedName, fullName, f, out, errout),
 				cmd.NewCmdPortForward(fullName, f, out, errout),
 				cmd.NewCmdDebug(fullName, f, in, out, errout),
-				cmd.NewCmdExec(fullName, f, in, out, errout),
 				cmd.NewCmdProxy(fullName, f, out),
+				cmd.NewCmdExec(fullName, f, in, out, errout),
 				cmd.NewCmdAttach(fullName, f, in, out, errout),
-				cmd.NewCmdRun(fullName, f, in, out, errout),
 				cmd.NewCmdCp(fullName, f, in, out, errout),
 			},
 		},
 		{
 			Message: "Advanced Commands:",
 			Commands: []*cobra.Command{
-				admin.NewCommandAdmin("adm", fullName+" "+"adm", in, out, errout),
-				cmd.NewCmdCreate(fullName, f, out, errout),
+				secretcmds,
+				sa.NewCmdServiceAccounts(sa.ServiceAccountsRecommendedName, fullName+" "+sa.ServiceAccountsRecommendedName, f, out, errout),
+				policy.NewCmdPolicy(policy.PolicyRecommendedName, fullName+" "+policy.PolicyRecommendedName, f, out, errout),
 				cmd.NewCmdReplace(fullName, f, out),
 				cmd.NewCmdApply(fullName, f, out, errout),
 				cmd.NewCmdPatch(fullName, f, out),
 				cmd.NewCmdProcess(fullName, f, in, out, errout),
+				cmd.NewCmdRun(fullName, f, in, out, errout),
 				cmd.NewCmdExport(fullName, f, in, out),
+				cmd.NewCmdImportImage(fullName, f, out, errout),
 				cmd.NewCmdExtract(fullName, f, in, out, errout),
-				cmd.NewCmdIdle(fullName, f, out, errout),
-				observe.NewCmdObserve(fullName, f, out, errout),
-				policy.NewCmdPolicy(policy.PolicyRecommendedName, fullName+" "+policy.PolicyRecommendedName, f, out, errout),
 				cmd.NewCmdAuth(fullName, f, out, errout),
 				cmd.NewCmdConvert(fullName, f, out),
-				importer.NewCmdImport(fullName, f, in, out, errout),
+				cmd.NewCmdIdle(fullName, f, out, errout),
+				observe.NewCmdObserve(fullName, f, out, errout),
 				image.NewCmdImage(fullName, f, in, out, errout),
 				registry.NewCmd(fullName, f, in, out, errout),
+			},
+		},
+		{
+			Message: "Cluster Management Commands:",
+			Commands: []*cobra.Command{
+				cluster.NewCmdCluster(cluster.ClusterRecommendedName, fullName+" "+cluster.ClusterRecommendedName, f, in, out, errout),
+				admin.NewCommandAdmin("adm", fullName+" "+"adm", in, out, errout),
 			},
 		},
 		{

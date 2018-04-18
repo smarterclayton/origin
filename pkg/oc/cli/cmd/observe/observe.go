@@ -171,7 +171,7 @@ func NewCmdObserve(fullName string, f *clientcmd.Factory, out, errOut io.Writer)
 
 	cmd := &cobra.Command{
 		Use:     "observe RESOURCE [-- COMMAND ...]",
-		Short:   "Observe changes to resources and react to them (experimental)",
+		Short:   "Observe changes to resources and react to them",
 		Long:    fmt.Sprintf(observeLong, fullName),
 		Example: fmt.Sprintf(observeExample, fullName),
 		Run: func(cmd *cobra.Command, args []string) {
