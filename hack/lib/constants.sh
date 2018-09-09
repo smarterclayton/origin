@@ -34,6 +34,9 @@ readonly OS_SDN_COMPILE_TARGETS_LINUX=(
 )
 readonly OS_IMAGE_COMPILE_TARGETS_LINUX=(
   "${OS_SDN_COMPILE_TARGETS_LINUX[@]}"
+  cmd/hypershift
+  cmd/openshift
+  cmd/template-service-broker
 )
 readonly OS_SCRATCH_IMAGE_COMPILE_TARGETS_LINUX=(
   images/pod
@@ -41,11 +44,7 @@ readonly OS_SCRATCH_IMAGE_COMPILE_TARGETS_LINUX=(
 readonly OS_IMAGE_COMPILE_BINARIES=("${OS_SCRATCH_IMAGE_COMPILE_TARGETS_LINUX[@]##*/}" "${OS_IMAGE_COMPILE_TARGETS_LINUX[@]##*/}")
 
 readonly OS_CROSS_COMPILE_TARGETS=(
-  cmd/hypershift
-  cmd/openshift
   cmd/oc
-  cmd/oadm
-  cmd/template-service-broker
   cmd/openshift-node-config
   vendor/k8s.io/kubernetes/cmd/hyperkube
 )
