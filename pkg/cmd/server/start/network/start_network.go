@@ -1,4 +1,4 @@
-package start
+package network
 
 import (
 	"errors"
@@ -10,21 +10,20 @@ import (
 
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/golang/glog"
-	"github.com/openshift/origin/pkg/cmd/server/origin"
 	"github.com/spf13/cobra"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	kcmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/master/ports"
 
+	"github.com/openshift/library-go/pkg/serviceability"
 	configapi "github.com/openshift/origin/pkg/cmd/server/apis/config"
 	configapilatest "github.com/openshift/origin/pkg/cmd/server/apis/config/latest"
-	"github.com/openshift/origin/pkg/cmd/server/apis/config/validation"
 	"github.com/openshift/origin/pkg/cmd/server/apis/config/validation/common"
 	"github.com/openshift/origin/pkg/cmd/server/kubernetes/network"
 	networkoptions "github.com/openshift/origin/pkg/cmd/server/kubernetes/network/options"
+	"github.com/openshift/origin/pkg/cmd/server/start/options"
 	cmdutil "github.com/openshift/origin/pkg/cmd/util"
 	utilflags "github.com/openshift/origin/pkg/cmd/util/flags"
 	"github.com/openshift/origin/pkg/version"
@@ -50,40 +49,35 @@ var networkLong = templates.LongDesc(`
 
 // NewCommandStartNetwork provides a CLI handler for 'start network' command
 func NewCommandStartNetwork(basename string, out, errout io.Writer) (*cobra.Command, *NetworkOptions) {
-	options := &NetworkOptions{Output: out}
+	opts := &NetworkOptions{Output: out}
 
 	cmd := &cobra.Command{
 		Use:   "network",
 		Short: "Launch node network",
 		Long:  fmt.Sprintf(networkLong, basename),
 		Run: func(c *cobra.Command, args []string) {
-			options.Run(c, errout, args, wait.NeverStop)
+			opts.Run(c, errout, args, wait.NeverStop)
 		},
 	}
 
 	flags := cmd.Flags()
-	flags.StringVar(&options.ConfigFile, "config", "", "Location of the node configuration file to run from. When running from a configuration file, all other command-line arguments are ignored.")
+	flags.StringVar(&opts.ConfigFile, "config", "", "Location of the node configuration file to run from. When running from a configuration file, all other command-line arguments are ignored.")
 
-	options.NodeArgs = NewDefaultNetworkArgs()
-	options.NodeArgs.ListenArg.ListenAddr.DefaultPort = ports.ProxyHealthzPort
-	BindNodeNetworkArgs(options.NodeArgs, flags, "")
-	BindListenArg(options.NodeArgs.ListenArg, flags, "")
-	BindImageFormatArgs(options.NodeArgs.ImageFormatArgs, flags, "")
-	BindKubeConnectionArgs(options.NodeArgs.KubeConnectionArgs, flags, "")
+	opts.NodeArgs = NewDefaultNetworkArgs()
+	opts.NodeArgs.ListenArg.ListenAddr.DefaultPort = ports.ProxyHealthzPort
+	BindNodeNetworkArgs(opts.NodeArgs, flags, "")
+	options.BindListenArg(opts.NodeArgs.ListenArg, flags, "")
+	options.BindImageFormatArgs(opts.NodeArgs.ImageFormatArgs, flags, "")
+	options.BindKubeConnectionArgs(opts.NodeArgs.KubeConnectionArgs, flags, "")
 
 	// autocompletion hints
 	cmd.MarkFlagFilename("config", "yaml", "yml")
 
-	return cmd, options
+	return cmd, opts
 }
 
 func (options *NetworkOptions) Run(c *cobra.Command, errout io.Writer, args []string, stopCh <-chan struct{}) {
-	kcmdutil.CheckErr(options.Complete(c))
-	kcmdutil.CheckErr(options.Validate(args))
-
-	origin.StartProfiler()
-
-	if err := options.StartNetwork(stopCh); err != nil {
+	if err := options.run(c, errout, args, stopCh); err != nil {
 		if kerrors.IsInvalid(err) {
 			if details := err.(*kerrors.StatusError).ErrStatus.Details; details != nil {
 				fmt.Fprintf(errout, "Invalid %s %s\n", details.Kind, details.Name)
@@ -95,6 +89,17 @@ func (options *NetworkOptions) Run(c *cobra.Command, errout io.Writer, args []st
 		}
 		glog.Fatal(err)
 	}
+}
+
+func (options *NetworkOptions) run(c *cobra.Command, errout io.Writer, args []string, stopCh <-chan struct{}) error {
+	if err := options.Complete(c); err != nil {
+		return err
+	}
+	if err := options.Validate(args); err != nil {
+		return err
+	}
+	serviceability.StartProfiler()
+	return options.StartNetwork(stopCh)
 }
 
 func (o NetworkOptions) Validate(args []string) error {
@@ -155,9 +160,9 @@ func (o NetworkOptions) RunNetwork() error {
 			nodeConfig.NodeName = o.NodeArgs.NodeName
 		}
 		nodeConfig.MasterKubeConfig = o.NodeArgs.KubeConnectionArgs.ClientConfigLoadingRules.ExplicitPath
-		validationResults = validation.ValidateInClusterNodeConfig(nodeConfig, nil)
+		//validationResults = validation.ValidateInClusterNodeConfig(nodeConfig, nil)
 	default:
-		validationResults = validation.ValidateNodeConfig(nodeConfig, nil)
+		//validationResults = validation.ValidateNodeConfig(nodeConfig, nil)
 	}
 
 	if len(validationResults.Warnings) != 0 {

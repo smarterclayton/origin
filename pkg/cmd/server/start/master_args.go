@@ -22,6 +22,7 @@ import (
 	configapi "github.com/openshift/origin/pkg/cmd/server/apis/config"
 	configapiv1 "github.com/openshift/origin/pkg/cmd/server/apis/config/v1"
 	"github.com/openshift/origin/pkg/cmd/server/bootstrappolicy"
+	"github.com/openshift/origin/pkg/cmd/server/start/options"
 	cmdutil "github.com/openshift/origin/pkg/cmd/util"
 	"github.com/spf13/cobra"
 )
@@ -65,13 +66,13 @@ type MasterArgs struct {
 
 	APIServerCAFiles []string
 
-	ListenArg          *ListenArg
-	ImageFormatArgs    *ImageFormatArgs
-	KubeConnectionArgs *KubeConnectionArgs
+	ListenArg          *options.ListenArg
+	ImageFormatArgs    *options.ImageFormatArgs
+	KubeConnectionArgs *options.KubeConnectionArgs
 
 	SchedulerConfigFile string
 
-	NetworkArgs *NetworkArgs
+	NetworkArgs *options.NetworkArgs
 
 	OverrideConfig func(config *configapi.MasterConfig) error
 }
@@ -104,10 +105,10 @@ func NewDefaultMasterArgs() *MasterArgs {
 
 		ConfigDir: &flag.StringFlag{},
 
-		ListenArg:          NewDefaultListenArg(),
-		ImageFormatArgs:    NewDefaultImageFormatArgs(),
-		KubeConnectionArgs: NewDefaultKubeConnectionArgs(),
-		NetworkArgs:        NewDefaultMasterNetworkArgs(),
+		ListenArg:          options.NewDefaultListenArg(),
+		ImageFormatArgs:    options.NewDefaultImageFormatArgs(),
+		KubeConnectionArgs: options.NewDefaultKubeConnectionArgs(),
+		NetworkArgs:        options.NewDefaultMasterNetworkArgs(),
 	}
 
 	return config
