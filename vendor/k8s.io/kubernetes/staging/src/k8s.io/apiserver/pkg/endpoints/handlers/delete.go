@@ -152,19 +152,6 @@ func DeleteResource(r rest.GracefulDeleter, allowsOptions bool, scope RequestSco
 					Kind: scope.Kind.Kind,
 				},
 			}
-		} else {
-			// when a non-status response is returned, set the self link
-			requestInfo, ok := request.RequestInfoFrom(ctx)
-			if !ok {
-				scope.err(fmt.Errorf("missing requestInfo"), w, req)
-				return
-			}
-			if _, ok := result.(*metav1.Status); !ok {
-				if err := setSelfLink(result, requestInfo, scope.Namer); err != nil {
-					scope.err(err, w, req)
-					return
-				}
-			}
 		}
 
 		transformResponseObject(ctx, scope, req, w, status, result)
@@ -280,14 +267,6 @@ func DeleteCollection(r rest.CollectionDeleter, checkBody bool, scope RequestSco
 				Details: &metav1.StatusDetails{
 					Kind: scope.Kind.Kind,
 				},
-			}
-		} else {
-			// when a non-status response is returned, set the self link
-			if _, ok := result.(*metav1.Status); !ok {
-				if _, err := setListSelfLink(result, ctx, req, scope.Namer); err != nil {
-					scope.err(err, w, req)
-					return
-				}
 			}
 		}
 

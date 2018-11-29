@@ -63,15 +63,6 @@ func getResourceHandler(scope RequestScope, getter getterFunc) http.HandlerFunc 
 			scope.err(err, w, req)
 			return
 		}
-		requestInfo, ok := request.RequestInfoFrom(ctx)
-		if !ok {
-			scope.err(fmt.Errorf("missing requestInfo"), w, req)
-			return
-		}
-		if err := setSelfLink(result, requestInfo, scope.Namer); err != nil {
-			scope.err(err, w, req)
-			return
-		}
 
 		trace.Step("About to write a response")
 		transformResponseObject(ctx, scope, req, w, http.StatusOK, result)
@@ -265,21 +256,8 @@ func ListResource(r rest.Lister, rw rest.Watcher, scope RequestScope, forceWatch
 			return
 		}
 		trace.Step("Listing from storage done")
-		numberOfItems, err := setListSelfLink(result, ctx, req, scope.Namer)
-		if err != nil {
-			scope.err(err, w, req)
-			return
-		}
-		trace.Step("Self-linking done")
-		// Ensure empty lists return a non-nil items slice
-		if numberOfItems == 0 && meta.IsListType(result) {
-			if err := meta.SetList(result, []runtime.Object{}); err != nil {
-				scope.err(err, w, req)
-				return
-			}
-		}
 
 		transformResponseObject(ctx, scope, req, w, http.StatusOK, result)
-		trace.Step(fmt.Sprintf("Writing http response done (%d items)", numberOfItems))
+		trace.Step(fmt.Sprintf("Writing http response done (%d items)", meta.LenList(result)))
 	}
 }

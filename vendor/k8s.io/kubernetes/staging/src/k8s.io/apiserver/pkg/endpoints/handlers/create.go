@@ -129,17 +129,6 @@ func createHandler(r rest.NamedCreater, scope RequestScope, admit admission.Inte
 		}
 		trace.Step("Object stored in database")
 
-		requestInfo, ok := request.RequestInfoFrom(ctx)
-		if !ok {
-			scope.err(fmt.Errorf("missing requestInfo"), w, req)
-			return
-		}
-		if err := setSelfLink(result, requestInfo, scope.Namer); err != nil {
-			scope.err(err, w, req)
-			return
-		}
-		trace.Step("Self-link added")
-
 		// If the object is partially initialized, always indicate it via StatusAccepted
 		code := http.StatusCreated
 		if accessor, err := meta.Accessor(result); err == nil {

@@ -34,6 +34,11 @@ import (
 // transformResponseObject takes an object loaded from storage and performs any necessary transformations.
 // Will write the complete response object.
 func transformResponseObject(ctx context.Context, scope RequestScope, req *http.Request, w http.ResponseWriter, statusCode int, result runtime.Object) {
+	if err := setObjectSelfLink(ctx, result, req, scope.Namer); err != nil {
+		scope.err(err, w, req)
+		return
+	}
+
 	// TODO: fetch the media type much earlier in request processing and pass it into this method.
 	mediaType, _, err := negotiation.NegotiateOutputMediaType(req, scope.Serializer, &scope)
 	if err != nil {

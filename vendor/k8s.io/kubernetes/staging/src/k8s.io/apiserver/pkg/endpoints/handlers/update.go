@@ -121,17 +121,6 @@ func UpdateResource(r rest.Updater, scope RequestScope, admit admission.Interfac
 		}
 		trace.Step("Object stored in database")
 
-		requestInfo, ok := request.RequestInfoFrom(ctx)
-		if !ok {
-			scope.err(fmt.Errorf("missing requestInfo"), w, req)
-			return
-		}
-		if err := setSelfLink(result, requestInfo, scope.Namer); err != nil {
-			scope.err(err, w, req)
-			return
-		}
-		trace.Step("Self-link added")
-
 		status := http.StatusOK
 		if wasCreated {
 			status = http.StatusCreated

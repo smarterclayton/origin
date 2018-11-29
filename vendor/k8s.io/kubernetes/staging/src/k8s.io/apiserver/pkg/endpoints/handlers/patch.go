@@ -145,17 +145,6 @@ func PatchResource(r rest.Patcher, scope RequestScope, admit admission.Interface
 		}
 		trace.Step("Object stored in database")
 
-		requestInfo, ok := request.RequestInfoFrom(ctx)
-		if !ok {
-			scope.err(fmt.Errorf("missing requestInfo"), w, req)
-			return
-		}
-		if err := setSelfLink(result, requestInfo, scope.Namer); err != nil {
-			scope.err(err, w, req)
-			return
-		}
-		trace.Step("Self-link added")
-
 		transformResponseObject(ctx, scope, req, w, http.StatusOK, result)
 	}
 }
