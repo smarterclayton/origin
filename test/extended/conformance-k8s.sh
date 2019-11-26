@@ -43,7 +43,7 @@ To recreate these results
 Nightly conformance tests are run against release branches and reported https://openshift-gce-devel.appspot.com/builds/origin-ci-test/logs/periodic-ci-origin-conformance-k8s/
 END
 
-version="${KUBERNETES_VERSION:-release-1.16}"
+version="${KUBERNETES_VERSION:-release-1.17}"
 kubernetes="${KUBERNETES_ROOT:-${OS_ROOT}/../../../k8s.io/kubernetes}"
 if [[ -d "${kubernetes}" ]]; then
   git fetch origin --tags
@@ -76,6 +76,7 @@ pushd "${kubernetes}" > /dev/null
 git checkout "${version}"
 make WHAT=cmd/kubectl
 make WHAT=test/e2e/e2e.test
+make WHAT=vendor/github.com/onsi/ginkgo/ginkgo
 export PATH="${kubernetes}/_output/local/bin/$( os::build::host_platform ):${PATH}"
 
 kubectl version  > "${test_report_dir}/version.txt"
@@ -83,8 +84,9 @@ echo "-----"    >> "${test_report_dir}/version.txt"
 oc version      >> "${test_report_dir}/version.txt"
 
 # Run the test
-e2e.test '-ginkgo.focus=\[Conformance\]' \
-  -report-dir "${test_report_dir}" -ginkgo.noColor \
+ginkgo \
+  -nodes 5 -noColor '-focus=\[Conformance\]' $( which e2e.test ) -- \
+  -report-dir "${test_report_dir}" \
   -allowed-not-ready-nodes ${unschedulable} \
   2>&1 | tee "${test_report_dir}/e2e.log"
 
