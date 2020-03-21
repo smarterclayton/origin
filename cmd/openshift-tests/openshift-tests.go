@@ -19,10 +19,13 @@ import (
 	"github.com/openshift/library-go/pkg/serviceability"
 	"github.com/openshift/origin/pkg/monitor"
 	testginkgo "github.com/openshift/origin/pkg/test/ginkgo"
+	"github.com/openshift/origin/pkg/test/ssh"
+	sshnodes "github.com/openshift/origin/pkg/test/ssh/nodes"
 	exutil "github.com/openshift/origin/test/extended/util"
 )
 
 func main() {
+	defer serviceability.Profile(os.Getenv("OPENSHIFT_PROFILE")).Stop()
 	logs.InitLogs()
 	defer logs.FlushLogs()
 
@@ -46,6 +49,7 @@ func main() {
 		newRunUpgradeCommand(),
 		newRunTestCommand(),
 		newRunMonitorCommand(),
+		newRunSSHCommand(),
 	)
 
 	pflag.CommandLine = pflag.NewFlagSet("empty", pflag.ExitOnError)
@@ -53,7 +57,6 @@ func main() {
 	exutil.InitStandardFlags()
 
 	if err := func() error {
-		defer serviceability.Profile(os.Getenv("OPENSHIFT_PROFILE")).Stop()
 		return root.Execute()
 	}(); err != nil {
 		if ex, ok := err.(testginkgo.ExitError); ok {
@@ -86,6 +89,46 @@ func newRunMonitorCommand() *cobra.Command {
 	return cmd
 }
 
+func newRunSSHCommand() *cobra.Command {
+	verbosityFlag := pflag.CommandLine.Lookup("v")
+	sshOpt := &ssh.Options{
+		Address: "localhost:2222",
+	}
+	var nodeSelector string
+	cmd := &cobra.Command{
+		Use:   "run-ssh-forward",
+		Short: "Act as an SSH forwarder to nodes in a cluster",
+		Long: templates.LongDesc(`
+		Start an SSH server that will forward connections to nodes
+
+		Starts an SSH forwarder that can pass SSH connections to the list of nodes or backend
+		addresses provided by the command line. If a node selector is provided, the selected node
+		internal addresses are used - this assumes the command runs from reachability to the node
+		on the internal IP. Only users in the authorized keys section of the those nodes may
+		connect. If no selector is provided, the backends must be provided directly and an
+		authorized keys file presented.
+		`),
+
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(nodeSelector) > 0 {
+				ssh, err := sshnodes.New(nodeSelector, 5*time.Minute)
+				if err != nil {
+					return err
+				}
+				sshOpt.AuthorizedKeysFunc = ssh.AuthorizedKeys
+				sshOpt.AddressFunc = ssh.AddressFor
+			}
+			return sshOpt.Run()
+		},
+	}
+	cmd.Flags().AddFlag(verbosityFlag)
+	cmd.Flags().StringVar(&nodeSelector, "node-selector", nodeSelector, "An optional selector to identify nodes that may be forwarded to.")
+	sshOpt.Bind(cmd.Flags())
+	return cmd
+}
+
 func newRunCommand() *cobra.Command {
 	opt := &testginkgo.Options{
 		Suites: staticSuites,
@@ -104,7 +147,6 @@ func newRunCommand() *cobra.Command {
 		suite will be printed, one per line. You may filter this list and pass it back to the run
 		command with the --file argument. You may also pipe a list of test names, one per line, on
 		standard input by passing "-f -".
-
 		`) + testginkgo.SuitesString(opt.Suites, "\n\nAvailable test suites:\n\n"),
 
 		SilenceUsage:  true,
