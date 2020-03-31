@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -22,7 +21,11 @@ func main() {
 	if err != nil {
 		klog.Fatal(err)
 	}
-	fmt.Fprintf(streams.ErrOut, "The following compatible plugins are available:\n%v\n\n", strings.Join(testBinaries, "\n"))
+	if verbose() {
+		for _, testBinary := range testBinaries {
+			klog.Infof("Found test binary: %s", testBinary)
+		}
+	}
 
 	for _, testBinary := range testBinaries {
 		testCommand := exec.Command(testBinary, os.Args[1:]...)
@@ -31,41 +34,48 @@ func main() {
 		testCommand.Stdin = streams.In
 
 		if err := testCommand.Run(); err != nil {
-			klog.Fatal(err)
+			if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() != 0 {
+				os.Exit(exitErr.ExitCode())
+			}
+			os.Exit(1)
 		}
 	}
+}
+
+// verbose returns true if additional output from this binary should be printed.
+func verbose() bool {
+	return len(os.Getenv("OPENSHIFT_TESTS_DEBUG_PLUGINS")) > 0
 }
 
 func getTestBinaries(streams genericclioptions.IOStreams) ([]string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 	executablePath, err := os.Executable()
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
+
 	executableDir := filepath.Dir(executablePath)
 	testBinaryDirectories := []string{}
 	testBinaryDirectories = append(testBinaryDirectories, cwd)
 	testBinaryDirectories = append(testBinaryDirectories, executableDir)
 	testBinaryDirectories = append(testBinaryDirectories, filepath.SplitList(os.Getenv("PATH"))...)
 
-	warnings := 0
-	errors := []error{}
-	testBinaries := sets.String{}
+	var warnings []string
+	var errors []error
+	testBinaries := sets.NewString()
+
 	verifier := &CommandOverrideVerifier{
-		//root:        cmd.Root(),
 		seenPlugins: make(map[string]string),
 	}
 	for _, dir := range uniquePathsList(testBinaryDirectories) {
 		files, err := ioutil.ReadDir(dir)
 		if err != nil {
-			if _, ok := err.(*os.PathError); ok {
-				fmt.Fprintf(streams.ErrOut, "Unable read directory %q from your PATH: %v. Skipping...\n", dir, err)
+			if os.IsNotExist(err) {
 				continue
 			}
-
 			errors = append(errors, fmt.Errorf("error: unable to read directory %q in your PATH: %v", dir, err))
 			continue
 		}
@@ -81,31 +91,30 @@ func getTestBinaries(streams genericclioptions.IOStreams) ([]string, error) {
 			testBinaryPath := filepath.Join(dir, f.Name())
 			isSymlink, err := evalSymlink(testBinaryPath)
 			if err != nil {
-				log.Println(err)
+				klog.Errorf("unable to evaluate symlink: %v", err)
 			}
+
 			if testBinaries.Has(testBinaryPath) || isSymlink {
 				continue
 			}
 			testBinaries.Insert(testBinaryPath)
 
-			fmt.Fprintf(streams.ErrOut, "%s\n", testBinaryPath)
 			if errs := verifier.Verify(streams, filepath.Join(dir, f.Name())); len(errs) != 0 {
 				for _, err := range errs {
-					fmt.Fprintf(streams.ErrOut, "  - %s\n", err)
-					warnings++
+					warnings = append(warnings, fmt.Sprintf("%s: %v", err))
 				}
 			}
 		}
 	}
-	if warnings > 0 {
-		if warnings == 1 {
-			errors = append(errors, fmt.Errorf("error: one plugin warning was found"))
+	if len(warnings) > 0 {
+		if len(warnings) == 1 {
+			errors = append(errors, fmt.Errorf("error: plugin warning: %s", warnings[0]))
 		} else {
-			errors = append(errors, fmt.Errorf("error: %v plugin warnings were found", warnings))
+			errors = append(errors, fmt.Errorf("error: plugin warnings:\n%s", strings.Join(warnings, "\n")))
 		}
 	}
 	if len(testBinaries) == 0 {
-		errors = append(errors, fmt.Errorf("error: unable to find any kubectl plugins in your PATH"))
+		errors = append(errors, fmt.Errorf("error: unable to find any openshift-tests plugins in your PATH"))
 	}
 	if len(errors) > 0 {
 		return nil, errorsutil.NewAggregate(errors)
@@ -137,10 +146,6 @@ func evalSymlink(path string) (bool, error) {
 // is valid depending on whether or not it overwrites an existing
 // kubectl command path, or a previously seen plugin.
 func (v *CommandOverrideVerifier) Verify(streams genericclioptions.IOStreams, path string) []error {
-	//if v.root == nil {
-	//	return []error{fmt.Errorf("unable to verify path with nil root")}
-	//}
-
 	// extract the plugin binary name
 	segs := strings.Split(path, "/")
 	binName := segs[len(segs)-1]
@@ -154,20 +159,18 @@ func (v *CommandOverrideVerifier) Verify(streams genericclioptions.IOStreams, pa
 	errors := []error{}
 
 	if isExec, err := isExecutable(path); err == nil && !isExec {
-		errors = append(errors, fmt.Errorf("warning: %s identified as a kubectl plugin, but it is not executable", path))
+		errors = append(errors, fmt.Errorf("error: %s identified as a kubectl plugin, but it is not executable", path))
 	} else if err != nil {
 		errors = append(errors, fmt.Errorf("error: unable to identify %s as an executable file: %v", path, err))
 	}
 
 	if existingPath, ok := v.seenPlugins[binName]; ok {
-		fmt.Fprintf(streams.ErrOut, "warning: %s is overshadowed by a similarly named plugin: %s\n", path, existingPath)
+		if verbose() {
+			klog.Warningf("%s is overshadowed by a similarly named plugin: %s\n", path, existingPath)
+		}
 	} else {
 		v.seenPlugins[binName] = path
 	}
-
-	//if cmd, _, err := v.root.Find(cmdPath); err == nil {
-	//	errors = append(errors, fmt.Errorf("warning: %s overwrites existing command: %q", binName, cmd.CommandPath()))
-	//}
 
 	return errors
 }
@@ -207,6 +210,5 @@ func nameMatchesTest(filepath string) bool {
 		}
 		return true
 	}
-
 	return false
 }
